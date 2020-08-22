@@ -33,16 +33,6 @@
   </url>
   
   <url>
-    <loc>divyanshu25.github.io/post/</loc>
-    <lastmod>2019-09-05T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>divyanshu25.github.io/post/writing-technical-content/</loc>
-    <lastmod>2019-07-12T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>divyanshu25.github.io/courses/</loc>
     <lastmod>2019-05-05T00:00:00+01:00</lastmod>
   </url>
@@ -59,12 +49,12 @@
   
   <url>
     <loc>divyanshu25.github.io/authors/</loc>
-    <lastmod>2019-09-05T00:00:00+00:00</lastmod>
+    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>divyanshu25.github.io/author/divyanshu-goyal/</loc>
-    <lastmod>2019-09-05T00:00:00+00:00</lastmod>
+    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -85,11 +75,6 @@
   <url>
     <loc>divyanshu25.github.io/tags/</loc>
     <lastmod>2019-04-17T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>divyanshu25.github.io/post/jupyter/</loc>
-    <lastmod>2019-09-05T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -128,37 +113,27 @@
   </url>
   
   <url>
-    <loc>divyanshu25.github.io/tag/academic/</loc>
+    <loc>divyanshu25.github.io/tag/distributed-computing/</loc>
     <lastmod>2019-04-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>divyanshu25.github.io/post/getting-started/</loc>
+    <loc>divyanshu25.github.io/post/urp/</loc>
     <lastmod>2019-04-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>divyanshu25.github.io/categories/</loc>
+    <loc>divyanshu25.github.io/tag/machine-learning-systems/</loc>
     <lastmod>2019-04-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>divyanshu25.github.io/category/demo/</loc>
+    <loc>divyanshu25.github.io/post/</loc>
     <lastmod>2019-04-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>divyanshu25.github.io/author/%E5%90%B3%E6%81%A9%E9%81%94/</loc>
-    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>divyanshu25.github.io/tag/%E5%BC%80%E6%BA%90/</loc>
-    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>divyanshu25.github.io/category/%E6%95%99%E7%A8%8B/</loc>
+    <loc>divyanshu25.github.io/author/shirsh-bansal/</loc>
     <lastmod>2019-04-17T00:00:00+00:00</lastmod>
   </url>
   
@@ -185,6 +160,14 @@
   <url>
     <loc>divyanshu25.github.io/publication/conference-paper/</loc>
     <lastmod>2013-07-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>divyanshu25.github.io/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>divyanshu25.github.io/author/%E5%90%B3%E6%81%A9%E9%81%94/</loc>
   </url>
   
 </urlset>
