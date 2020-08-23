@@ -13,11 +13,153 @@
     </image>
     
     <item>
-      <title>External Project</title>
-      <link>/project/external-project/</link>
+      <title>Engineering High-Throughput, Low-Latency Machine Learning Services.</title>
+      <link>/post/urp/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
-      <guid>/project/external-project/</guid>
-      <description></description>
+      <guid>/post/urp/</guid>
+      <description>&lt;hr&gt;
+&lt;p&gt;#title: &amp;lsquo;Engineering High-Throughput, Low-Latency Machine Learning Services.&amp;rsquo;
+#subtitle: &amp;lsquo;Serve your Machine Learning Models in Real-Time.&amp;rsquo;
+#&lt;!-- summary: Create a beautifully simple website in under 10 minutes. --&gt;
+#authors:
+#- admin
+#- Shirsh Bansal
+#tags:
+#- Distributed Computing
+#- Machine Learning Systems#&lt;/p&gt;
+&lt;p&gt;#date: &amp;ldquo;2016-04-20T00:00:00Z&amp;rdquo;
+#lastmod: &amp;ldquo;2019-04-17T00:00:00Z&amp;rdquo;
+#featured: false
+#draft: false#&lt;/p&gt;
+&lt;h2 id=&#34;featured-image&#34;&gt;Featured image&lt;/h2&gt;
+&lt;h2 id=&#34;to-use-add-an-image-named-featuredjpgpng-to-your-pages-folder&#34;&gt;To use, add an image named &lt;code&gt;featured.jpg/png&lt;/code&gt; to your page&amp;rsquo;s folder.&lt;/h2&gt;
+&lt;h2 id=&#34;placement-options-1--full-column-width-2--out-set-3--screen-width&#34;&gt;Placement options: 1 = Full column width, 2 = Out-set, 3 = Screen-width&lt;/h2&gt;
+&lt;h2 id=&#34;focal-point-options-smart-center-topleft-top-topright-left-right-bottomleft-bottom-bottomright&#34;&gt;Focal point options: Smart, Center, TopLeft, Top, TopRight, Left, Right, BottomLeft, Bottom, BottomRight&lt;/h2&gt;
+&lt;p&gt;#image:&lt;/p&gt;
+&lt;h1 id=&#34;placement-2&#34;&gt;placement: 2&lt;/h1&gt;
+&lt;h1 id=&#34;caption-image-credit-unsplashhttpsunsplashcomphotoscpkojocxduy&#34;&gt;caption: &amp;lsquo;Image credit: 
+&lt;a href=&#34;https://unsplash.com/photos/CpkOjOcXdUY&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Unsplash&lt;/strong&gt;&lt;/a&gt;&amp;rsquo;&lt;/h1&gt;
+&lt;h1 id=&#34;focal_point-&#34;&gt;focal_point: &amp;quot;&amp;rdquo;&lt;/h1&gt;
+&lt;h1 id=&#34;preview_only-false&#34;&gt;preview_only: false#&lt;/h1&gt;
+&lt;h2 id=&#34;projects-optional&#34;&gt;Projects (optional).&lt;/h2&gt;
+&lt;h2 id=&#34;associate-this-post-with-one-or-more-of-your-projects&#34;&gt;Associate this post with one or more of your projects.&lt;/h2&gt;
+&lt;h2 id=&#34;simply-enter-your-projects-folder-or-file-name-without-extension&#34;&gt;Simply enter your project&amp;rsquo;s folder or file name without extension.&lt;/h2&gt;
+&lt;h2 id=&#34;eg-projects--internal-project-references-contentprojectdeep-learningindexmd&#34;&gt;E.g. &lt;code&gt;projects = [&amp;quot;internal-project&amp;quot;]&lt;/code&gt; references &lt;code&gt;content/project/deep-learning/index.md&lt;/code&gt;.&lt;/h2&gt;
+&lt;h2 id=&#34;otherwise-set-projects--&#34;&gt;Otherwise, set &lt;code&gt;projects = []&lt;/code&gt;.&lt;/h2&gt;
+&lt;p&gt;#projects: []
+#&amp;mdash;
+#external_link: &lt;a href=&#34;https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271&#34;&gt;https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271&lt;/a&gt;&lt;/p&gt;
+&lt;!-- The following blog has been moved to Medium under **Adobe Tech Blogs**. 
+
+Please visit the following [link.](https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271) --&gt;
+&lt;!-- **Create a free website with Academic using Markdown, Jupyter, or RStudio. Choose a beautiful color theme and build anything with the Page Builder - over 40 _widgets_, _themes_, and _language packs_ included!**
+
+[Check out the latest **demo**](https://academic-demo.netlify.com/) of what you&#39;ll get in less than 10 minutes, or [view the **showcase**](https://sourcethemes.com/academic/#expo) of personal, project, and business sites.
+
+- 👉 [**Get Started**](#install)
+- 📚 [View the **documentation**](https://sourcethemes.com/academic/docs/)
+- 💬 [**Ask a question** on the forum](https://discourse.gohugo.io)
+- 👥 [Chat with the **community**](https://spectrum.chat/academic)
+- 🐦 Twitter: [@source_themes](https://twitter.com/source_themes) [@GeorgeCushen](https://twitter.com/GeorgeCushen) [#MadeWithAcademic](https://twitter.com/search?q=%23MadeWithAcademic&amp;src=typd)
+- 💡 [Request a **feature** or report a **bug**](https://github.com/gcushen/hugo-academic/issues)
+- ⬆️ **Updating?** View the [Update Guide](https://sourcethemes.com/academic/docs/update/) and [Release Notes](https://sourcethemes.com/academic/updates/)
+- ❤️ **Support development** of Academic:
+  - ☕️ [**Donate a coffee**](https://paypal.me/cushen)
+  - 💵 [Become a backer on **Patreon**](https://www.patreon.com/cushen)
+  - 🖼️ [Decorate your laptop or journal with an Academic **sticker**](https://www.redbubble.com/people/neutreno/works/34387919-academic)
+  - 👕 [Wear the **T-shirt**](https://academic.threadless.com/)
+  - 👩‍💻 [**Contribute**](https://sourcethemes.com/academic/docs/contribute/)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;figure id=&#34;figure-academic-is-mobile-first-with-a-responsive-design-to-ensure-that-your-site-looks-stunning-on-every-device&#34;&gt;
+
+
+  &lt;a data-fancybox=&#34;&#34; href=&#34;https://raw.githubusercontent.com/gcushen/hugo-academic/master/academic.png&#34; data-caption=&#34;Academic is mobile first with a responsive design to ensure that your site looks stunning on every device.&#34;&gt;
+
+
+  &lt;img src=&#34;https://raw.githubusercontent.com/gcushen/hugo-academic/master/academic.png&#34; alt=&#34;&#34;  &gt;
+&lt;/a&gt;
+
+
+  
+  
+  &lt;figcaption&gt;
+    Academic is mobile first with a responsive design to ensure that your site looks stunning on every device.
+  &lt;/figcaption&gt;
+
+
+&lt;/figure&gt;
+
+
+**Key features:**
+
+- **Page builder** - Create *anything* with [**widgets**](https://sourcethemes.com/academic/docs/page-builder/) and [**elements**](https://sourcethemes.com/academic/docs/writing-markdown-latex/)
+- **Edit any type of content** - Blog posts, publications, talks, slides, projects, and more!
+- **Create content** in [**Markdown**](https://sourcethemes.com/academic/docs/writing-markdown-latex/), [**Jupyter**](https://sourcethemes.com/academic/docs/jupyter/), or [**RStudio**](https://sourcethemes.com/academic/docs/install/#install-with-rstudio)
+- **Plugin System** - Fully customizable [**color** and **font themes**](https://sourcethemes.com/academic/themes/)
+- **Display Code and Math** - Code highlighting and [LaTeX math](https://en.wikibooks.org/wiki/LaTeX/Mathematics) supported
+- **Integrations** - [Google Analytics](https://analytics.google.com), [Disqus commenting](https://disqus.com), Maps, Contact Forms, and more!
+- **Beautiful Site** - Simple and refreshing one page design
+- **Industry-Leading SEO** - Help get your website found on search engines and social media
+- **Media Galleries** - Display your images and videos with captions in a customizable gallery
+- **Mobile Friendly** - Look amazing on every screen with a mobile friendly version of your site
+- **Multi-language** - 15+ language packs including English, 中文, and Português
+- **Multi-user** - Each author gets their own profile page
+- **Privacy Pack** - Assists with GDPR
+- **Stand Out** - Bring your site to life with animation, parallax backgrounds, and scroll effects
+- **One-Click Deployment** - No servers. No databases. Only files.
+
+## Themes
+
+Academic comes with **automatic day (light) and night (dark) mode** built-in. Alternatively, visitors can  choose their preferred mode - click the sun/moon icon in the top right of the [Demo](https://academic-demo.netlify.com/) to see it in action! Day/night mode can also be disabled by the site admin in `params.toml`.
+
+[Choose a stunning **theme** and **font**](https://sourcethemes.com/academic/themes/) for your site. Themes are fully [customizable](https://sourcethemes.com/academic/docs/customization/#custom-theme).
+
+## Ecosystem
+
+* **[Academic Admin](https://github.com/sourcethemes/academic-admin):** An admin tool to import publications from BibTeX or import assets for an offline site
+* **[Academic Scripts](https://github.com/sourcethemes/academic-scripts):** Scripts to help migrate content to new versions of Academic
+
+## Install
+
+You can choose from one of the following four methods to install:
+
+* [**one-click install using your web browser (recommended)**](https://sourcethemes.com/academic/docs/install/#install-with-web-browser)
+* [install on your computer using **Git** with the Command Prompt/Terminal app](https://sourcethemes.com/academic/docs/install/#install-with-git)
+* [install on your computer by downloading the **ZIP files**](https://sourcethemes.com/academic/docs/install/#install-with-zip)
+* [install on your computer with **RStudio**](https://sourcethemes.com/academic/docs/install/#install-with-rstudio)
+
+Then [personalize and deploy your new site](https://sourcethemes.com/academic/docs/get-started/).
+
+## Updating
+
+[View the Update Guide](https://sourcethemes.com/academic/docs/update/).
+
+Feel free to *star* the project on [Github](https://github.com/gcushen/hugo-academic/) to help keep track of [updates](https://sourcethemes.com/academic/updates).
+
+## License
+
+Copyright 2016-present [George Cushen](https://georgecushen.com).
+
+Released under the [MIT](https://github.com/gcushen/hugo-academic/blob/master/LICENSE.md) license.
+ --&gt;&lt;blockquote&gt;
+&lt;/blockquote&gt;
+</description>
     </item>
     
   </channel>
