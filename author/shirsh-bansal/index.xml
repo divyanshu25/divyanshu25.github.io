@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Shirsh Bansal | Home</title>
-    <link>divyanshu25.github.io/author/shirsh-bansal/</link>
-      <atom:link href="divyanshu25.github.io/author/shirsh-bansal/index.xml" rel="self" type="application/rss+xml" />
+    <link>/author/shirsh-bansal/</link>
+      <atom:link href="/author/shirsh-bansal/index.xml" rel="self" type="application/rss+xml" />
     <description>Shirsh Bansal</description>
     <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Wed, 20 Apr 2016 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/divyanshu25.github.io/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
+      <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
       <title>Shirsh Bansal</title>
-      <link>divyanshu25.github.io/author/shirsh-bansal/</link>
+      <link>/author/shirsh-bansal/</link>
     </image>
     
     <item>
       <title>Engineering High-Throughput, Low-Latency Machine Learning Services.</title>
-      <link>divyanshu25.github.io/post/urp/</link>
+      <link>/post/urp/</link>
       <pubDate>Wed, 20 Apr 2016 00:00:00 +0000</pubDate>
-      <guid>divyanshu25.github.io/post/urp/</guid>
+      <guid>/post/urp/</guid>
       <description>&lt;p&gt;The following blog has been moved to Medium under &lt;strong&gt;Adobe Tech Blogs&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;Please visit the following 
 &lt;a href=&#34;https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;link.&lt;/a&gt;&lt;/p&gt;
