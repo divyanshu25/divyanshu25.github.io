@@ -162,5 +162,13 @@ Released under the [MIT](https://github.com/gcushen/hugo-academic/blob/master/LI
 </description>
     </item>
     
+    <item>
+      <title>Hive-JDBC Storage Handler</title>
+      <link>/post/hive-jdbc/</link>
+      <pubDate>Tue, 28 Jul 2015 00:00:00 +0000</pubDate>
+      <guid>/post/hive-jdbc/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>
