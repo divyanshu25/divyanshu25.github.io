@@ -83,8 +83,8 @@
       <guid>/post/flask-apache/</guid>
       <description>&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
 &lt;p&gt;We have written this blog to help developers deploy flask application with apache and mod_wsgi in production.
-We read through alot of articles and found out the steps we layout below are the most simplest way to deploy.
-Also, the biggest caveat to deploying in prduction is version mismatches, so we are going to be building things from source rather than using apt-get to install packages.
+We read through a lot of articles and found out the steps we layout below are the simplest way to deploy.
+Also, the biggest caveat to deploying in production is version mismatches, so we are going to be building things from source rather than using apt-get to install packages.
 So let&amp;rsquo;s get started.&lt;/p&gt;
 &lt;p&gt;&lt;a id=&#34;orgbba5361&#34;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;build-and-install-custom-version-of-python&#34;&gt;Build and install custom version of python&lt;/h1&gt;
@@ -114,7 +114,7 @@ sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-
 make -j4
 sudo make install 
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Argument in make -j&lt;code&gt;N&lt;/code&gt; is number of processors if you are not sure about number of processors in the machine. You can use
+&lt;p&gt;Argument in make -j&lt;code&gt;N&lt;/code&gt; is the number of processors if you are not sure about number of processors in the machine. You can use
 &lt;code&gt;nproc&lt;/code&gt; to get it.&lt;/p&gt;
 &lt;p&gt;&lt;a id=&#34;org895c7b7&#34;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;build-and-install-custom-version-of-wsgi-mod&#34;&gt;Build and install custom version of wsgi mod&lt;/h1&gt;
@@ -127,7 +127,7 @@ even where it is the same Python version, is that the Python installation may it
 compiled with the same options. This is especially a problem when it comes to issues around how Python stores 
 Unicode characters in memory. 
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;So to avoid this problem we are going build mod_wsgi from source and compile it with python we just installed in last step.&lt;/p&gt;
+&lt;p&gt;So to avoid this problem we are going to build mod_wsgi from the source and compile it with python we just installed in the last step.&lt;/p&gt;
 &lt;h2 id=&#34;1-compile-wsgi-mod&#34;&gt;1. Compile wsgi-mod&lt;/h2&gt;
 &lt;p&gt;Download source code from: 
 &lt;a href=&#34;https://github.com/GrahamDumpleton/mod_wsgi/releases&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github releases&lt;/a&gt;&lt;/p&gt;
@@ -140,14 +140,14 @@ sudo make install
 &lt;!-- Refer link for compilation: [wsgi](https://modwsgi.readthedocs.io/en/develop/user-guides/quick-installation-guide.html)
 --&gt;
 &lt;h1 id=&#34;configure-apache&#34;&gt;Configure Apache&lt;/h1&gt;
-&lt;p&gt;Ok now we move on to building apache2.&lt;/p&gt;
+&lt;p&gt;Ok, now we move on to building apache2.&lt;/p&gt;
 &lt;p&gt;&lt;a id=&#34;orgd89c968&#34;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;1-install-apache2&#34;&gt;1. Install apache2&lt;/h2&gt;
 &lt;pre&gt;&lt;code&gt;sudo apt-get install apache2
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;a id=&#34;orga12ca17&#34;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;2-configure-wsgi-module&#34;&gt;2. Configure Wsgi module&lt;/h2&gt;
-&lt;p&gt;Now we need to configure apache with the mod_wsgi we complied and installed in last step.&lt;/p&gt;
+&lt;p&gt;Now we need to configure apache with the mod_wsgi we complied and installed in the last step.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;Create a file: `/etc/apache2/mods-available/wsgi.load`
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Add the following line to the file:&lt;/p&gt;
@@ -160,7 +160,7 @@ sudo systemctl restart apache2
 &lt;p&gt;This completes the installation of Apache2 and mod_wsgi, all complied with python3.7.5.&lt;/p&gt;
 &lt;h1 id=&#34;deploying-flask-application&#34;&gt;Deploying Flask Application&lt;/h1&gt;
 &lt;h2 id=&#34;1-create-wsgi-file&#34;&gt;1. Create .wsgi file&lt;/h2&gt;
-&lt;p&gt;Now in order to deploy the flask application copy your code directory to
+&lt;p&gt;Now to deploy the flask application copy your code directory to
 &lt;code&gt;/var/www/&lt;/code&gt; directory and create &lt;code&gt;&amp;lt;your_application&amp;gt;&lt;/code&gt;.wsgi file and add the following lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;import sys
 sys.path.insert(0, &#39;/var/www/&amp;lt;your_application_dir&amp;gt;&#39;)
@@ -202,9 +202,9 @@ In &lt;code&gt;/etc/apache2/sites-available&lt;/code&gt; create &lt;code&gt;&amp
         CustomLog /var/www/&amp;lt;your_application_dir&amp;gt;/access.log combined
    &amp;lt;/VirtualHost&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;You can remove that logging commands if you donot wish to see logs.&lt;/p&gt;
+&lt;p&gt;You can remove that logging commands if you don&amp;rsquo;t wish to see logs.&lt;/p&gt;
 &lt;h2 id=&#34;4-enable-application&#34;&gt;4. Enable application&lt;/h2&gt;
-&lt;p&gt;Now we need tell apache to enable our application and load the configiration file we just created.&lt;/p&gt;
+&lt;p&gt;Now we need to tell apache to enable our application and load the configuration file we just created.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;sudo a2ensite &amp;lt;your_application&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;That&amp;rsquo;s it. Your website is up and running on the public IP for the server.&lt;/p&gt;

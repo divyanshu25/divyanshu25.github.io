@@ -656,8 +656,8 @@
     <div class="article-style">
       <h1 id="introduction">Introduction</h1>
 <p>We have written this blog to help developers deploy flask application with apache and mod_wsgi in production.
-We read through alot of articles and found out the steps we layout below are the most simplest way to deploy.
-Also, the biggest caveat to deploying in prduction is version mismatches, so we are going to be building things from source rather than using apt-get to install packages.
+We read through a lot of articles and found out the steps we layout below are the simplest way to deploy.
+Also, the biggest caveat to deploying in production is version mismatches, so we are going to be building things from source rather than using apt-get to install packages.
 So let&rsquo;s get started.</p>
 <p><a id="orgbba5361"></a></p>
 <h1 id="build-and-install-custom-version-of-python">Build and install custom version of python</h1>
@@ -687,7 +687,7 @@ sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-
 make -j4
 sudo make install 
 </code></pre>
-<p>Argument in make -j<code>N</code> is number of processors if you are not sure about number of processors in the machine. You can use
+<p>Argument in make -j<code>N</code> is the number of processors if you are not sure about number of processors in the machine. You can use
 <code>nproc</code> to get it.</p>
 <p><a id="org895c7b7"></a></p>
 <h1 id="build-and-install-custom-version-of-wsgi-mod">Build and install custom version of wsgi mod</h1>
@@ -700,7 +700,7 @@ even where it is the same Python version, is that the Python installation may it
 compiled with the same options. This is especially a problem when it comes to issues around how Python stores 
 Unicode characters in memory. 
 </code></pre>
-<p>So to avoid this problem we are going build mod_wsgi from source and compile it with python we just installed in last step.</p>
+<p>So to avoid this problem we are going to build mod_wsgi from the source and compile it with python we just installed in the last step.</p>
 <h2 id="1-compile-wsgi-mod">1. Compile wsgi-mod</h2>
 <p>Download source code from: 
 <a href="https://github.com/GrahamDumpleton/mod_wsgi/releases" target="_blank" rel="noopener">Github releases</a></p>
@@ -713,14 +713,14 @@ sudo make install
 <!-- Refer link for compilation: [wsgi](https://modwsgi.readthedocs.io/en/develop/user-guides/quick-installation-guide.html)
 -->
 <h1 id="configure-apache">Configure Apache</h1>
-<p>Ok now we move on to building apache2.</p>
+<p>Ok, now we move on to building apache2.</p>
 <p><a id="orgd89c968"></a></p>
 <h2 id="1-install-apache2">1. Install apache2</h2>
 <pre><code>sudo apt-get install apache2
 </code></pre>
 <p><a id="orga12ca17"></a></p>
 <h2 id="2-configure-wsgi-module">2. Configure Wsgi module</h2>
-<p>Now we need to configure apache with the mod_wsgi we complied and installed in last step.</p>
+<p>Now we need to configure apache with the mod_wsgi we complied and installed in the last step.</p>
 <pre><code>Create a file: `/etc/apache2/mods-available/wsgi.load`
 </code></pre>
 <p>Add the following line to the file:</p>
@@ -733,7 +733,7 @@ sudo systemctl restart apache2
 <p>This completes the installation of Apache2 and mod_wsgi, all complied with python3.7.5.</p>
 <h1 id="deploying-flask-application">Deploying Flask Application</h1>
 <h2 id="1-create-wsgi-file">1. Create .wsgi file</h2>
-<p>Now in order to deploy the flask application copy your code directory to
+<p>Now to deploy the flask application copy your code directory to
 <code>/var/www/</code> directory and create <code>&lt;your_application&gt;</code>.wsgi file and add the following lines.</p>
 <pre><code>import sys
 sys.path.insert(0, '/var/www/&lt;your_application_dir&gt;')
@@ -775,9 +775,9 @@ In <code>/etc/apache2/sites-available</code> create <code>&lt;your_application&g
         CustomLog /var/www/&lt;your_application_dir&gt;/access.log combined
    &lt;/VirtualHost&gt;
 </code></pre>
-<p>You can remove that logging commands if you donot wish to see logs.</p>
+<p>You can remove that logging commands if you don&rsquo;t wish to see logs.</p>
 <h2 id="4-enable-application">4. Enable application</h2>
-<p>Now we need tell apache to enable our application and load the configiration file we just created.</p>
+<p>Now we need to tell apache to enable our application and load the configuration file we just created.</p>
 <pre><code>sudo a2ensite &lt;your_application&gt;
 </code></pre>
 <p>That&rsquo;s it. Your website is up and running on the public IP for the server.</p>
