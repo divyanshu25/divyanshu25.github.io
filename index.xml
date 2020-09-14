@@ -208,6 +208,7 @@ In &lt;code&gt;/etc/apache2/sites-available&lt;/code&gt; create &lt;code&gt;&amp
 &lt;h3 id=&#34;4-enable-application&#34;&gt;4. Enable application&lt;/h3&gt;
 &lt;p&gt;Now we need to tell apache to enable our application and load the configuration file we just created.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;sudo a2ensite &amp;lt;your_application&amp;gt;
+sudo systemctl restart apache2
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;That&amp;rsquo;s it. Your website is up and running on the public IP for the server.&lt;/p&gt;
 </description>
