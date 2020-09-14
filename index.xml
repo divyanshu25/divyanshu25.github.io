@@ -82,7 +82,7 @@
       <pubDate>Mon, 14 Sep 2020 00:00:00 +0000</pubDate>
       <guid>/post/flask-apache/</guid>
       <description>&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
-&lt;p&gt;We have written this blog to help developers deploy flask application with apache and mod_wsgi in production.
+&lt;p&gt;We have written this blog to help developers deploy &lt;code&gt;flask&lt;/code&gt; application with &lt;code&gt;apache&lt;/code&gt; and &lt;code&gt;mod_wsgi&lt;/code&gt; in production.
 We read through a lot of articles and found out the steps we layout below are the simplest way to deploy.
 Also, the biggest caveat to deploying in production is version mismatches, so we are going to be building things from source rather than using apt-get to install packages.
 So let&amp;rsquo;s get started.&lt;/p&gt;
