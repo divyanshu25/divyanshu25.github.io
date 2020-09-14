@@ -102,7 +102,7 @@ sudo systemctl restart apache2
 &lt;code&gt;/var/www/&lt;/code&gt; directory and create &lt;code&gt;&amp;lt;your_application&amp;gt;&lt;/code&gt;.wsgi file and add the following lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;import sys
 sys.path.insert(0, &#39;/var/www/&amp;lt;your_application_dir&amp;gt;&#39;)
-from AOSServer import &amp;lt;your_application&amp;gt; as application
+from &amp;lt;your_application_dir&amp;gt; import &amp;lt;your_application&amp;gt; as application
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&#34;2-create-virtualenv&#34;&gt;2. Create virtualenv&lt;/h3&gt;
 &lt;p&gt;Its generally best practice to create a virtualenv for your application and install all the dependencies, to avoid clashing package versions that
@@ -119,7 +119,7 @@ pip install -r requirements.txt
 In &lt;code&gt;/etc/apache2/sites-available&lt;/code&gt; create &lt;code&gt;&amp;lt;your_application&amp;gt;.conf&lt;/code&gt; file and add the following lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;    &amp;lt;VirtualHost *:80&amp;gt;
        ServerName &amp;lt;Server_name&amp;gt;
-       WSGIDaemonProcess AOSServer user=&amp;lt;user&amp;gt; group=&amp;lt;group&amp;gt; threads=5 \
+       WSGIDaemonProcess &amp;lt;your_application&amp;gt; user=&amp;lt;user&amp;gt; group=&amp;lt;group&amp;gt; threads=5 \
        python-home=/var/www/&amp;lt;venv_name&amp;gt;
    
        WSGIProcessGroup &amp;lt;your_application&amp;gt;

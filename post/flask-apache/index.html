@@ -739,7 +739,7 @@ sudo systemctl restart apache2
 <code>/var/www/</code> directory and create <code>&lt;your_application&gt;</code>.wsgi file and add the following lines.</p>
 <pre><code>import sys
 sys.path.insert(0, '/var/www/&lt;your_application_dir&gt;')
-from AOSServer import &lt;your_application&gt; as application
+from &lt;your_application_dir&gt; import &lt;your_application&gt; as application
 </code></pre>
 <h3 id="2-create-virtualenv">2. Create virtualenv</h3>
 <p>Its generally best practice to create a virtualenv for your application and install all the dependencies, to avoid clashing package versions that
@@ -756,7 +756,7 @@ pip install -r requirements.txt
 In <code>/etc/apache2/sites-available</code> create <code>&lt;your_application&gt;.conf</code> file and add the following lines.</p>
 <pre><code class="language-xml">    &lt;VirtualHost *:80&gt;
        ServerName &lt;Server_name&gt;
-       WSGIDaemonProcess AOSServer user=&lt;user&gt; group=&lt;group&gt; threads=5 \
+       WSGIDaemonProcess &lt;your_application&gt; user=&lt;user&gt; group=&lt;group&gt; threads=5 \
        python-home=/var/www/&lt;venv_name&gt;
    
        WSGIProcessGroup &lt;your_application&gt;
