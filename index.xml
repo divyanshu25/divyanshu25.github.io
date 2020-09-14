@@ -110,6 +110,7 @@ sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-
 &lt;h3 id=&#34;3-compile-python&#34;&gt;3. Compile python&lt;/h3&gt;
 &lt;p&gt;Now to compile the downloaded tar.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;tar -xf Python-3.7.5.tgz
+cd Python-3.7.5
 ./configure --enable-shared --prefix=/usr/ 
 make -j4
 sudo make install 
@@ -132,6 +133,7 @@ Unicode characters in memory.
 &lt;p&gt;Download source code from: 
 &lt;a href=&#34;https://github.com/GrahamDumpleton/mod_wsgi/releases&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github releases&lt;/a&gt;&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;tar xvfz mod_wsgi-X.Y.tar.gz
+cd mod_wsgi-X.Y
 sudo apt-get install apache2-dev
 ./configure --with-python=/usr/bin/python
 make -j4
