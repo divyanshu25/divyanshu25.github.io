@@ -166,7 +166,7 @@ sudo systemctl restart apache2
 &lt;code&gt;/var/www/&lt;/code&gt; directory and create &lt;code&gt;&amp;lt;your_application&amp;gt;&lt;/code&gt;.wsgi file and add the following lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;import sys
 sys.path.insert(0, &#39;/var/www/&amp;lt;your_application_dir&amp;gt;&#39;)
-from &amp;lt;your_application_dir&amp;gt; import &amp;lt;your_application&amp;gt; as application
+from &amp;lt;your_application&amp;gt; import &amp;lt;flask_app&amp;gt; as application
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&#34;2-create-virtualenv&#34;&gt;2. Create virtualenv&lt;/h3&gt;
 &lt;p&gt;Its generally best practice to create a virtualenv for your application and install all the dependencies, to avoid clashing package versions that
