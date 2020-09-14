@@ -5,97 +5,12 @@
     <link>/tag/demo/</link>
       <atom:link href="/tag/demo/index.xml" rel="self" type="application/rss+xml" />
     <description>Demo</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 14 Sep 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Tue, 28 May 2019 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
       <title>Demo</title>
       <link>/tag/demo/</link>
     </image>
-    
-    <item>
-      <title>Deploying Flask Application using Apache with mod_wsgi</title>
-      <link>/post/flask-apache/</link>
-      <pubDate>Mon, 14 Sep 2020 00:00:00 +0000</pubDate>
-      <guid>/post/flask-apache/</guid>
-      <description>&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
-&lt;p&gt;We have written this blog to help developers deploy flask application with apache and mod_wsgi in production.
-We read through alot of articles and found out the steps we layout below are the most simplest way to deploy.
-Also, the biggest caveat to deploying in prduction is version mismatches, so we are going to be building things from source rather than using apt-get to install packages.
-So let&amp;rsquo;s get started.&lt;/p&gt;
-&lt;p&gt;&lt;a id=&#34;orgbba5361&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&#34;build-and-install-custom-version-of-python&#34;&gt;Build and install custom version of python&lt;/h1&gt;
-&lt;p&gt;We used python 3.7.5 for a current project and here is how you can deploy python from source. Make sure you remove any other python version you might have on your machine.
-To remove any existing python installations.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;sudo apt-get purge python&amp;lt;version&amp;gt;
-sudo apt-get autoremove
-&lt;/code&gt;&lt;/pre&gt;
-&lt;!-- Refer link for compilation: [Link](https://linuxize.com/post/how-to-install-python-3-7-on-ubuntu-18-04/)
---&gt;
-&lt;p&gt;&lt;a id=&#34;orgb970147&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;install-dependencies-and-packages&#34;&gt;Install Dependencies and packages.&lt;/h2&gt;
-&lt;pre&gt;&lt;code&gt;sudo apt update
-sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget libbz2-dev
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;download-source&#34;&gt;Download source&lt;/h2&gt;
-&lt;p&gt;Now to fetch tar file for a specific python version use.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;wget https://www.python.org/ftp/python/3.7.5/Python-3.7.5.tgz  
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;You can check out other python versions here: 
-&lt;a href=&#34;https://www.python.org/downloads/source/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Link&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a id=&#34;orge79fbcd&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;compile-python&#34;&gt;Compile python&lt;/h2&gt;
-&lt;p&gt;Now to compile the downloaded tar.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;tar -xf Python-3.7.5.tgz
-./configure --enable-shared --prefix=/usr/ 
-make -j4
-sudo make install 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Argument in make -j&lt;code&gt;N&lt;/code&gt; is number of processors if you are not sure about number of processors in the machine. You can use
-&lt;code&gt;nproc&lt;/code&gt; to get it.&lt;/p&gt;
-&lt;p&gt;&lt;a id=&#34;org895c7b7&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&#34;build-and-install-custom-version-of-wsgi-mod&#34;&gt;Build and install custom version of wsgi mod&lt;/h1&gt;
-&lt;p&gt;Ok, now we move on to getting mod_wsgi installation right. Before we get into steps I would like you to read this
-
-&lt;a href=&#34;https://modwsgi.readthedocs.io/en/develop/user-guides/virtual-environments.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Link&lt;/a&gt;.
-which essentially says this:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;The problem in trying to force mod_wsgi to use a different Python installation than what it was compiled for, 
-even where it is the same Python version, is that the Python installation may itself not have been 
-compiled with the same options. This is especially a problem when it comes to issues around how Python stores 
-Unicode characters in memory. 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;So to avoid this problem we are going build mod_wsgi from source and compile it with python we just installed in last step.&lt;/p&gt;
-&lt;h2 id=&#34;compile-wsgi-mod&#34;&gt;Compile wsgi-mod&lt;/h2&gt;
-&lt;p&gt;Download source code from: 
-&lt;a href=&#34;https://github.com/GrahamDumpleton/mod_wsgi/releases&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github releases&lt;/a&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;tar xvfz mod_wsgi-X.Y.tar.gz
-sudo apt-get install apache2-dev
-./configure --with-python=/usr/bin/python
-make -j4
-sudo make install
-&lt;/code&gt;&lt;/pre&gt;
-&lt;!-- Refer link for compilation: [wsgi](https://modwsgi.readthedocs.io/en/develop/user-guides/quick-installation-guide.html)
---&gt;
-&lt;h1 id=&#34;configure-apache&#34;&gt;Configure Apache&lt;/h1&gt;
-&lt;p&gt;Ok now we move on to building apache2.&lt;/p&gt;
-&lt;p&gt;&lt;a id=&#34;orgd89c968&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;install-apache2&#34;&gt;Install apache2&lt;/h2&gt;
-&lt;pre&gt;&lt;code&gt;sudo apt-get install apache2
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;a id=&#34;orga12ca17&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;configure-wsgi-module&#34;&gt;Configure Wsgi module&lt;/h2&gt;
-&lt;p&gt;Now we need to configure apache with the mod_wsgi we complied and installed in last step.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;Create a file: `/etc/apache2/mods-available/wsgi.load`
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Add the following line to the file:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;`LoadModule wsgi_module /usr/lib/apache2/modules/mod_wsgi.so`
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now we need to enable mod_wsgi and restart apache2.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;sudo a2enmod wsgi
-sudo systemctl restart apache2
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This completes the installation of Apache2 and mod_wsgi, all complied with python3.7.5.&lt;/p&gt;
-</description>
-    </item>
     
     <item>
       <title>Engineering High-Throughput, Low-Latency Machine Learning Services.</title>
