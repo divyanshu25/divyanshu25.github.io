@@ -669,18 +669,18 @@ sudo apt-get autoremove
 <!-- Refer link for compilation: [Link](https://linuxize.com/post/how-to-install-python-3-7-on-ubuntu-18-04/)
 -->
 <p><a id="orgb970147"></a></p>
-<h2 id="1-install-dependencies-and-packages">1. Install Dependencies and packages.</h2>
+<h3 id="1-install-dependencies-and-packages">1. Install Dependencies and packages.</h3>
 <pre><code>sudo apt update
 sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget libbz2-dev
 </code></pre>
-<h2 id="2-download-source">2. Download source</h2>
+<h3 id="2-download-source">2. Download source</h3>
 <p>Now to fetch tar file for a specific python version use.</p>
 <pre><code>wget https://www.python.org/ftp/python/3.7.5/Python-3.7.5.tgz  
 </code></pre>
 <p>You can check out other python versions here: 
 <a href="https://www.python.org/downloads/source/" target="_blank" rel="noopener">Link</a></p>
 <p><a id="orge79fbcd"></a></p>
-<h2 id="3-compile-python">3. Compile python</h2>
+<h3 id="3-compile-python">3. Compile python</h3>
 <p>Now to compile the downloaded tar.</p>
 <pre><code>tar -xf Python-3.7.5.tgz
 ./configure --enable-shared --prefix=/usr/ 
@@ -701,7 +701,7 @@ compiled with the same options. This is especially a problem when it comes to is
 Unicode characters in memory. 
 </code></pre>
 <p>So to avoid this problem we are going to build mod_wsgi from the source and compile it with python we just installed in the last step.</p>
-<h2 id="1-compile-wsgi-mod">1. Compile wsgi-mod</h2>
+<h3 id="1-compile-wsgi-mod">1. Compile wsgi-mod</h3>
 <p>Download source code from: 
 <a href="https://github.com/GrahamDumpleton/mod_wsgi/releases" target="_blank" rel="noopener">Github releases</a></p>
 <pre><code>tar xvfz mod_wsgi-X.Y.tar.gz
@@ -715,11 +715,11 @@ sudo make install
 <h1 id="configure-apache">Configure Apache</h1>
 <p>Ok, now we move on to building apache2.</p>
 <p><a id="orgd89c968"></a></p>
-<h2 id="1-install-apache2">1. Install apache2</h2>
+<h3 id="1-install-apache2">1. Install apache2</h3>
 <pre><code>sudo apt-get install apache2
 </code></pre>
 <p><a id="orga12ca17"></a></p>
-<h2 id="2-configure-wsgi-module">2. Configure Wsgi module</h2>
+<h3 id="2-configure-wsgi-module">2. Configure Wsgi module</h3>
 <p>Now we need to configure apache with the mod_wsgi we complied and installed in the last step.</p>
 <pre><code>Create a file: `/etc/apache2/mods-available/wsgi.load`
 </code></pre>
@@ -732,14 +732,14 @@ sudo systemctl restart apache2
 </code></pre>
 <p>This completes the installation of Apache2 and mod_wsgi, all complied with python3.7.5.</p>
 <h1 id="deploying-flask-application">Deploying Flask Application</h1>
-<h2 id="1-create-wsgi-file">1. Create .wsgi file</h2>
+<h3 id="1-create-wsgi-file">1. Create .wsgi file</h3>
 <p>Now to deploy the flask application copy your code directory to
 <code>/var/www/</code> directory and create <code>&lt;your_application&gt;</code>.wsgi file and add the following lines.</p>
 <pre><code>import sys
 sys.path.insert(0, '/var/www/&lt;your_application_dir&gt;')
 from AOSServer import &lt;your_application&gt; as application
 </code></pre>
-<h2 id="2-create-virtualenv">2. Create virtualenv</h2>
+<h3 id="2-create-virtualenv">2. Create virtualenv</h3>
 <p>Its generally best practice to create a virtualenv for your application and install all the dependencies, to avoid clashing package versions that
 other application might be using. To create a virtualenv:</p>
 <pre><code>cd /var/www/
@@ -749,7 +749,7 @@ pip install -r requirements.txt
 <p>Note that you will need a <code>requiremnts.txt</code> file. To create one you can do the following:</p>
 <pre><code>pip freeze &gt; requirements.txt
 </code></pre>
-<h2 id="3-create-configuration-file-in-apache">3. Create Configuration file in Apache</h2>
+<h3 id="3-create-configuration-file-in-apache">3. Create Configuration file in Apache</h3>
 <p>Now we need to create a configuration file to tell apache from where to load your application.
 In <code>/etc/apache2/sites-available</code> create <code>&lt;your_application&gt;.conf</code> file and add the following lines.</p>
 <pre><code class="language-xml">    &lt;VirtualHost *:80&gt;
@@ -776,7 +776,7 @@ In <code>/etc/apache2/sites-available</code> create <code>&lt;your_application&g
    &lt;/VirtualHost&gt;
 </code></pre>
 <p>You can remove that logging commands if you don&rsquo;t wish to see logs.</p>
-<h2 id="4-enable-application">4. Enable application</h2>
+<h3 id="4-enable-application">4. Enable application</h3>
 <p>Now we need to tell apache to enable our application and load the configuration file we just created.</p>
 <pre><code>sudo a2ensite &lt;your_application&gt;
 </code></pre>

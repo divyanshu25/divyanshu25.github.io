@@ -96,18 +96,18 @@ sudo apt-get autoremove
 &lt;!-- Refer link for compilation: [Link](https://linuxize.com/post/how-to-install-python-3-7-on-ubuntu-18-04/)
 --&gt;
 &lt;p&gt;&lt;a id=&#34;orgb970147&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;1-install-dependencies-and-packages&#34;&gt;1. Install Dependencies and packages.&lt;/h2&gt;
+&lt;h3 id=&#34;1-install-dependencies-and-packages&#34;&gt;1. Install Dependencies and packages.&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;sudo apt update
 sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget libbz2-dev
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;2-download-source&#34;&gt;2. Download source&lt;/h2&gt;
+&lt;h3 id=&#34;2-download-source&#34;&gt;2. Download source&lt;/h3&gt;
 &lt;p&gt;Now to fetch tar file for a specific python version use.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;wget https://www.python.org/ftp/python/3.7.5/Python-3.7.5.tgz  
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;You can check out other python versions here: 
 &lt;a href=&#34;https://www.python.org/downloads/source/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Link&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a id=&#34;orge79fbcd&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;3-compile-python&#34;&gt;3. Compile python&lt;/h2&gt;
+&lt;h3 id=&#34;3-compile-python&#34;&gt;3. Compile python&lt;/h3&gt;
 &lt;p&gt;Now to compile the downloaded tar.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;tar -xf Python-3.7.5.tgz
 ./configure --enable-shared --prefix=/usr/ 
@@ -128,7 +128,7 @@ compiled with the same options. This is especially a problem when it comes to is
 Unicode characters in memory. 
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;So to avoid this problem we are going to build mod_wsgi from the source and compile it with python we just installed in the last step.&lt;/p&gt;
-&lt;h2 id=&#34;1-compile-wsgi-mod&#34;&gt;1. Compile wsgi-mod&lt;/h2&gt;
+&lt;h3 id=&#34;1-compile-wsgi-mod&#34;&gt;1. Compile wsgi-mod&lt;/h3&gt;
 &lt;p&gt;Download source code from: 
 &lt;a href=&#34;https://github.com/GrahamDumpleton/mod_wsgi/releases&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github releases&lt;/a&gt;&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;tar xvfz mod_wsgi-X.Y.tar.gz
@@ -142,11 +142,11 @@ sudo make install
 &lt;h1 id=&#34;configure-apache&#34;&gt;Configure Apache&lt;/h1&gt;
 &lt;p&gt;Ok, now we move on to building apache2.&lt;/p&gt;
 &lt;p&gt;&lt;a id=&#34;orgd89c968&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;1-install-apache2&#34;&gt;1. Install apache2&lt;/h2&gt;
+&lt;h3 id=&#34;1-install-apache2&#34;&gt;1. Install apache2&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;sudo apt-get install apache2
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;a id=&#34;orga12ca17&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;2-configure-wsgi-module&#34;&gt;2. Configure Wsgi module&lt;/h2&gt;
+&lt;h3 id=&#34;2-configure-wsgi-module&#34;&gt;2. Configure Wsgi module&lt;/h3&gt;
 &lt;p&gt;Now we need to configure apache with the mod_wsgi we complied and installed in the last step.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;Create a file: `/etc/apache2/mods-available/wsgi.load`
 &lt;/code&gt;&lt;/pre&gt;
@@ -159,14 +159,14 @@ sudo systemctl restart apache2
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;This completes the installation of Apache2 and mod_wsgi, all complied with python3.7.5.&lt;/p&gt;
 &lt;h1 id=&#34;deploying-flask-application&#34;&gt;Deploying Flask Application&lt;/h1&gt;
-&lt;h2 id=&#34;1-create-wsgi-file&#34;&gt;1. Create .wsgi file&lt;/h2&gt;
+&lt;h3 id=&#34;1-create-wsgi-file&#34;&gt;1. Create .wsgi file&lt;/h3&gt;
 &lt;p&gt;Now to deploy the flask application copy your code directory to
 &lt;code&gt;/var/www/&lt;/code&gt; directory and create &lt;code&gt;&amp;lt;your_application&amp;gt;&lt;/code&gt;.wsgi file and add the following lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;import sys
 sys.path.insert(0, &#39;/var/www/&amp;lt;your_application_dir&amp;gt;&#39;)
 from AOSServer import &amp;lt;your_application&amp;gt; as application
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;2-create-virtualenv&#34;&gt;2. Create virtualenv&lt;/h2&gt;
+&lt;h3 id=&#34;2-create-virtualenv&#34;&gt;2. Create virtualenv&lt;/h3&gt;
 &lt;p&gt;Its generally best practice to create a virtualenv for your application and install all the dependencies, to avoid clashing package versions that
 other application might be using. To create a virtualenv:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;cd /var/www/
@@ -176,7 +176,7 @@ pip install -r requirements.txt
 &lt;p&gt;Note that you will need a &lt;code&gt;requiremnts.txt&lt;/code&gt; file. To create one you can do the following:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;pip freeze &amp;gt; requirements.txt
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;3-create-configuration-file-in-apache&#34;&gt;3. Create Configuration file in Apache&lt;/h2&gt;
+&lt;h3 id=&#34;3-create-configuration-file-in-apache&#34;&gt;3. Create Configuration file in Apache&lt;/h3&gt;
 &lt;p&gt;Now we need to create a configuration file to tell apache from where to load your application.
 In &lt;code&gt;/etc/apache2/sites-available&lt;/code&gt; create &lt;code&gt;&amp;lt;your_application&amp;gt;.conf&lt;/code&gt; file and add the following lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;    &amp;lt;VirtualHost *:80&amp;gt;
@@ -203,7 +203,7 @@ In &lt;code&gt;/etc/apache2/sites-available&lt;/code&gt; create &lt;code&gt;&amp
    &amp;lt;/VirtualHost&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;You can remove that logging commands if you don&amp;rsquo;t wish to see logs.&lt;/p&gt;
-&lt;h2 id=&#34;4-enable-application&#34;&gt;4. Enable application&lt;/h2&gt;
+&lt;h3 id=&#34;4-enable-application&#34;&gt;4. Enable application&lt;/h3&gt;
 &lt;p&gt;Now we need to tell apache to enable our application and load the configuration file we just created.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;sudo a2ensite &amp;lt;your_application&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
