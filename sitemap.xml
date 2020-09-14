@@ -33,23 +33,38 @@
   </url>
   
   <url>
+    <loc>/authors/</loc>
+    <lastmod>2020-09-14T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/tag/demo/</loc>
-    <lastmod>2020-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2020-09-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>/post/flask-apache/</loc>
-    <lastmod>2020-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2020-09-14T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/author/divyanshu-goyal/</loc>
+    <lastmod>2020-09-14T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/author/harish-krupo/</loc>
+    <lastmod>2020-09-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>/post/</loc>
-    <lastmod>2020-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2020-09-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>/tags/</loc>
-    <lastmod>2020-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2020-09-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -89,16 +104,6 @@
   
   <url>
     <loc>/publication/preprint/</loc>
-    <lastmod>2019-04-07T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/authors/</loc>
-    <lastmod>2019-04-07T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/author/divyanshu-goyal/</loc>
     <lastmod>2019-04-07T00:00:00+00:00</lastmod>
   </url>
   

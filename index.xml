@@ -79,7 +79,7 @@
     <item>
       <title>Deploying Flask Application using Apache with mod_wsgi</title>
       <link>/post/flask-apache/</link>
-      <pubDate>Fri, 14 Aug 2020 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 14 Sep 2020 00:00:00 +0000</pubDate>
       <guid>/post/flask-apache/</guid>
       <description>&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
 &lt;p&gt;We have written this blog to help developers deploy flask application with apache and mod_wsgi in production.
