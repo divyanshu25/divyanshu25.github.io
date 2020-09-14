@@ -88,7 +88,7 @@ Also, the biggest caveat to deploying in production is version mismatches, so we
 So let&amp;rsquo;s get started.&lt;/p&gt;
 &lt;p&gt;&lt;a id=&#34;orgbba5361&#34;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;build-and-install-custom-version-of-python&#34;&gt;Build and install custom version of python&lt;/h1&gt;
-&lt;p&gt;We used python 3.7.5 for a current project and here is how you can deploy python from source. Make sure you remove any other python version you might have on your machine.
+&lt;p&gt;We used python &lt;code&gt;3.7.5&lt;/code&gt; for a current project and here is how you can deploy python from source. Make sure you remove any other python version you might have on your machine.
 To remove any existing python installations.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;sudo apt-get purge python&amp;lt;version&amp;gt;
 sudo apt-get autoremove
@@ -159,7 +159,7 @@ sudo make install
 &lt;pre&gt;&lt;code&gt;sudo a2enmod wsgi
 sudo systemctl restart apache2
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This completes the installation of Apache2 and mod_wsgi, all complied with python3.7.5.&lt;/p&gt;
+&lt;p&gt;This completes the installation of Apache2 and mod_wsgi, all complied with python&lt;code&gt;3.7.5&lt;/code&gt;.&lt;/p&gt;
 &lt;h1 id=&#34;deploying-flask-application&#34;&gt;Deploying Flask Application&lt;/h1&gt;
 &lt;h3 id=&#34;1-create-wsgi-file&#34;&gt;1. Create .wsgi file&lt;/h3&gt;
 &lt;p&gt;Now to deploy the flask application copy your code directory to

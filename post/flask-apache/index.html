@@ -661,7 +661,7 @@ Also, the biggest caveat to deploying in production is version mismatches, so we
 So let&rsquo;s get started.</p>
 <p><a id="orgbba5361"></a></p>
 <h1 id="build-and-install-custom-version-of-python">Build and install custom version of python</h1>
-<p>We used python 3.7.5 for a current project and here is how you can deploy python from source. Make sure you remove any other python version you might have on your machine.
+<p>We used python <code>3.7.5</code> for a current project and here is how you can deploy python from source. Make sure you remove any other python version you might have on your machine.
 To remove any existing python installations.</p>
 <pre><code>sudo apt-get purge python&lt;version&gt;
 sudo apt-get autoremove
@@ -732,7 +732,7 @@ sudo make install
 <pre><code>sudo a2enmod wsgi
 sudo systemctl restart apache2
 </code></pre>
-<p>This completes the installation of Apache2 and mod_wsgi, all complied with python3.7.5.</p>
+<p>This completes the installation of Apache2 and mod_wsgi, all complied with python<code>3.7.5</code>.</p>
 <h1 id="deploying-flask-application">Deploying Flask Application</h1>
 <h3 id="1-create-wsgi-file">1. Create .wsgi file</h3>
 <p>Now to deploy the flask application copy your code directory to
