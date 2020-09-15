@@ -111,7 +111,7 @@ other application might be using. To create a virtualenv:&lt;/p&gt;
 virtualenv -p python3 &amp;lt;venv_name&amp;gt;
 pip install -r requirements.txt
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Note that you will need a &lt;code&gt;requiremnts.txt&lt;/code&gt; file. To create one you can do the following:&lt;/p&gt;
+&lt;p&gt;Note that you will need a &lt;code&gt;requirments.txt&lt;/code&gt; file. To create one you can do the following:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;pip freeze &amp;gt; requirements.txt
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&#34;3-create-configuration-file-in-apache&#34;&gt;3. Create Configuration file in Apache&lt;/h3&gt;
