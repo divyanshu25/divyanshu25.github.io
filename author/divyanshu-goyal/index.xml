@@ -5,12 +5,266 @@
     <link>/author/divyanshu-goyal/</link>
       <atom:link href="/author/divyanshu-goyal/index.xml" rel="self" type="application/rss+xml" />
     <description>Divyanshu Goyal</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 14 Sep 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 03 Dec 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
       <title>Divyanshu Goyal</title>
       <link>/author/divyanshu-goyal/</link>
     </image>
+    
+    <item>
+      <title>Image Query</title>
+      <link>/project/imagequery/</link>
+      <pubDate>Thu, 03 Dec 2020 00:00:00 +0000</pubDate>
+      <guid>/project/imagequery/</guid>
+      <description>&lt;h1 id=&#34;abstracta-idabstracta&#34;&gt;Abstract&lt;a id=&#34;abstract&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;Querying images has traditionally been implemented using metadata of an image, where images are not treated as first class citizens in a database. This approach depends solely on how well an image has been tagged by a human user. In this project we aim to change the status quo by also including the images itself in the search process. At its core, our project focuses on looking at an image to extract relevant features, which in turn can be used to generate textual descriptions of the image. We then compute various similarity measures between these textual descriptions and a user provided query to return the most relevant images. We then extend this system to search similar images given an input image.&lt;/p&gt;
+&lt;h1 id=&#34;introductiona-idintroductiona&#34;&gt;Introduction&lt;a id=&#34;introduction&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;Image search using textual description is a very powerful tool with numerous applications. In contrast to the traditional setting, where image retrieval is performed by looking up metadata, we propose to build a system that can query an image by using its features to generate a textual description. Writing metadata for a ever-growing set of images is an intractable task. In most cases the images either don&amp;rsquo;t have metadata or have incorrect metadata. This project aims to break that dependency and use the implicit information within the image for retrieval.&lt;/p&gt;
+&lt;p&gt;Our model is built on an image captioning system and computing various similarity measures to fetch images based on the closeness between textual query and generated image captions. In this project we have used two architectures, one is called vanilla architecture where we use a CNN-encoder to generate image features and a LSTM model as decoder, and second is attention architecture where we again use a CNN-encoder to generate image features and an attention based LSTM model as decoder. We will go into details of both these architectures in subsequent sections. We are using COCO and Flickr8k datasets, both these datasets provide 5 human generated captions per image. The main modules that are implemented in this project are:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Implemented both vanilla and attention architectures, and tested both the architectures on various hyper-parameters.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Implemented a module to compute BLEU score of both vanilla and attention architecture on COCO and Flickr8k datasets.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;We have developed an weighted cosine-similarity mechanism by computing the cosine-similarity between embeddings of textual query and generated captions and weighting them with inverse word frequency to fetch top 5 relevant images.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Implemented an REST-API architecture to query images.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Extended the image search system to search based on images instead of the textual description.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;related-worka-idrelated-worka&#34;&gt;Related Work&lt;a id=&#34;related-work&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;Deep Fragment Embeddings for Bidirectional Image Sentence Mapping&lt;/strong&gt;: Our initial inspiration for image retrieval from came from 
+&lt;a href=&#34;http://arxiv.org/abs/1406.5679&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deep fragment embeddings&lt;/a&gt;. Here the authors use a object detection model to extract fragments of images (objects). They also extract fragments of sentences. Fragments from both images and sentences are embedded in a common embedding space and explicitly reasons about their latent, inter-modal correspondences. They use a cosine-similarity based loss function where they take embeddings from image space and sentence space compute there dot product.&lt;/p&gt;
+&lt;p&gt;Our project is based on a similar approach but instead of comparing common embeddings from images and sentences we use a image captioning system to generate novel captions for an images and then use those captions to compute similarity between the given query. Our loss function (weighted-cosine similarity) is similar to their loss function, but differs in the fact that they compute fragment level loss whereas we compute a global loss.&lt;/p&gt;
+&lt;h1 id=&#34;methodologya-idmethodologya&#34;&gt;Methodology&lt;a id=&#34;methodology&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;At core of our project we use an image captioning model to generate captions for an image, then we store those captions in a database. Then on being provided with a textual query we iterate over all the generated captions in the database, compute the various similarity metrics between the user textual query and generated captions and finally return the images with top5 similarity scores. We have used two datasets - Flickr8k and COCO , to evaluate our model. Both these datasets provide 5 user generated captions per image. In subsequent section we will go over various architecture that we experimented with in our captioning model.&lt;/p&gt;
+&lt;h2 id=&#34;image-captioning-modela-idimage-captioning-modela&#34;&gt;Image Captioning Model&lt;a id=&#34;image-captioning-model&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h3 id=&#34;vanilla-cnn-lstm-networka-idvanilla-cnn-lstm-networka&#34;&gt;Vanilla CNN-LSTM network&lt;a id=&#34;vanilla-cnn-lstm-network&#34;&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;The vanilla architecture uses a pretrained Resnet50 model to encode the image features. These features are concatenated with the embeddings of true captions and fed to a single layered Long Short Term Memory (LSTM) network. The embedding and LSTM layers are trained from scratch. The outputs of the trained LSTM are used to generate the predicted captions.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Images/vanilla_model_arch.png&#34; alt=&#34;img&#34; title=&#34;Vanilla Model Architecture&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;cnn-lstm-with-attentiona-idcnn-lstm-with-attentiona&#34;&gt;CNN-LSTM with attention&lt;a id=&#34;cnn-lstm-with-attention&#34;&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;In this architecture we use an attention mechanism in a single layered LSTM to give attention to image features along with previous generated word. The approach is taken from the paper &amp;ldquo;Show, attend and tell&amp;rdquo; . We use a pretrained Resnet101 model to generate image features. At each step of LSTM the image features and the last hidden state of LSTM is passed through an attention layer. The output of the attention layer is concatenated with the embeddings of the word generated in last step of LSTM to generate the current word.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Images/Attention_model_arch.jpeg&#34; alt=&#34;img&#34; title=&#34;Attention Model Architecture&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;cnn-lstm-with-attention-using-bert-embeddinga-idcnn-lstm-with-attention-using-bert-embeddinga&#34;&gt;CNN-LSTM with attention using BERT embedding&lt;a id=&#34;cnn-lstm-with-attention-using-bert-embedding&#34;&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;In this variant, we used our attention CNN-LSTM network along with a pretrained BERT embedding layer instead of training the embedding layer from scratch. The pretrained BERT model already has learnt language embeddings over a large dataset and has proven to be successful in many downstream language tasks. We load the pretrained weights in the embedding layer and then fine-tune it for our own down stream task.&lt;/p&gt;
+&lt;h2 id=&#34;caption-generation-and-search-apia-idcaption-generation-and-search-apia&#34;&gt;Caption Generation and Search API&lt;a id=&#34;caption-generation-and-search-api&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h3 id=&#34;textual-searcha-idtextual-searcha&#34;&gt;Textual search&lt;a id=&#34;textual-search&#34;&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;We use beam search to sample top five predictions for each image in our test set and saved these to an Sqlite database. Now when a textual query is provided we iterate over all the images in the database and compute the similarity between the embeddings of textual query and each of the 5 generated captions for a particular image and store the max value. After iterating over all the images we return the images with top 5 similarity scores. To compute the similarity we experiment with two metrics, BLEU-score and weighted cosine similarity between embedded captions and query. Details of both these similarity metrics will be covered in a later section. To generate the embeddings we have experimented with two variants:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;We generate embeddings using the embedding layer that was trained from scratch during the training process.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;We use the pre-trained BERT model&amp;rsquo;s embedding layer and further train it and use it to generate the embeddings.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;similar-image-searcha-idsimilar-image-searcha&#34;&gt;Similar image search&lt;a id=&#34;similar-image-search&#34;&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;We then extended the above textual search to search for similar images, given an input image. To do this we first generate the caption of the input image and then use the above search mechanism to produce the related images. The quality of the produced results directly depends on the image captioning system and this corroborates with the outputs we observed in our experiments.&lt;/p&gt;
+&lt;h1 id=&#34;experimentsa-idexperimentsa&#34;&gt;Experiments&lt;a id=&#34;experiments&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;We experiment with two datasets: Flickr8k and COCO.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Flickr8k&lt;/strong&gt; contains 8,091 images collected from Flickr. The dataset in composed of images depicting people and animals doing various activities. Each image consist of 5 human generated captions. We use publicly available splits for train, validation and test sets. Validation and train sets consists of 1000 images each.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;COCO&lt;/strong&gt; is the largest image captioning dataset, containing 118,000, 5,000 and 40,670 images for training, validation and test respectively. This dataset is more challenging, since most images contain multiple objects in the context of complex scenes. Each image has 5 human annotated captions. To ease our training and evaluation times, we use 30000 images from the training set for training, 1000 images from the validation set for validation and 1500 images from the withheld validation set for testing.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Pre-processing&lt;/strong&gt; We truncate captions longer than 40 words for COCO and for Flickr8k. We then build a vocabulary of words that occur at least 5 times in the training set, resulting in 11372 and 3005 words for COCO and Flickr8k respectively. When using pretrained bert-embeddings, we use bert tokenizer which has a vocabulary size of 30,522.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Hyper-Paramters:&lt;/strong&gt; We use the following hyper-parameters to train our model:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Learning Rate&lt;/strong&gt;: 0.001, &lt;strong&gt;Batch Size&lt;/strong&gt;: 128, &lt;strong&gt;Optimizer&lt;/strong&gt;: ADAM, &lt;strong&gt;Momentum&lt;/strong&gt;: 0.9, &lt;strong&gt;Weight Decay&lt;/strong&gt;: 0.99, &lt;strong&gt;Scheduler Weight Decay&lt;/strong&gt;: 0.95, &lt;strong&gt;Dropout&lt;/strong&gt;: 0.5&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Embedding Size&lt;/strong&gt;: 512, &lt;strong&gt;Hidden Size&lt;/strong&gt;: 512, &lt;strong&gt;Image Feature Size&lt;/strong&gt;: 2048, &lt;strong&gt;Attention vector Size&lt;/strong&gt;: 512, &lt;strong&gt;Encoded Image Size&lt;/strong&gt;: 14&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Compared Approaches:&lt;/strong&gt; For offline evaluation on Flickr8k and COCO , we compare the following models in this project:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Vanilla Model (Vanilla CNN-LSTM), In this model we use features generated by Resnet50 CNN model and pass it to a LSTM model to predict output words.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Attention model (CNN-LSTM with Attention) which uses a hard attention mechanism to predict words in LSTM decoder.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Attention model with BERT embeddings. In this model we train our CNN-LSTM with Attention model with pre-trained BERT embeddings and also fine tune the embedding layer.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The goal of this comparison is to verify that the improvements are caused specifically by the attention mechanism and BERT embeddings, and are not the result of orthogonal contributions (e.g. better CNN features or better optimization). We further compare our method with Adaptive Attention , Google NIC and Hard-Attention .&lt;/p&gt;
+&lt;h1 id=&#34;resultsa-idresultsa&#34;&gt;Results&lt;a id=&#34;results&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2 id=&#34;training-mechanisma-idtraining-mechanisma&#34;&gt;Training mechanism:&lt;a id=&#34;training-mechanism&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Using the above hyperparameters, we trained all three models on the two datasets for 20 epochs each. The graphs in Fig [1,2,3,4] show the training and validation loss for each of these.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Images/flickr_train_loss.png&#34; alt=&#34;img&#34; title=&#34;Training loss on Flickr8k dataset.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Images/flickr_val_loss.png&#34; alt=&#34;img&#34; title=&#34;Validation loss on Flickr8k dataset.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Images/Coco_train_loss.png&#34; alt=&#34;img&#34; title=&#34;Training loss on COCO dataset.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Images/Coco_val_loss.png&#34; alt=&#34;img&#34; title=&#34;Validation loss on COCO dataset.&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;quantitative-analysisa-idquantitative-analysisa&#34;&gt;Quantitative Analysis:&lt;a id=&#34;quantitative-analysis&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;We report our results for evaluating the image captioning model on COCO and Flickr8k datasets using BLEU score. 
+&lt;a href=&#34;#org9f83ef7&#34;&gt;Table&lt;/a&gt; shows the BLEU score with 1,2,3 and 4-grams for both our vanilla and attention models trained over COCO and Flickr8k datasets.&lt;/p&gt;
+&lt;p&gt;In search API to fetch top-5 relevant images for a given query we use the following metrics.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;BLEU-Score&lt;/strong&gt;: We used BLEU-score as a similarity metric, where we take top 5 generated captions from an image and compute the BLEU score against the user given query. We return the results with top-5 BLEU scores. In this approach we also experimented with BLEU-1, BLEU-2, BLEU-3, BLEU-4, n-grams and found that BLEU-1 and BLEU-2 give the best results.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Weighted Cosine Similarity:&lt;/strong&gt; In this approach we compute the embeddings the user query and caption generated by our model using the learned embedding layer. The embeddings are a 2D tensor of shape (caption length × embed dimension). Now for each caption in our database, we compute the matrix multiplication of the query&amp;rsquo;s embedding with the caption&amp;rsquo;s embedding. For example, if the query length is 3, the caption length is 4 and the embedding length is 768, the query&amp;rsquo;s embedding (Q) would be of size (3×768) and the caption&amp;rsquo;s embedding (C) would be of size (4×768). We now compute (Q×C&amp;rsquo;) to get a (3×4) dimension matrix. We then take a max along the rows of the matrix to get (3×1) vector which represents the similarity of the query and the caption. We then weight the obtained vector by inverse word-frequency and then finally we sum it up to obtain a similarity score. Figure [
+&lt;a href=&#34;#org15ff1fb&#34;&gt;7&lt;/a&gt;] illustrates the process. In the figure &amp;ldquo;A dog is sleeping&amp;rdquo; is the generated caption and &amp;ldquo;Dog is running&amp;rdquo; is user given query.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;Images/weighted_sim_score.png&#34; alt=&#34;img&#34; title=&#34;Weighted Similarity Score.&#34;&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;BLEU Scores&lt;/th&gt;
+&lt;th&gt;Flickr8k&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;MS-COCO&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Architecture&lt;/td&gt;
+&lt;td&gt;BLEU-1&lt;/td&gt;
+&lt;td&gt;BLEU-2&lt;/td&gt;
+&lt;td&gt;BLEU-3&lt;/td&gt;
+&lt;td&gt;BLEU-4&lt;/td&gt;
+&lt;td&gt;BLEU-1&lt;/td&gt;
+&lt;td&gt;BLEU-2&lt;/td&gt;
+&lt;td&gt;BLEU-3&lt;/td&gt;
+&lt;td&gt;BLEU-4&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Vanilla&lt;/td&gt;
+&lt;td&gt;0.506&lt;/td&gt;
+&lt;td&gt;0.304&lt;/td&gt;
+&lt;td&gt;0.191&lt;/td&gt;
+&lt;td&gt;0.121&lt;/td&gt;
+&lt;td&gt;0.622&lt;/td&gt;
+&lt;td&gt;0.412&lt;/td&gt;
+&lt;td&gt;0.281&lt;/td&gt;
+&lt;td&gt;0.200&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Attention&lt;/td&gt;
+&lt;td&gt;0.597&lt;/td&gt;
+&lt;td&gt;0.405&lt;/td&gt;
+&lt;td&gt;0.278&lt;/td&gt;
+&lt;td&gt;0.189&lt;/td&gt;
+&lt;td&gt;0.671&lt;/td&gt;
+&lt;td&gt;0.472&lt;/td&gt;
+&lt;td&gt;0.338&lt;/td&gt;
+&lt;td&gt;0.245&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Attention with BERT&lt;/td&gt;
+&lt;td&gt;0.605&lt;/td&gt;
+&lt;td&gt;0.415&lt;/td&gt;
+&lt;td&gt;0.286&lt;/td&gt;
+&lt;td&gt;0.196&lt;/td&gt;
+&lt;td&gt;0.614&lt;/td&gt;
+&lt;td&gt;0.421&lt;/td&gt;
+&lt;td&gt;0.294&lt;/td&gt;
+&lt;td&gt;0.210&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Hard-Attention&lt;/td&gt;
+&lt;td&gt;0.670&lt;/td&gt;
+&lt;td&gt;0.457&lt;/td&gt;
+&lt;td&gt;0.314&lt;/td&gt;
+&lt;td&gt;0.213&lt;/td&gt;
+&lt;td&gt;0.718&lt;/td&gt;
+&lt;td&gt;0.504&lt;/td&gt;
+&lt;td&gt;0.357&lt;/td&gt;
+&lt;td&gt;0.250&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Adaptive Attention&lt;/td&gt;
+&lt;td&gt;0.677&lt;/td&gt;
+&lt;td&gt;0.494&lt;/td&gt;
+&lt;td&gt;0.354&lt;/td&gt;
+&lt;td&gt;0.251&lt;/td&gt;
+&lt;td&gt;0.742&lt;/td&gt;
+&lt;td&gt;0.580&lt;/td&gt;
+&lt;td&gt;0.439&lt;/td&gt;
+&lt;td&gt;0.332&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Google NIC&lt;/td&gt;
+&lt;td&gt;0.630&lt;/td&gt;
+&lt;td&gt;0.410&lt;/td&gt;
+&lt;td&gt;0.270&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;td&gt;0.666&lt;/td&gt;
+&lt;td&gt;0.461&lt;/td&gt;
+&lt;td&gt;0.329&lt;/td&gt;
+&lt;td&gt;0.246&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;qualitative-analysisa-idqualitative-analysisa&#34;&gt;Qualitative Analysis&lt;a id=&#34;qualitative-analysis&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Based on qualitative analysis of our search results, we tried multiple similarity metrics to find matching images for the search query from our database. In 
+&lt;a href=&#34;#subsec:searchres&#34;&gt;Appendix&lt;/a&gt; show examples of query results searched on both datasets using captions generated from all three model variants.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;We first generated search results based on the highest BLEU-1 and BLEU-2 score calculated between the query and the predicted captions for each image. Since we are storing five predicted captions per image, the summation of BLEU scores with all predicted captions of the image was taken to be the similarity score of the image with the query. The major drawback in this method was the equal weightage being given to &amp;ldquo;filler&amp;rdquo; words in the query like prepositions and conjunctions. This sometimes inflated the score of long but irrelevant captions in the database and led to many irrelevant results being thrown out along with relevant ones.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;To avoid above drawback, we filtered all &amp;ldquo;stopwords&amp;rdquo; from the query and captions before computing BLEU score. This removed filler words from the comparison and significantly improved search results.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;On further inspection, we observed that for good results we needed to give more importance to the rarely occurring words in our corpus as compared to more commonly occurring words. For example, in a query like &amp;ldquo;A person sitting with a laptop&amp;rdquo;, &amp;ldquo;person&amp;rdquo; is a very common word present in many captions but &amp;ldquo;laptop&amp;rdquo; is a rarer word. Our current metrics give equal importance to the two words, throwing results with just a person in them if it could not find both person and laptop. However, we consider results containing a laptop to be more relevant in this case. Hence, we also multiplied &amp;ldquo;term weightages&amp;rdquo; with count of common unigrams while calculating BLEU scores. Term weightages were calculated from the term counts (TC) of each word in the test corpus as follows: &lt;img src=&#34;https://render.githubusercontent.com/render/math?math=w_i = 1 - \frac{TC_i}{\sum_i{TC_i}}&#34;&gt; This gave us significantly better search results.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;One drawback still remaining in these methods is that we are looking for common words between query and captions, but any words with similar meaning that could also give relevant results are being ignored. In order to capture this similarity, we used the inner product of the BERT embeddings of the two sentences, as the similarity score instead of BLEU score. After applying term weightage to this method as well, we observe good search results.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In section 
+&lt;a href=&#34;#subsec:searchres&#34;&gt;Search Results&lt;/a&gt;, we show the results for &amp;ldquo;Search by image&amp;rdquo; API. The input image is randomly picked from google. We see an image with dolphins being returned in the results as the model has predicted its caption as &amp;ldquo;A man surfing on a wave&amp;rdquo;.&lt;/p&gt;
+&lt;h1 id=&#34;conclusiona-idconclusiona&#34;&gt;Conclusion&lt;a id=&#34;conclusion&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;In this project we started out with the aim of retrieving images based on textual queries whilst treating images as first class citizens rather than relying on meta-data of an image. We experimented with various image captioning models namely Vanilla CNN-LSTM network, CNN-LSTM with attention, CNN-LSTM using BERT embeddings. We evaluated the quality of captions generated by each of the model using BLEU score which we reported in table 
+&lt;a href=&#34;#org9f83ef7&#34;&gt;Blue Scores&lt;/a&gt;. Scores obtained by our models were fairly close to the referred models. We then implemented a Search API which given a user input query returned top 5 relevant images. We used two metrics at the core of our search API, BLEU-Score and cosine similarity. We used these scores with and without term weights and discovered that results obtained by weighted scores were much better than normal BLEU-score or cosine similarity. Within various n-grams of BLEU score, BLEU-1 and BLEU-2 gave the best results. As an addition we extended the textual search to incorporate image based search. We observed that the quality of the image based search depends on the quality of the captions returned by the captiong model.&lt;/p&gt;
+&lt;h1 id=&#34;appendicesa-idappendicesa&#34;&gt;Appendices&lt;a id=&#34;appendices&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2 id=&#34;search-resultsa-idsubsecsearchresa&#34;&gt;Search results&lt;a id=&#34;subsec:searchres&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h3 id=&#34;coco-vanilla-results&#34;&gt;Coco Vanilla Results&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;Images/coco_vanilla.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;coco-attention-results&#34;&gt;Coco Attention Results&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;Images/coco_attn.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;coco-attention-with-bert-results&#34;&gt;Coco Attention with BERT Results&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;Images/coco_attn_bert.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;flickr-vanilla-results&#34;&gt;Flickr Vanilla Results&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;Images/flickr_vanilla.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;flickr-attention-results&#34;&gt;Flickr Attention Results&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;Images/flickr_attn.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;flickr-attention-with-bert-results&#34;&gt;Flickr Attention with BERT Results&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;Images/flickr_attn_bert.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;computing-infrastructurea-idcomputing-infrastructurea&#34;&gt;Computing Infrastructure&lt;a id=&#34;computing-infrastructure&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The computing infrastructure used for training and running the models described in the paper was 1 NVIDIA Tesla K80 GPU.&lt;/p&gt;
+&lt;h2 id=&#34;runtimea-idruntimea&#34;&gt;Runtime&lt;a id=&#34;runtime&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The average training time for the model on each combination of hyperparameters was roughly 7 hours for 20 epochs.&lt;/p&gt;
+&lt;h2 id=&#34;source-codea-idsource-codea&#34;&gt;Source Code&lt;a id=&#34;source-code&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The code is publicly available at 
+&lt;a href=&#34;https://github.com/divyanshu25/ImageQuery&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github repo&lt;/a&gt;: &lt;a href=&#34;https://github.com/divyanshu25/ImageQuery&#34;&gt;https://github.com/divyanshu25/ImageQuery&lt;/a&gt;. The readme contains details on how to reproduce the results.&lt;/p&gt;
+&lt;h3 id=&#34;referred-codebasesa-idreferred-codebasesa&#34;&gt;Referred Codebases&lt;a id=&#34;referred-codebases&#34;&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;a href=&#34;https://github.com/Noob-can-Compile/Automatic-Image-Captioning/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Pytorch Image Captioning&lt;/a&gt;: &lt;a href=&#34;https://github.com/Noob-can-Compile/Automatic-Image-Captioning/&#34;&gt;https://github.com/Noob-can-Compile/Automatic-Image-Captioning/&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;a href=&#34;https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Image-Captioning&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Image Captioning with Attention&lt;/a&gt;: &lt;a href=&#34;https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Image-Captioning&#34;&gt;https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Image-Captioning&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
     
     <item>
       <title>Deploying Flask Application using Apache with mod_wsgi</title>
