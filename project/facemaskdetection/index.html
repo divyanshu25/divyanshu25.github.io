@@ -589,7 +589,7 @@
     
 
   
-  <span ><a href="/author/divyanshu-goyal/">Divyanshu Goyal</a></span>
+  <span ><a href="/author/divyanshu-goyal/">Divyanshu Goyal</a></span>, <span >Sravanthi Ashok Kumar</span>, <span ><a href="/authors/">Authors</a></span>
   </div>
   
   
@@ -664,10 +664,12 @@ We use both supervised learning and unsupervised learning methods to achieve the
 <h3 id="architectures">Architectures</h3>
 <h4 id="resnet">Resnet</h4>
 <p>ResNet is a Convolutional Neural Network model. The major problem that ResNet addresses is how it is not just important to have multiple layers stacked to get better results. In fact, having deep layers gives rise to the vanishing gradient problem and also the accuracy gets saturated and later would degrade. ResNet introduces a residual learning block where an identity mapping is added at the end of the block to solve the degradation problem as follows:
-<img src="Images/resnet-block.png" alt="img" title="resnet-block"> <br/>
+<br/>
+<img src="Images/resnet-block.png" alt="img" title="resnet-block">
+<br/>
 The hypothesis is that instead of expecting the stacked layer to fit the desired mapping function, an identity mapping is used to let it fit the residual mapping which makes it easier to reduce the error towards zero. This is achieved by introducing shortcut connections between the stacked layers to add the identity mapping. The assumption is that the identity mappings do not introduce additional parameters. It is shown that with this approach, error is reduced with deeper layers:</p>
 <!-- ![img](Images/resnet-result-paper.png "resnet-result-paper") -->
-<img src="Images/resnet-result-paper.png" alt="resnet-result-paper" width="600" height="400">
+<img src="Images/resnet-result-paper.png" alt="resnet-result-paper" width="500" height="200">
 <h4 id="efficient-net">Efficient Net</h4>
 <!-- ![img](Images/effnet_perf.png "effnet_perf") <br/> -->
 <img src="Images/effnet_perf.png" alt="effnet_scale" width="400" height="400">
@@ -680,8 +682,10 @@ Left is width scaling, middle is depth scaling, and then far right is image reso
 <img src="Images/effnet_2.png" alt="effnet_scale" width="400" height="400">
 <p>After extensive grid search, they derived the theoretically optimal formula for compound scaling using these coefficients. Compound scaling method is the key idea in EfficenetNet which balances the up sampling with Width, Depth and Resolution by scaling with a constant ratio.</p>
 <h4 id="alexnet">Alexnet</h4>
-<p>AlexNet architecture was proposed by Alex Krizhevsky, Illya Sutskever and Geoffrey E. Hinton, and became popular in 2012 after competing and won in the ImageNet Large Scale Visual Recognition Challenge in achieving top-5 error of 15.3%. Getting these rates of accuracy was quite rare at the time and it is what ignited CNN into the mainstream. AlexNet has five convolution layers some of which follow a max-pooling layer and finally three fully connected layers. This architecture also popularized ReLU activation function which improved training performance over Tanh and Sigmoid, and used dropout instead of other methods of regularization to avoid overfitting. <br/>
-<img src="Images/alexnet_1.png" alt="img" title="alexnet"> <br/></p>
+<p>AlexNet architecture was proposed by Alex Krizhevsky, Illya Sutskever and Geoffrey E. Hinton, and became popular in 2012 after competing and won in the ImageNet Large Scale Visual Recognition Challenge in achieving top-5 error of 15.3%. Getting these rates of accuracy was quite rare at the time and it is what ignited CNN into the mainstream. AlexNet has five convolution layers some of which follow a max-pooling layer and finally three fully connected layers. This architecture also popularized ReLU activation function which improved training performance over Tanh and Sigmoid, and used dropout instead of other methods of regularization to avoid overfitting.
+<br/>
+<img src="Images/alexnet_1.png" alt="img" title="alexnet">
+<br/></p>
 <h4 id="googlenet">GoogleNet</h4>
 <p>GoogLeNet was the winner of ImageNet Large Scale Visual Recognition Challenge of 2014 that focused on efficient computation and deeper networks while achieving higher accuracy. This network is 22-layer deep with 27 pooling layers. The key component is the 9 inception modules stacked linearly followed by an average pooling layer connected to the end of the inception modules. The Inception module is simply the concatenation across 3 convolutions, scales a 1 x 1 convolution, a 3 x 3 convolution, a 5 x 5 convolution and a 3 x 3 max pooling. One of the benefits of using multiple web convolutions on a single patch is that visual information is being processed at several scales then aggregated. Hence, inception modules give us the knobs and levers of controlled balancing of computer resources and speed.
 <img src="Images/googlenet_1.png" alt="img" title="googlenet"> <br/>
@@ -700,13 +704,13 @@ We will first describe a general training procedure for an autoencoder and then 
 Training a autoencoder is two step process:</p>
 <ul>
 <li><strong>Unsupervised Training:</strong> In this step we take an autoencoder, which is essentially a combination of an encoder and a decoder. The loss is defined by L2  loss which is also called reconstruction loss in this setting. We then pass the images through the autoencoder to minimize the reconstruction loss.
-<img src="Images/vae_1.png" alt="img" title="vae"> <br/></li>
+<br/> <img src="Images/vae_1.png" alt="img" title="vae"> <br/></li>
 <li><strong>Supervised Training:</strong> After the autoencoder is trained to minimize the reconstruction loss, we throw away the decoder and hope that the latent representation (z) has effectively compressed the crucial information of an image.
-<img src="Images/vae_2.png" alt="img" title="vae"> <br/>
+<br/> <img src="Images/vae_2.png" alt="img" title="vae"> <br/>
 Then we finetune the obtained encoder for our binary classification downstream task.
-<img src="Images/vae_3.png" alt="img" title="vae"> <br/></li>
+<br/> <img src="Images/vae_3.png" alt="img" title="vae"> <br/></li>
 <li><strong>Variational Autoencoders:</strong> Variational autoencoders work in a similar fashion as an autoencoder. The difference is that in variational autoencoders instead of sampling a static latent representation z we sample two vectors, μ and σ, which reprensents mean and standard deviation. Then we use μ and σ to sample a new latent vector z from the gaussian distribtion.
-<img src="Images/vae_4.png" alt="img" title="vae">	<br/>
+<br/> <img src="Images/vae_4.png" alt="img" title="vae">	<br/>
 Loss function is also modified to account for KL divergence along with reconstruction loss.</li>
 <li>Architecture specifications of our VAE model:
 <ul>
@@ -719,16 +723,16 @@ Loss function is also modified to account for KL divergence along with reconstru
 <h2 id="grad-cam">Grad-Cam</h2>
 <p>GradCAM is a visualization technique which does not need any re-training for the Convolutional Neural Network based models. It creates a heatmap of features critical to image classification. We initially used a pytorch implementation of GradCAM, maintained by Vicky Liin and were able to get useful visualizations for ResNet and AlexNet but due to the limitations on the number of architectures the library supports, we chose to switch to the Captum implementation of gradcam. Following are the results for various architectures that we obtained:</p>
 <ul>
-<li>AlexNet: <img src="Images/gradcam_1.png" alt="img" title="gradcam"> <br/></li>
-<li>GoogleNet: <img src="Images/gradcam_2.png" alt="img" title="gradcam"> <br/></li>
-<li>ResNet: <img src="Images/gradcam_3.png" alt="img" title="gradcam"> <br/></li>
-<li>EfficientNet: <img src="Images/gradcam_4.png" alt="img" title="gradcam"> <br/></li>
-<li>VAE: <img src="Images/gradcam_5.png" alt="img" title="gradcam"> <br/></li>
+<li>AlexNet:  <br/><img src="Images/gradcam_1.png" alt="gradcam" width="600" height="200"> <br/></li>
+<li>GoogleNet:  <br/><img src="Images/gradcam_2.png" alt="gradcam" width="600" height="200"> <br/></li>
+<li>ResNet: <br/> <img src="Images/gradcam_3.png" alt="gradcam" width="600" height="200"> <br/></li>
+<li>EfficientNet: <br/><img src="Images/gradcam_4.png" alt="gradcam" width="600" height="200"> <br/></li>
+<li>VAE: <br/><img src="Images/gradcam_5.png" alt="gradcam" width="600" height="200"> <br/></li>
 </ul>
 <h1 id="results-a-idresultsa">Results <a id="results"></a></h1>
 <h2 id="accuracy-graphs">Accuracy Graphs</h2>
-<p>Following are the results for various architectures along with VAE. As we can observer that VAE model performed really well against GoogleNet, AlexNet and EfficientNet.
-<img src="Images/result_1.jpg" alt="img" title="result"> <br/></p>
+<p>Following are the results for various architectures along with VAE. As we can observer that VAE model performed really well against GoogleNet, AlexNet and EfficientNet.</p>
+<p><img src="Images/result_1.jpg" alt="img" title="result"> <br/></p>
 <h2 id="optimizers-comparison">Optimizers comparison</h2>
 <p>Below are the results for various optimizers used on the classification task using EfficientNet:
 <img src="Images/result_2.png" alt="img" title="result"> <br/>
@@ -1104,6 +1108,28 @@ AUC - ROC curve is a performance measurement for classification problems at vari
 
       </div>
     </div>
+  
+
+
+  
+    
+    
+
+
+
+
+
+  
+
+
+  
+    
+    
+
+
+
+
+
   
 
 
