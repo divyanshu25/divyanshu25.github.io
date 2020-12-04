@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Safin Salih | Home</title>
+    <link>/author/safin-salih/</link>
+      <atom:link href="/author/safin-salih/index.xml" rel="self" type="application/rss+xml" />
+    <description>Safin Salih</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 03 Dec 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
+      <title>Safin Salih</title>
+      <link>/author/safin-salih/</link>
+    </image>
+    
+    <item>
+      <title>FaceMask Detection</title>
+      <link>/project/facemaskdetection/</link>
+      <pubDate>Thu, 03 Dec 2020 00:00:00 +0000</pubDate>
+      <guid>/project/facemaskdetection/</guid>
+      <description>&lt;h1 id=&#34;introductiona-idintroductiona&#34;&gt;Introduction&lt;a id=&#34;introduction&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;The rise of the COVID-19 pandemic has brought about unprecedented changes all around the world. There is currently no treatment or vaccine for coronavirus and our best defense against it is properly wearing a face mask. Unfortunately, it&amp;rsquo;s been observed that a lot of people do not wear their masks properly thus putting their and other’s life at risk of catching this deadly virus.&lt;/p&gt;
+&lt;h1 id=&#34;problema-idproblema&#34;&gt;Problem&lt;a id=&#34;problem&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;As pandemic fatigue sets in around the country, more and more people are eschewing face mask use. Being able to identify whether a person is properly wearing a mask or not is crucial to identify and prevent a potential outbreak. We propose a face mask detector that can identify whether an individual is wearing a facemask or not.&lt;/p&gt;
+&lt;h1 id=&#34;data-collectiona-iddata_collectiona&#34;&gt;Data Collection&lt;a id=&#34;data_collection&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;We are using FaceMask 12K dataset on 
+&lt;a href=&#34;%28https://www.kaggle.com/ashishjangra27/face-mask-12k-images-dataset.&#34;&gt;kaggle&lt;/a&gt;. The dataset is split into 10,000  in training, 992 in test and 800 in validation and has equal representation of both classes.&lt;br&gt;
+We are not doing any explicit feature selection on the data. We rely on CNNs and VAE to automatically learn these features while training.
+The dataset that we obtained is balanced between the two classes so we are not performing any explicit data cleaning.&lt;/p&gt;
+&lt;h1 id=&#34;methods-a-idmethodsa&#34;&gt;Methods &lt;a id=&#34;Methods&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;We propose the use of Convolutional Neural Networks to tackle the problem. We model the problem as a binary classification task, where individuals wearing a mask pertain to positive class and individuals not wearing a mask pertain to negative class. We choose Pytorch as our preferred framework to develop the project.
+We use both supervised learning and unsupervised learning methods to achieve the mentioned goal.  We have also implemented grad-cam to visulaize what our model is learning. Details of all these approaches are discussed below.&lt;/p&gt;
+&lt;h2 id=&#34;supervised-learning&#34;&gt;Supervised Learning&lt;/h2&gt;
+&lt;p&gt;We have developed deep neural networks to perform the binary classification task using various off the shelf models.&lt;/p&gt;
+&lt;h3 id=&#34;architectures&#34;&gt;Architectures&lt;/h3&gt;
+&lt;h4 id=&#34;resnet&#34;&gt;Resnet&lt;/h4&gt;
+&lt;p&gt;ResNet is a Convolutional Neural Network model. The major problem that ResNet addresses is how it is not just important to have multiple layers stacked to get better results. In fact, having deep layers gives rise to the vanishing gradient problem and also the accuracy gets saturated and later would degrade. ResNet introduces a residual learning block where an identity mapping is added at the end of the block to solve the degradation problem as follows:
+&lt;br/&gt;
+&lt;img src=&#34;Images/resnet-block.png&#34; alt=&#34;img&#34; title=&#34;resnet-block&#34;&gt;
+&lt;br/&gt;
+The hypothesis is that instead of expecting the stacked layer to fit the desired mapping function, an identity mapping is used to let it fit the residual mapping which makes it easier to reduce the error towards zero. This is achieved by introducing shortcut connections between the stacked layers to add the identity mapping. The assumption is that the identity mappings do not introduce additional parameters. It is shown that with this approach, error is reduced with deeper layers:&lt;/p&gt;
+&lt;!-- ![img](Images/resnet-result-paper.png &#34;resnet-result-paper&#34;) --&gt;
+&lt;img src=&#34;Images/resnet-result-paper.png&#34; alt=&#34;resnet-result-paper&#34; width=&#34;500&#34; height=&#34;200&#34;&gt;
+&lt;h4 id=&#34;efficient-net&#34;&gt;Efficient Net&lt;/h4&gt;
+&lt;!-- ![img](Images/effnet_perf.png &#34;effnet_perf&#34;) &lt;br/&gt; --&gt;
+&lt;img src=&#34;Images/effnet_perf.png&#34; alt=&#34;effnet_scale&#34; width=&#34;400&#34; height=&#34;400&#34;&gt;
+EfficientNet is a new technique achieving state-of-the-art image classification accuracy from Google AI research. This technique rethinks the way we scale convolutional neural networks. Traditionally, one way to scale up CNN is to add more layers, for example, ResNet18 to ResNet 200. In EfficenetNet, this is done systematically which looks at three properties, width, depth and_resolution.
+![img](Images/effnet_scale.png &#34;effnet_scale&#34;) &lt;br/&gt;
+Width scaling captures fine-grained features by adding more feature maps; depth scaling adds more layers to the CNN and finally resolution scaling is changing the size of the input image. Scaling any of these will improve performance but it quickly plateaus as the images below shows.
+![img](Images/effnet_1.png &#34;effnet_scale&#34;)  &lt;br/&gt;
+Left is width scaling, middle is depth scaling, and then far right is image resolution scaling, hence performance is gained on each but it quickly saturates. The authors then discovered that there is a synergy in scaling multiple dimensions together. Meaning if you increase depth you will also see a performance boost when you increase image resolution as well. So there is a dependency amongst scaling  each of these dimensions. 
+&lt;!-- ![img](Images/effnet_2.png &#34;effnet_scale&#34;) &lt;br/&gt; --&gt;
+&lt;img src=&#34;Images/effnet_2.png&#34; alt=&#34;effnet_scale&#34; width=&#34;400&#34; height=&#34;400&#34;&gt;
+&lt;p&gt;After extensive grid search, they derived the theoretically optimal formula for compound scaling using these coefficients. Compound scaling method is the key idea in EfficenetNet which balances the up sampling with Width, Depth and Resolution by scaling with a constant ratio.&lt;/p&gt;
+&lt;h4 id=&#34;alexnet&#34;&gt;Alexnet&lt;/h4&gt;
+&lt;p&gt;AlexNet architecture was proposed by Alex Krizhevsky, Illya Sutskever and Geoffrey E. Hinton, and became popular in 2012 after competing and won in the ImageNet Large Scale Visual Recognition Challenge in achieving top-5 error of 15.3%. Getting these rates of accuracy was quite rare at the time and it is what ignited CNN into the mainstream. AlexNet has five convolution layers some of which follow a max-pooling layer and finally three fully connected layers. This architecture also popularized ReLU activation function which improved training performance over Tanh and Sigmoid, and used dropout instead of other methods of regularization to avoid overfitting.
+&lt;br/&gt;
+&lt;img src=&#34;Images/alexnet_1.png&#34; alt=&#34;img&#34; title=&#34;alexnet&#34;&gt;
+&lt;br/&gt;&lt;/p&gt;
+&lt;h4 id=&#34;googlenet&#34;&gt;GoogleNet&lt;/h4&gt;
+&lt;p&gt;GoogLeNet was the winner of ImageNet Large Scale Visual Recognition Challenge of 2014 that focused on efficient computation and deeper networks while achieving higher accuracy. This network is 22-layer deep with 27 pooling layers. The key component is the 9 inception modules stacked linearly followed by an average pooling layer connected to the end of the inception modules. The Inception module is simply the concatenation across 3 convolutions, scales a 1 x 1 convolution, a 3 x 3 convolution, a 5 x 5 convolution and a 3 x 3 max pooling. One of the benefits of using multiple web convolutions on a single patch is that visual information is being processed at several scales then aggregated. Hence, inception modules give us the knobs and levers of controlled balancing of computer resources and speed.
+&lt;img src=&#34;Images/googlenet_1.png&#34; alt=&#34;img&#34; title=&#34;googlenet&#34;&gt; &lt;br/&gt;
+&lt;img src=&#34;Images/googlenet_2.png&#34; alt=&#34;img&#34; title=&#34;googlenet&#34;&gt; &lt;br/&gt;&lt;/p&gt;
+&lt;h3 id=&#34;optimizersb-br&#34;&gt;Optimizers:&lt;/b&gt; &lt;br/&gt;&lt;/h3&gt;
+&lt;p&gt;We experimented with the following optimizers to train our network:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Adam&lt;/li&gt;
+&lt;li&gt;Stochastic Gradient Descent&lt;/li&gt;
+&lt;li&gt;ADADELTA&lt;/li&gt;
+&lt;li&gt;Average Stochastic Gradient Descent&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;unsupervised-learning&#34;&gt;Unsupervised Learning&lt;/h2&gt;
+&lt;p&gt;For unsupervised learning, we used Variational Autoencoder. Specifically, we aim to use Autoencoders for Dimensionality Reduction and map the input observations from a high-dimensional feature space to a low-dimensional feature space without signiﬁcant information loss. Since autoencoders can capture the non-linear relations between the features, they are a powerful tool to detect subtleties in the input and therefore helps to augment the dataset. This way we can increase the overall training accuracy of our classification task.
+We will first describe a general training procedure for an autoencoder and then extend it to variational autoencoder in the next section.
+Training a autoencoder is two step process:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Unsupervised Training:&lt;/strong&gt; In this step we take an autoencoder, which is essentially a combination of an encoder and a decoder. The loss is defined by L2  loss which is also called reconstruction loss in this setting. We then pass the images through the autoencoder to minimize the reconstruction loss.
+&lt;br/&gt; &lt;img src=&#34;Images/vae_1.png&#34; alt=&#34;img&#34; title=&#34;vae&#34;&gt; &lt;br/&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Supervised Training:&lt;/strong&gt; After the autoencoder is trained to minimize the reconstruction loss, we throw away the decoder and hope that the latent representation (z) has effectively compressed the crucial information of an image.
+&lt;br/&gt; &lt;img src=&#34;Images/vae_2.png&#34; alt=&#34;img&#34; title=&#34;vae&#34;&gt; &lt;br/&gt;
+Then we finetune the obtained encoder for our binary classification downstream task.
+&lt;br/&gt; &lt;img src=&#34;Images/vae_3.png&#34; alt=&#34;img&#34; title=&#34;vae&#34;&gt; &lt;br/&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Variational Autoencoders:&lt;/strong&gt; Variational autoencoders work in a similar fashion as an autoencoder. The difference is that in variational autoencoders instead of sampling a static latent representation z we sample two vectors, μ and σ, which reprensents mean and standard deviation. Then we use μ and σ to sample a new latent vector z from the gaussian distribtion.
+&lt;br/&gt; &lt;img src=&#34;Images/vae_4.png&#34; alt=&#34;img&#34; title=&#34;vae&#34;&gt;	&lt;br/&gt;
+Loss function is also modified to account for KL divergence along with reconstruction loss.&lt;/li&gt;
+&lt;li&gt;Architecture specifications of our VAE model:
+&lt;ul&gt;
+&lt;li&gt;The encoder has 5, 2d Convolution layers with kernel size 3, stride 2 and padding 1.&lt;/li&gt;
+&lt;li&gt;The decoder has 5,  2d Convolution layers with kernel size 3, stride 2 and padding 1.&lt;/li&gt;
+&lt;li&gt;LeakyReLu is used as the activation function after every hidden layer along with a batch normalization layer.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;visualization-a-idvisuala&#34;&gt;Visualization &lt;a id=&#34;visual&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2 id=&#34;grad-cam&#34;&gt;Grad-Cam&lt;/h2&gt;
+&lt;p&gt;GradCAM is a visualization technique which does not need any re-training for the Convolutional Neural Network based models. It creates a heatmap of features critical to image classification. We initially used a pytorch implementation of GradCAM, maintained by Vicky Liin and were able to get useful visualizations for ResNet and AlexNet but due to the limitations on the number of architectures the library supports, we chose to switch to the Captum implementation of gradcam. Following are the results for various architectures that we obtained:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;AlexNet:  &lt;br/&gt;&lt;img src=&#34;Images/gradcam_1.png&#34; alt=&#34;gradcam&#34; width=&#34;600&#34; height=&#34;200&#34;&gt; &lt;br/&gt;&lt;/li&gt;
+&lt;li&gt;GoogleNet:  &lt;br/&gt;&lt;img src=&#34;Images/gradcam_2.png&#34; alt=&#34;gradcam&#34; width=&#34;600&#34; height=&#34;200&#34;&gt; &lt;br/&gt;&lt;/li&gt;
+&lt;li&gt;ResNet: &lt;br/&gt; &lt;img src=&#34;Images/gradcam_3.png&#34; alt=&#34;gradcam&#34; width=&#34;600&#34; height=&#34;200&#34;&gt; &lt;br/&gt;&lt;/li&gt;
+&lt;li&gt;EfficientNet: &lt;br/&gt;&lt;img src=&#34;Images/gradcam_4.png&#34; alt=&#34;gradcam&#34; width=&#34;600&#34; height=&#34;200&#34;&gt; &lt;br/&gt;&lt;/li&gt;
+&lt;li&gt;VAE: &lt;br/&gt;&lt;img src=&#34;Images/gradcam_5.png&#34; alt=&#34;gradcam&#34; width=&#34;600&#34; height=&#34;200&#34;&gt; &lt;br/&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;results-a-idresultsa&#34;&gt;Results &lt;a id=&#34;results&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2 id=&#34;accuracy-graphs&#34;&gt;Accuracy Graphs&lt;/h2&gt;
+&lt;p&gt;Following are the results for various architectures along with VAE. As we can observer that VAE model performed really well against GoogleNet, AlexNet and EfficientNet.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Images/result_1.jpg&#34; alt=&#34;img&#34; title=&#34;result&#34;&gt; &lt;br/&gt;&lt;/p&gt;
+&lt;h2 id=&#34;optimizers-comparison&#34;&gt;Optimizers comparison&lt;/h2&gt;
+&lt;p&gt;Below are the results for various optimizers used on the classification task using EfficientNet:
+&lt;img src=&#34;Images/result_2.png&#34; alt=&#34;img&#34; title=&#34;result&#34;&gt; &lt;br/&gt;
+&lt;img src=&#34;Images/result_3.png&#34; alt=&#34;img&#34; title=&#34;result&#34;&gt; &lt;br/&gt;&lt;/p&gt;
+&lt;h2 id=&#34;confusion-matix&#34;&gt;Confusion Matix:&lt;/h2&gt;
+&lt;p&gt;A table of confusion (sometimes also called a confusion matrix) is a table with two rows and two columns that reports the number of false positives, false negatives, true positives, and true negatives.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Resnet&lt;/th&gt;
+&lt;th&gt;GoogleNet&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&#34;Images/cm_resnet.png&#34; alt=&#34;img&#34; title=&#34;cm&#34;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;img src=&#34;Images/cm_googlenet.png&#34; alt=&#34;img&#34; title=&#34;cm&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Alexnet&lt;/th&gt;
+&lt;th&gt;EfficientNet&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&#34;Images/cm_alexnet.png&#34; alt=&#34;img&#34; title=&#34;cm&#34;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;img src=&#34;Images/cm_effnet.png&#34; alt=&#34;img&#34; title=&#34;cm&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;VAE&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&#34;Images/cm_vae.png&#34; alt=&#34;img&#34; title=&#34;cm&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;f-1-score&#34;&gt;F-1 Score&lt;/h2&gt;
+&lt;p&gt;The F-measure or balanced F-score (F1 score) is the harmonic mean of precision and recall:.
+&lt;img src=&#34;Images/pr_formula.png&#34; alt=&#34;img&#34; title=&#34;pr&#34;&gt; &lt;br/&gt;
+Using the above mentioned formula we get the following Precision, Recall and F-1 scores for each of the models:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Architecture&lt;/th&gt;
+&lt;th&gt;Precision&lt;/th&gt;
+&lt;th&gt;Recall&lt;/th&gt;
+&lt;th&gt;F1-Score&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;ResNet&lt;/td&gt;
+&lt;td&gt;0.9960&lt;/td&gt;
+&lt;td&gt;0.9712&lt;/td&gt;
+&lt;td&gt;0.9835&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GoogleNet&lt;/td&gt;
+&lt;td&gt;0.9921&lt;/td&gt;
+&lt;td&gt;0.9921&lt;/td&gt;
+&lt;td&gt;0.9921&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Alexnet&lt;/td&gt;
+&lt;td&gt;0.9056&lt;/td&gt;
+&lt;td&gt;0.9892&lt;/td&gt;
+&lt;td&gt;0.9456&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;EfficientNet&lt;/td&gt;
+&lt;td&gt;0.9317&lt;/td&gt;
+&lt;td&gt;0.9115&lt;/td&gt;
+&lt;td&gt;0.9215&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;VAE&lt;/td&gt;
+&lt;td&gt;0.9882&lt;/td&gt;
+&lt;td&gt;0.9882&lt;/td&gt;
+&lt;td&gt;0.9882&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;br/&gt;
+&lt;h2 id=&#34;receiver-operating-characteristic&#34;&gt;Receiver operating characteristic&lt;/h2&gt;
+&lt;p&gt;The Receiver operating characteristic (ROC) curve is created by plotting the true positive rate (TPR) against the false positive rate (FPR) at various threshold settings.
+AUC (Area Under the Curve) provides an aggregate measure of performance across all possible classification thresholds. &lt;br/&gt;
+AUC - ROC curve is a performance measurement for classification problems at various thresholds settings. ROC is a probability curve and AUC represents degree or measure of separability. It tells how much model is capable of distinguishing between classes.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Resnet&lt;/th&gt;
+&lt;th&gt;GoogleNet&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&#34;Images/roc_resnet.png&#34; alt=&#34;img&#34; title=&#34;roc&#34;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;img src=&#34;Images/roc_googlenet.png&#34; alt=&#34;img&#34; title=&#34;roc&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Alexnet&lt;/th&gt;
+&lt;th&gt;EfficientNet&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&#34;Images/roc_alexnet.png&#34; alt=&#34;img&#34; title=&#34;roc&#34;&gt;&lt;/td&gt;
+&lt;td&gt;&lt;img src=&#34;Images/roc_effnet.png&#34; alt=&#34;img&#34; title=&#34;roc&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;VAE&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;img src=&#34;Images/roc_vae.png&#34; alt=&#34;img&#34; title=&#34;roc&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h1 id=&#34;references&#34;&gt;References&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Karen Simonyan, Andrea Vedaldi, and Andrew Zisserman. “Deep Inside Convolutional Networks: Visualising Image Classification Models and Saliency Maps”, ICLR Workshop 2014.&lt;/li&gt;
+&lt;li&gt;Ramprasaath R. Selvaraju, Michael Cogswell, Abhishek Das, Ramakrishna Vedantam, Devi Parikh, Dhruv Batra. “Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization”, IJCV 2019.&lt;/li&gt;
+&lt;li&gt;Pu, Yunchen, Zhe Gan, Ricardo Henao, Xin Yuan, Chunyuan Li, Andrew Stevens, and Lawrence Carin. &amp;ldquo;Variational autoencoder for deep learning of images, labels and captions.&amp;rdquo; In Advances in neural information processing systems, pp. 2352-2360. 2016..&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://pypi.org/project/pytorch-gradcam/&#34;&gt;https://pypi.org/project/pytorch-gradcam/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;K Subramanian.  Pytorch-vae. &lt;a href=&#34;https://github.com/AntixK/PyTorch-VAE,&#34;&gt;https://github.com/AntixK/PyTorch-VAE,&lt;/a&gt; 2020&lt;/li&gt;
+&lt;li&gt;K. He, X. Zhang, S. Ren and J. Sun, &amp;ldquo;Deep Residual Learning for Image Recognition,&amp;rdquo; 2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR), Las Vegas, NV, 2016.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Receiver_operating_characteristic&#34;&gt;https://en.wikipedia.org/wiki/Receiver_operating_characteristic&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/understanding-auc-roc-curve-68b2303cc9c5&#34;&gt;https://towardsdatascience.com/understanding-auc-roc-curve-68b2303cc9c5&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Confusion_matrix&#34;&gt;https://en.wikipedia.org/wiki/Confusion_matrix&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Tan, Mingxing, and Quoc V. Le. &amp;ldquo;Efficientnet: Rethinking model scaling for convolutional neural networks.&amp;rdquo; arXiv preprint arXiv:1905.11946 (2019).&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
