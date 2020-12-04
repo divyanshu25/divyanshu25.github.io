@@ -659,10 +659,10 @@ The dataset that we obtained is balanced between the two classes so we are not p
 <h1 id="methods-a-idmethodsa">Methods <a id="Methods"></a></h1>
 <p>We propose the use of Convolutional Neural Networks to tackle the problem. We model the problem as a binary classification task, where individuals wearing a mask pertain to positive class and individuals not wearing a mask pertain to negative class. We choose Pytorch as our preferred framework to develop the project.
 We use both supervised learning and unsupervised learning methods to achieve the mentioned goal.  We have also implemented grad-cam to visulaize what our model is learning. Details of all these approaches are discussed below.</p>
-<ul>
+<ol>
 	<li><b>Supervised Learning</b>: We have developed deep neural networks to perform the binary classification task using various off the shelf models.</li>
-	<ul>
-		<li>Architectures:</li>
+	<ol type="a">
+		<li><b>Architectures</b>:
 		<ul>
 			<li><b><u>Resnet</u></b>: <br/> ResNet is a Convolutional Neural Network model. The major problem that ResNet addresses is how it is not just important to have multiple layers stacked to get better results. In fact, having deep layers gives rise to the vanishing gradient problem and also the accuracy gets saturated and later would degrade. ResNet introduces a residual learning block where an identity mapping is added at the end of the block to solve the degradation problem as follows: 
 			<img src="Images/resnet-block.png" alt="Resnet" title="Resnet Block"/>
@@ -686,7 +686,17 @@ We use both supervised learning and unsupervised learning methods to achieve the
 			<img src="Images/googlenet_2.png" alt="googlenet" title="googlenet"/>
 			</li>
 		</ul>
-	</ul>
+		</li>
+		<li> <b>Optimizers:</b> <br/>
+			We experimented with the following optimizers to train our network:
+			<ul>
+				<li>Adam</li>
+				<li>Stochastic Gradient Descent</li>
+				<li>ADADELTA</li>
+				<li>Average Stochastic Gradient Descent</li>
+			</ul>
+		</li>
+	</ol>
 	<li><b>Unsupervised Learning</b>: <br/>For unsupervised learning, we used Variational Autoencoder. Specifically, we aim to use Autoencoders for Dimensionality Reduction and map the input observations from a high-dimensional feature space to a low-dimensional feature space without signiﬁcant information loss. Since autoencoders can capture the non-linear relations between the features, they are a powerful tool to detect subtleties in the input and therefore helps to augment the dataset. This way we can increase the overall training accuracy of our classification task.
 	We will first describe a general training procedure for an autoencoder and then extend it to variational autoencoder in the next section.
 	Training a autoencoder is two step process:
@@ -699,8 +709,187 @@ We use both supervised learning and unsupervised learning methods to achieve the
 		Then we finetune the obtained encoder for our binary classification downstream task.
 		<img src="Images/vae_3.png" alt="vae" title="vae"/>		
 		</li>
+		<li><b>Variational Autoencoders</b>: Variational autoencoders work in a similar fashion as an autoencoder. The difference is that in variational autoencoders instead of sampling a static latent representation z we sample two vectors, μ and σ, which reprensents mean and standard deviation. Then we use μ and σ to sample a new latent vector z from the gaussian distribtion.
+		<img src="Images/vae_4.png" alt="vae" title="vae"/>	
+		Loss function is also modified to account for KL divergence along with reconstruction loss.	
+		</li>
+		<li>Architecture specifications of our VAE model:
+			<ul>
+				<li>The encoder has 5, 2d Convolution layers with kernel size 3, stride 2 and padding 1.</li>
+				<li>The decoder has 5,  2d Convolution layers with kernel size 3, stride 2 and padding 1.</li>
+				<li>LeakyReLu is used as the activation function after every hidden layer along with a batch normalization layer.</li>
+			</ul>
+		</li>
 	</ul>
 	</li>
+</ol>
+<h1 id="visualization-a-idvisuala">Visualization <a id="visual"></a></h1>
+<h2 id="grad-cam">Grad-Cam</h2>
+<p>GradCAM is a visualization technique which does not need any re-training for the Convolutional Neural Network based models. It creates a heatmap of features critical to image classification. We initially used a pytorch implementation of GradCAM, maintained by Vicky Liin and were able to get useful visualizations for ResNet and AlexNet but due to the limitations on the number of architectures the library supports, we chose to switch to the Captum implementation of gradcam. Following are the results for various architectures that we obtained:</p>
+<ul>
+	<li>AlexNet: <img src="Images/gradcam_1.png" alt="gradcam" title="gradcam"/>	
+	</li>
+	<li>GoogleNet<img src="Images/gradcam_2.png" alt="gradcam" title="gradcam"/>
+	</li>
+	<li>ResNet<img src="Images/gradcam_3.png" alt="gradcam" title="gradcam"/>
+	</li>
+	<li>EfficientNet<img src="Images/gradcam_4.png" alt="gradcam" title="gradcam"/>
+	</li>
+	<li>VAE<img src="Images/gradcam_5.png" alt="gradcam" title="gradcam"/>
+	</li>
+</ul>
+<h1 id="results-a-idresultsa">Results <a id="results"></a></h1>
+<h2 id="accuracy-graphs">Accuracy Graphs</h2>
+<p>Following are the results for various architectures along with VAE. As we can observer that VAE model performed really well against GoogleNet, AlexNet and EfficientNet.
+<img src="Images/result_1.jpg" alt="result" title="result"/></p>
+<h2 id="optimizers-comparison">Optimizers comparison</h2>
+<p>Below are the results for various optimizers used on the classification task using EfficientNet:
+<img src="Images/result_2.png" alt="result" title="result"/>
+<img src="Images/result_3.png" alt="result" title="result"/></p>
+<h2 id="confusion-matix">Confusion Matix:</h2>
+<p>A table of confusion (sometimes also called a confusion matrix) is a table with two rows and two columns that reports the number of false positives, false negatives, true positives, and true negatives.</p>
+<table>
+<thead>
+<tr>
+<th>Resnet</th>
+<th>GoogleNet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="Images/cm_resnet.png" alt="cm" title="cm"/></td>
+<td><img src="Images/cm_googlenet.png" alt="cm" title="cm"/></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Alexnet</th>
+<th>EfficientNet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="Images/cm_alexnet.png" alt="cm" title="cm"/></td>
+<td><img src="Images/cm_effnet.png" alt="cm" title="cm"/></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>VAE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="Images/cm_vae.png" alt="cm" title="cm"/></td>
+</tr>
+</tbody>
+</table>
+<h2 id="f-1-score">F-1 Score</h2>
+<p>The F-measure or balanced F-score (F1 score) is the harmonic mean of precision and recall:.
+<img src="Images/pr_formula.png" alt="pr" title="pr"/>
+Using the above mentioned formula we get the following Precision, Recall and F-1 scores for each of the models:</p>
+<table>
+<thead>
+<tr>
+<th>Architecture</th>
+<th>Precision</th>
+<th>Recall</th>
+<th>F1-Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ResNet</td>
+<td>0.9960</td>
+<td>0.9712</td>
+<td>0.9835</td>
+</tr>
+<tr>
+<td>GoogleNet</td>
+<td>0.9921</td>
+<td>0.9921</td>
+<td>0.9921</td>
+</tr>
+<tr>
+<td>Alexnet</td>
+<td>0.9056</td>
+<td>0.9892</td>
+<td>0.9456</td>
+</tr>
+<tr>
+<td>EfficientNet</td>
+<td>0.9317</td>
+<td>0.9115</td>
+<td>0.9215</td>
+</tr>
+<tr>
+<td>VAE</td>
+<td>0.9882</td>
+<td>0.9882</td>
+<td>0.9882</td>
+</tr>
+</tbody>
+</table>
+<h2 id="receiver-operating-characteristic">Receiver operating characteristic</h2>
+<p>The Receiver operating characteristic (ROC) curve is created by plotting the true positive rate (TPR) against the false positive rate (FPR) at various threshold settings.
+AUC (Area Under the Curve) provides an aggregate measure of performance across all possible classification thresholds.<br>
+AUC - ROC curve is a performance measurement for classification problems at various thresholds settings. ROC is a probability curve and AUC represents degree or measure of separability. It tells how much model is capable of distinguishing between classes.</p>
+<table>
+<thead>
+<tr>
+<th>Resnet</th>
+<th>GoogleNet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="Images/roc_resnet.png" alt="roc" title="roc"/></td>
+<td><img src="Images/roc_googlenet.png" alt="roc" title="roc"/></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Alexnet</th>
+<th>EfficientNet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="Images/roc_alexnet.png" alt="roc" title="roc"/></td>
+<td><img src="Images/roc_effnet.png" alt="roc" title="roc"/></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>VAE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="Images/roc_vae.png" alt="roc" title="roc"/></td>
+</tr>
+</tbody>
+</table>
+<h1 id="references">References</h1>
+<ul>
+<li>Karen Simonyan, Andrea Vedaldi, and Andrew Zisserman. “Deep Inside Convolutional Networks: Visualising Image Classification Models and Saliency Maps”, ICLR Workshop 2014.</li>
+<li>Ramprasaath R. Selvaraju, Michael Cogswell, Abhishek Das, Ramakrishna Vedantam, Devi Parikh, Dhruv Batra. “Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization”, IJCV 2019.</li>
+<li>Pu, Yunchen, Zhe Gan, Ricardo Henao, Xin Yuan, Chunyuan Li, Andrew Stevens, and Lawrence Carin. &ldquo;Variational autoencoder for deep learning of images, labels and captions.&rdquo; In Advances in neural information processing systems, pp. 2352-2360. 2016..</li>
+<li><a href="https://pypi.org/project/pytorch-gradcam/">https://pypi.org/project/pytorch-gradcam/</a></li>
+<li>K Subramanian.  Pytorch-vae. <a href="https://github.com/AntixK/PyTorch-VAE,">https://github.com/AntixK/PyTorch-VAE,</a> 2020</li>
+<li>K. He, X. Zhang, S. Ren and J. Sun, &ldquo;Deep Residual Learning for Image Recognition,&rdquo; 2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR), Las Vegas, NV, 2016.</li>
+<li><a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">https://en.wikipedia.org/wiki/Receiver_operating_characteristic</a></li>
+<li><a href="https://towardsdatascience.com/understanding-auc-roc-curve-68b2303cc9c5">https://towardsdatascience.com/understanding-auc-roc-curve-68b2303cc9c5</a>.</li>
+<li><a href="https://en.wikipedia.org/wiki/Confusion_matrix">https://en.wikipedia.org/wiki/Confusion_matrix</a></li>
+<li>Tan, Mingxing, and Quoc V. Le. &ldquo;Efficientnet: Rethinking model scaling for convolutional neural networks.&rdquo; arXiv preprint arXiv:1905.11946 (2019).</li>
 </ul>
 
     </div>
