@@ -674,10 +674,10 @@ The hypothesis is that instead of expecting the stacked layer to fit the desired
 <!-- ![img](Images/effnet_perf.png "effnet_perf") <br/> -->
 <img src="Images/effnet_perf.png" alt="effnet_scale" width="400" height="400">
 EfficientNet is a new technique achieving state-of-the-art image classification accuracy from Google AI research. This technique rethinks the way we scale convolutional neural networks. Traditionally, one way to scale up CNN is to add more layers, for example, ResNet18 to ResNet 200. In EfficenetNet, this is done systematically which looks at three properties, width, depth and_resolution.
-![img](Images/effnet_scale.png "effnet_scale") <br/>
-Width scaling captures fine-grained features by adding more feature maps; depth scaling adds more layers to the CNN and finally resolution scaling is changing the size of the input image. Scaling any of these will improve performance but it quickly plateaus as the images below shows.
-![img](Images/effnet_1.png "effnet_scale")  <br/>
-Left is width scaling, middle is depth scaling, and then far right is image resolution scaling, hence performance is gained on each but it quickly saturates. The authors then discovered that there is a synergy in scaling multiple dimensions together. Meaning if you increase depth you will also see a performance boost when you increase image resolution as well. So there is a dependency amongst scaling  each of these dimensions. 
+<p><img src="Images/effnet_scale.png" alt="img" title="effnet_scale"> <br/></p>
+<p>Width scaling captures fine-grained features by adding more feature maps; depth scaling adds more layers to the CNN and finally resolution scaling is changing the size of the input image. Scaling any of these will improve performance but it quickly plateaus as the images below shows.</p>
+<p><img src="Images/effnet_1.png" alt="img" title="effnet_scale">  <br/></p>
+<p>Left is width scaling, middle is depth scaling, and then far right is image resolution scaling, hence performance is gained on each but it quickly saturates. The authors then discovered that there is a synergy in scaling multiple dimensions together. Meaning if you increase depth you will also see a performance boost when you increase image resolution as well. So there is a dependency amongst scaling  each of these dimensions.</p>
 <!-- ![img](Images/effnet_2.png "effnet_scale") <br/> -->
 <img src="Images/effnet_2.png" alt="effnet_scale" width="400" height="400">
 <p>After extensive grid search, they derived the theoretically optimal formula for compound scaling using these coefficients. Compound scaling method is the key idea in EfficenetNet which balances the up sampling with Width, Depth and Resolution by scaling with a constant ratio.</p>
