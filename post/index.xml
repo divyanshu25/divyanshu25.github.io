@@ -177,7 +177,7 @@ sudo systemctl restart apache2
 &lt;h1 id=&#34;placement-2&#34;&gt;placement: 2&lt;/h1&gt;
 &lt;h1 id=&#34;caption-image-credit-unsplashhttpsunsplashcomphotoscpkojocxduy&#34;&gt;caption: &amp;lsquo;Image credit: 
 &lt;a href=&#34;https://unsplash.com/photos/CpkOjOcXdUY&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Unsplash&lt;/strong&gt;&lt;/a&gt;&amp;rsquo;&lt;/h1&gt;
-&lt;h1 id=&#34;focal_point-&#34;&gt;focal_point: &amp;quot;&amp;rdquo;&lt;/h1&gt;
+&lt;h1 id=&#34;focal_point-&#34;&gt;focal_point: &amp;quot;&amp;quot;&lt;/h1&gt;
 &lt;h1 id=&#34;preview_only-false&#34;&gt;preview_only: false#&lt;/h1&gt;
 &lt;h2 id=&#34;projects-optional&#34;&gt;Projects (optional).&lt;/h2&gt;
 &lt;h2 id=&#34;associate-this-post-with-one-or-more-of-your-projects&#34;&gt;Associate this post with one or more of your projects.&lt;/h2&gt;
