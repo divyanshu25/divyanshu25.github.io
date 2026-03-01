@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1d1d1f;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --gray-light: #f8fafc;
+  --gray-medium: #64748b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --gray-light: #1e293b;
+    --gray-medium: #94a3b8;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Enhanced fade-in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Gentle float for decorative elements */
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+/* Smooth scale on hover */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Pulse animation */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.animate-gentle-float {
+  animation: gentle-float 20s ease-in-out infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Enhanced hover lift with more dramatic effect */
+.hover-lift {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* Smooth button press effect */
+.button-press {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.button-press:active {
+  transform: scale(0.95);
+}
+
+/* Elegant underline effect */
+.elegant-underline {
+  position: relative;
+}
+
+.elegant-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.elegant-underline:hover::after {
+  width: 100%;
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Smooth section transitions */
+section {
+  position: relative;
+}
+
+/* Better focus states for accessibility */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
