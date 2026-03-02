@@ -56,6 +56,12 @@ export default function Navigation() {
               Publications
             </Link>
             <Link 
+              href="/#blog" 
+              className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
+            >
+              Blog
+            </Link>
+            <Link 
               href="/#contact" 
               className="ml-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-300/30 hover:scale-105"
             >
@@ -114,6 +120,13 @@ export default function Navigation() {
               onClick={() => setIsOpen(false)}
             >
               Publications
+            </Link>
+            <Link
+              href="/#blog"
+              className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
+              onClick={() => setIsOpen(false)}
+            >
+              Blog
             </Link>
             <Link
               href="/#contact"

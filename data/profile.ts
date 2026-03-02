@@ -73,5 +73,17 @@ export const profile = {
       link: "https://patents.google.com/patent/US20250117829A1/en",
       tags: ["Generative AI", "Marketing", "NLP", "Brand Management"]
     }
+  ],
+
+  blogs: [
+    {
+      title: "Engineering High-Throughput, Low-Latency Machine Learning Services",
+      authors: "Shirsh Bansal, Divyanshu Goyal",
+      venue: "Adobe Tech Blog",
+      date: "May 28, 2019",
+      description: "A deep dive into building Adobe's User Response Prediction Service that processes 3,500 requests per second with sub-5ms latency. Covers code optimization, garbage collection tuning, event generation, and performance benchmarking techniques for high-performance ML services.",
+      link: "https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271",
+      tags: ["Machine Learning", "System Architecture", "Performance Optimization", "Java", "Microservices"]
+    }
   ]
 };

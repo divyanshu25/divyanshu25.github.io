@@ -12,7 +12,7 @@ export default function Blog() {
         {/* Section Header */}
         <div className="mb-12">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-            Latest Articles
+            Blog
           </h2>
           <div className="w-20 h-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-3"></div>
           <p className="text-lg text-gray-600 max-w-3xl">
@@ -28,7 +28,9 @@ export default function Blog() {
             return (
               <Link
                 key={post.id}
-                href={`/blog/${post.id}`}
+                href={post.url || `/blog/${post.id}`}
+                target={post.url ? "_blank" : undefined}
+                rel={post.url ? "noopener noreferrer" : undefined}
                 className={`group relative bg-white rounded-3xl hover-lift overflow-hidden border border-gray-200 shadow-xl hover:shadow-2xl transition-all ${
                   isFeatured ? 'lg:col-span-2' : ''
                 }`}
@@ -51,11 +53,6 @@ export default function Blog() {
                         })}
                       </span>
                     </div>
-                    {isFeatured && (
-                      <span className="px-2.5 py-1 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-xs font-bold rounded-full shadow-md">
-                        Featured
-                      </span>
-                    )}
                   </div>
                   
                   {/* Title */}
