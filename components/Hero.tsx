@@ -29,7 +29,7 @@ export default function Hero() {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-violet-400/20 rounded-full blur-2xl scale-110"></div>
               
               {/* Main profile image */}
-              <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full overflow-hidden ring-4 ring-white/80 shadow-2xl hover:scale-105 transition-all duration-700 hover:ring-blue-200/80">
+              <div className="relative w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full overflow-hidden ring-4 ring-white/80 shadow-2xl hover:scale-105 transition-all duration-700 hover:ring-blue-200/80">
                 <Image
                   src="/profile.jpg"
                   alt="Divyanshu Goyal"

@@ -12,16 +12,16 @@ function renderDescription(description: string) {
 
 export default function Projects() {
   return (
-    <section id="projects" className="relative py-32 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+    <section id="projects" className="relative py-20 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
       <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-blue-100/20 to-indigo-100/20 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-indigo-100/20 to-violet-100/20 rounded-full filter blur-3xl"></div>
       
       <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
-        <div className="mb-20">
-          <h2 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
+        <div className="mb-12">
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
             Projects
           </h2>
-          <div className="w-24 h-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"></div>
+          <div className="w-20 h-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"></div>
         </div>
 
         <div className="relative">

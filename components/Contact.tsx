@@ -2,7 +2,7 @@ import { profile } from "@/data/profile";
 
 export default function Contact() {
   return (
-    <section id="contact" className="relative py-32 bg-gradient-to-br from-slate-50 via-blue-50/30 to-white overflow-hidden">
+    <section id="contact" className="relative py-20 bg-gradient-to-br from-slate-50 via-blue-50/30 to-white overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/20 to-violet-300/20 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-indigo-300/20 to-blue-300/20 rounded-full filter blur-3xl"></div>
