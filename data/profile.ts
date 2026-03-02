@@ -24,19 +24,15 @@ export const profile = {
   
   skills: {
     languages: ["Python", "C++", "JavaScript"],
-    tools: ["PyTorch", "TensorFlow", "Hugging Face", "LangChain", "OpenAI", "Anthropic Claude", "LLaMA", "CUDA", "Weights & Biases", "MLflow", "Docker", "Kubernetes"]
+    tools: ["PyTorch", "Hugging Face", "DeepSpeed", "CUDA", "Weights & Biases", "LangChain", "Docker"]
   },
   
   expertise: [
     "Large Language Models (LLMs)",
     "Vision-Language Models (VLMs)",
-    "Deep Learning",
-    "Computer Vision",
-    "Natural Language Processing",
-    "Distributed Training",
     "Model Fine-tuning & RLHF",
-    "Transformer Architecture",
-    "High Performance Computing"
+    "Distributed Training",
+    "Multimodal Reasoning"
   ],
   
   social: {
