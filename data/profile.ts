@@ -43,5 +43,17 @@ export const profile = {
     github: "https://github.com/divyanshu25",
     linkedin: "https://www.linkedin.com/in/divyanshu2594/",
     email: "divyanshu.g25@gmail.com"
-  }
+  },
+
+  publications: [
+    {
+      title: "Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment",
+      authors: "Vanya Bannihatti Kumar, Divyanshu Goyal, Akhil Eppa, Neel Bhandari",
+      venue: "arXiv preprint",
+      year: "2025",
+      abstract: "Modern large language models (LLMs) excel at objective tasks such as evaluating mathematical reasoning and factual accuracy, yet they falter when faced with the nuanced, subjective nature of assessing creativity. In this work, we propose a novel curiosity-driven LLM-as-a-judge for evaluating creative writing which is personalized to each individual's creative judgments.",
+      link: "https://arxiv.org/abs/2510.05135",
+      tags: ["LLMs", "Creative AI", "Pluralistic Alignment", "Evaluation"]
+    }
+  ]
 };
