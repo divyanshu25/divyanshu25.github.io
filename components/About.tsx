@@ -93,7 +93,7 @@ export default function About() {
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-indigo-500/0 group-hover:from-blue-500/5 group-hover:to-indigo-500/5 transition-all duration-300"></div>
                 
                 <div className="relative flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full group-hover:scale-150 transition-transform"></div>
+                  <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
                   <span className="text-sm font-semibold text-gray-800 group-hover:text-gray-900">{area}</span>
                 </div>
               </div>
@@ -115,18 +115,10 @@ export default function About() {
           
           <div className="bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50/30 p-10 rounded-3xl border border-gray-200 shadow-xl">
             <div className="flex flex-wrap gap-3">
-              {profile.skills.tools.map((tool, index) => (
+              {profile.skills.tools.map((tool) => (
                 <span
                   key={tool}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold hover-lift button-press shadow-md hover:shadow-lg transition-all ${
-                    index % 4 === 0
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
-                      : index % 4 === 1
-                      ? 'bg-white text-gray-800 border border-gray-300'
-                      : index % 4 === 2
-                      ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-white'
-                      : 'bg-gradient-to-r from-slate-100 to-gray-100 text-gray-800 border border-gray-300'
-                  }`}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold hover-lift button-press shadow-md hover:shadow-lg transition-all bg-white text-gray-800 border border-gray-300 hover:border-blue-300"
                 >
                   {tool}
                 </span>

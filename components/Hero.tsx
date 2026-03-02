@@ -71,29 +71,8 @@ export default function Hero() {
               {profile.bio}
             </p>
 
-            {/* CTA Buttons */}
-            <div className={`flex flex-wrap justify-center lg:justify-start gap-4 pt-4 ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.4s' }}>
-              <a
-                href="#contact"
-                className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 button-press shadow-xl shadow-blue-300/40 hover:shadow-2xl hover:shadow-blue-400/50 hover:scale-105"
-              >
-                <span className="flex items-center gap-2">
-                  Get in Touch
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </span>
-              </a>
-              <a
-                href="#about"
-                className="group px-8 py-4 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-50 transition-all duration-300 ring-2 ring-gray-300 hover:ring-gray-400 button-press shadow-xl hover:scale-105"
-              >
-                Learn More
-              </a>
-            </div>
-
             {/* Social Links */}
-            <div className={`flex justify-center lg:justify-start gap-4 pt-2 ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.5s' }}>
+            <div className={`flex justify-center lg:justify-start gap-4 pt-8 ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.4s' }}>
               <a
                 href={profile.social.github}
                 target="_blank"
