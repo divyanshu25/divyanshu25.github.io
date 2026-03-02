@@ -4,7 +4,7 @@ export const profile = {
   institution: "Georgia Tech",
   degree: "Master's in Computer Science",
   specialization: "Machine Learning",
-  bio: "Hi, I am an Applied Scientist at Adobe, working on cutting-edge machine learning solutions. I completed my Master's in Computer Science from Georgia Tech with specialization in Machine Learning.",
+  bio: "Applied Scientist at Adobe specializing in cutting-edge machine learning solutions. I hold a Master's in Computer Science from Georgia Tech with a focus on Machine Learning. Passionate about training Large Language Models and Vision-Language Models, I thrive on solving real-world challenges and delivering innovative solutions that drive impact.",
   
   skills: {
     languages: ["Python"],
