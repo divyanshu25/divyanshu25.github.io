@@ -95,7 +95,7 @@ export default function About() {
             {profile.expertise.map((area, index) => (
               <div
                 key={area}
-                className="group relative p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl hover-lift button-press border border-gray-200 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all overflow-hidden"
+                className="group relative p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-200 shadow-lg overflow-hidden"
               >
                 {/* Hover gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-indigo-500/0 group-hover:from-blue-500/5 group-hover:to-indigo-500/5 transition-all duration-300"></div>
@@ -126,7 +126,7 @@ export default function About() {
               {profile.skills.tools.map((tool) => (
                 <span
                   key={tool}
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold hover-lift button-press shadow-md hover:shadow-lg transition-all bg-white text-gray-800 border border-gray-300 hover:border-blue-300"
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md bg-white text-gray-800 border border-gray-300"
                 >
                   {tool}
                 </span>
