@@ -70,7 +70,7 @@ export default function About() {
                 {profile.skills.languages.map((lang) => (
                   <span
                     key={lang}
-                    className="px-4 py-2.5 bg-white text-gray-800 rounded-xl text-sm font-bold hover-lift button-press shadow-md border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all"
+                    className="px-4 py-2.5 bg-white text-gray-800 rounded-xl text-sm font-bold shadow-md border border-gray-200"
                   >
                     {lang}
                   </span>
