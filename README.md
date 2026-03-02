@@ -19,6 +19,7 @@ A modern, responsive portfolio website showcasing my work as an Applied Scientis
 - **SEO Friendly**: Built-in SEO optimization with Next.js
 - **Easy to Customize**: Simple data-driven content management
 - **Automated Deployment**: CI/CD pipeline with GitHub Actions
+- **Resume Download**: Dynamic PDF generation with LaTeX alternative
 
 ---
 
@@ -99,6 +100,83 @@ Edit **`data/posts.ts`** to manage blog content:
 
 ---
 
+## 📄 Resume Generation
+
+The website serves a professionally formatted PDF resume generated from LaTeX source. The PDF is **checked into the repository** at `public/resume.pdf` so users can download it without any build process.
+
+### Quick Start
+
+Choose one of three methods to generate the PDF:
+
+#### Option 1: Using Docker (Recommended - No LaTeX Installation Needed) 🐳
+
+```bash
+make resume-docker
+```
+
+This uses a Docker container with LaTeX pre-installed, so you don't need to install anything locally except Docker.
+
+#### Option 2: Using Local LaTeX
+
+If you have LaTeX installed:
+
+```bash
+make resume
+```
+
+#### Option 3: Using Overleaf (Online)
+
+1. Go to [Overleaf](https://www.overleaf.com/)
+2. Upload `public/resume.tex` and `public/resume.cls`
+3. Click "Recompile"
+4. Download the PDF and save as `public/resume.pdf`
+
+**Important:** After generating the PDF, commit it to the repository:
+
+```bash
+git add public/resume.pdf
+git commit -m "Update resume"
+git push
+```
+
+### Files
+
+- `public/resume.tex` - LaTeX source file with resume content
+- `public/resume.cls` - Resume class file (professional template)
+- `Makefile` - Build automation for PDF generation
+- `components/ResumeDownload.tsx` - Download button component
+
+### Installing LaTeX (Optional)
+
+Only needed if you want to use `make resume` instead of `make resume-docker`:
+
+- **macOS**: `brew install --cask mactex-no-gui`
+- **Ubuntu/Debian**: `sudo apt-get install texlive-latex-extra texlive-fonts-recommended`
+- **Windows**: Install [MiKTeX](https://miktex.org/download)
+
+### Updating the Resume
+
+1. Edit `public/resume.tex` with your changes
+2. Generate the updated PDF:
+   ```bash
+   make resume-docker  # or make resume if you have LaTeX installed
+   ```
+3. Commit the updated `resume.pdf` to the repository:
+   ```bash
+   git add public/resume.pdf
+   git commit -m "Update resume"
+   git push
+   ```
+
+### Makefile Targets
+
+- `make resume-docker` - Generate PDF using Docker (no LaTeX install needed)
+- `make resume` - Generate PDF using local pdflatex
+- `make clean` - Remove auxiliary LaTeX files
+- `make help` - Show available targets and installation instructions
+
+---
+
 ## 🚀 Deployment
 
 ### Automatic Deployment (Recommended)
@@ -145,6 +223,7 @@ divyanshu25.github.io/
 │   ├── Contact.tsx          # Contact section
 │   ├── Footer.tsx           # Footer component
 │   ├── Hero.tsx             # Hero section
+│   ├── ResumeDownload.tsx   # Resume download button
 │   └── Navigation.tsx       # Navigation bar
 ├── data/                     # Content data files
 │   ├── profile.ts           # Personal information
@@ -152,9 +231,13 @@ divyanshu25.github.io/
 │   └── posts.ts             # Blog posts data
 ├── public/                   # Static assets
 │   ├── profile.jpg          # Profile image
+│   ├── resume.tex           # LaTeX resume source
+│   ├── resume.cls           # LaTeX resume class file
+│   ├── resume.pdf           # Generated resume PDF
 │   └── .nojekyll            # GitHub Pages config
 ├── .github/workflows/        # CI/CD configuration
 │   └── deploy.yml           # GitHub Actions workflow
+├── Makefile                  # Build automation for resume
 └── package.json             # Dependencies and scripts
 ```
 

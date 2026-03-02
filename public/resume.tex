@@ -1,0 +1,145 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Medium Length Professional CV
+% LaTeX Template
+% Version 2.0 (8/5/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Rishi Shah 
+%
+% Important note:
+% This template requires the resume.cls file to be in the same directory as the
+% .tex file. The resume.cls file provides the resume style used for structuring the
+% document.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{resume} % Use the custom resume.cls style
+
+\usepackage[left=0.75in,top=0.5in,right=0.75in,bottom=0.5in]{geometry} % Document margins
+\usepackage{hyperref}
+
+\newcommand{\tab}[1]{\hspace{1ex}\rlap{#1}}
+\newcommand{\itab}[1]{\hspace{0em}\rlap{#1}}
+\name{Divyanshu Goyal} % Your name
+\address{Sunnyvale, CA \\ (+1) 404-414-3762 \\ divyanshu.g25@gmail.com}
+\address{\href{https://www.linkedin.com/in/divyanshu2594/}{LinkedIn} \\ \href{https://github.com/Divyanshu25}{GitHub} \\ \href{https://scholar.google.com/citations?user=5MJm4JsAAAAJ}{Google Scholar}}
+
+\begin{document}
+
+\begin{rSection}{Summary}
+Machine learning researcher specializing in {\bf Large Language Models}, {\bf Vision-Language Models}, and {\bf multimodal reasoning systems}. Focused on novel training methodologies, evaluation frameworks, and alignment techniques for foundation models. Experienced in {\bf model training}, {\bf fine-tuning}, {\bf RLHF}, and {\bf distributed systems}, with a track record of research contributions (1 publication, 2 patents) and deployment of AI systems at scale.
+\end{rSection}
+
+%----------------------------------------------------------------------------------------
+%	EDUCATION SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{Education}
+
+{\bf Georgia Institute of Technology, Atlanta} \hfill {August 2019 -- May 2021} \\
+M.S. in Computer Science, Specialization in Machine Learning \hfill {\bf CGPA: 4.0 / 4.0}
+
+\vspace{0.25em}
+{\bf Birla Institute of Technology and Science (BITS), Pilani} \hfill {August 2011 -- June 2016} \\
+B.E. in Computer Science \\
+M.Sc. in Mathematics \hfill {\bf CGPA: 8.75 / 10.0}
+
+\end{rSection}
+
+%----------------------------------------------------------------------------------------
+%	PUBLICATIONS SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{Publications \& Patents}
+
+\begin{rSubsection}{Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment}{arXiv 2025}{}
+\tab Vanya Bannihatti Kumar, Divyanshu Goyal, Akhil Eppa, Neel Bhandari \\
+Novel curiosity-driven LLM-as-a-judge framework for evaluating creative writing that personalizes assessments to individual judgments. \\
+\href{https://arxiv.org/abs/2510.05135}{arxiv.org/abs/2510.05135}
+\end{rSubsection}
+
+\begin{rSubsection}{Parameter-Efficient Model Serving Systems}{US Patent App. 2025}{}
+\tab Yuanyou Wang, Naveen Vangala, Mayank Anand, Kunal Kumar Jain, Jose Mathew, Eapen Jose, Divyanshu Goyal, et al. \\
+System for efficiently serving fine-tuned models by dynamically loading parameter-efficient layers into pre-loaded base models, minimizing network transfer costs and container startup time. \\
+\href{https://patents.google.com/patent/US20250217193A1/en}{patents.google.com/patent/US20250217193A1}
+\end{rSubsection}
+
+\begin{rSubsection}{Brand-Aligned Content Generation with Structured Knowledge}{US Patent App. 2025}{}
+\tab Mayank Anand, Jose Mathew, Divyanshu Goyal \\
+System for transforming unstructured brand information into structured knowledge and generating brand-aligned marketing content using generative models and NLP techniques. \\
+\href{https://patents.google.com/patent/US20250117829A1/en}{patents.google.com/patent/US20250117829A1}
+\end{rSubsection}
+
+\end{rSection}
+
+%----------------------------------------------------------------------------------------
+%	RESEARCH EXPERIENCE SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{Experience}
+
+\begin{rSubsection}{Applied Scientist - Adobe Unified Platform, San Jose}{June 2021 -- Present}{}
+\tab {\small\textit{\textbf{Vision-Language Model Training}}} \\
+$\rightarrow$ Designed and trained a {\bf 13B-parameter vision-language model} from scratch on {\bf 2M image-text pairs} across {\bf 8$\times$ H100 GPUs}, using novel {\bf observable injection techniques} that augment prompts with quantitative image metrics (sharpness, color balance, exposure, lighting distribution). \\
+$\rightarrow$ Fine-tuned CLIP on custom vision-language datasets to improve fine-grained attribute recognition, applying contrastive learning and image-text augmentation to boost {\bf F1 accuracy by 20\%} in multi-label classification tasks. \\
+$\rightarrow$ Built distributed training infrastructure and implemented LoRA-based parameter-efficient fine-tuning methods. \\
+$\rightarrow$ Developed {\bf MQCore evaluation benchmark} inspired by DCLM CORE for rigorous assessment of model performance on domain-specific quality tasks.
+
+\vspace{0.25em}
+{\small\textit{\textbf{LLM Alignment \& Evaluation Systems}}} \\
+$\rightarrow$ Created curiosity-driven LLM-as-a-judge framework for personalized creative evaluation, published in arXiv 2025. \\
+$\rightarrow$ Designed LLM-based evaluators for automated quality assessment with strong agreement to expert annotations. \\
+$\rightarrow$ Developed advanced prompting and alignment techniques achieving {\bf 18\%} improvement in human-likeness metrics and {\bf 25\%} improvement in response adherence. \\
+$\rightarrow$ Built human-in-the-loop evaluation frameworks and synthetic data generation pipelines for large-scale model benchmarking.
+
+\vspace{0.25em}
+{\small\textit{\textbf{Creativity \& Multimodal Reasoning Research}}} \\
+$\rightarrow$ Pioneered creativity modeling using transformer architectures with Bayesian surprise as a quantifiable novelty signal. \\
+$\rightarrow$ Achieved {\bf 23\% improvement in F1 score} and {\bf 38\% improvement in correlation metrics} for creativity assessment tasks. \\
+$\rightarrow$ Leading development of multimodal agent systems capable of complex reasoning and action orchestration for Photoshop image editing workflows. \\
+$\rightarrow$ Filed multiple patents on parameter-efficient model serving, brand-aligned content generation, and multimodal systems.
+
+\vspace{0.25em}
+{\small\textit{\textbf{Production AI Systems \& Impact}}} \\
+$\rightarrow$ Led development of {\bf Adobe GenStudio for Performance Marketing}, launched October 2024 as a generative AI platform integrating LLMs and diffusion models for enterprise-scale content creation. \\
+$\rightarrow$ Platform now serving major enterprise clients including Microsoft, AT\&T, and other Fortune 500 companies.
+\end{rSubsection}
+
+\begin{rSubsection}{Machine Learning Engineer - Adobe Inc., Bangalore}{July 2016 -- August 2019}{}
+\tab $\rightarrow$ Built a Model Management service on top of MLflow and Databricks, enabling end-to-end model lifecycle management including versioned deployment, real-time monitoring, and developer tooling for reproducible model promotion across staging and production environments. \\
+$\rightarrow$ Co-engineered Adobe's User Response Prediction Service, a high-throughput ML inference platform serving {\bf 3,500 QPS/node} at {\bf 0.3--0.6ms app-side latency} (99th percentile), using CPU flame-graph profiling, JMH micro-benchmarking, and lock-free architectures. \\
+$\rightarrow$ Designed a GC-free asynchronous event processing pipeline using the LMAX Disruptor ring buffer pattern, decoupling logging and feedback from prediction threads to eliminate back-pressure under peak load. \\
+$\rightarrow$ Reduced garbage collection pauses to {\bf $\sim$30ms per 20s} for recommendation models (FFM) through ThreadLocal object reuse, custom GC-free JSON serialization, and JVM generation sizing, enabling sustained high throughput with minimal memory overhead.
+\end{rSubsection}
+
+%----------------------------------------------------------------------------------------
+%	TECHNICAL SKILLS SECTION
+%----------------------------------------------------------------------------------------
+
+\newpage
+
+\begin{rSection}{Technical Skills \& Research Expertise}
+
+\begin{tabular}{ @{} >{\bfseries}l @{\hspace{2ex}} l }
+Research Areas: & Foundation Model Training, Vision-Language Models, LLM Alignment, \\
+& Multimodal Reasoning, Evaluation Frameworks, RLHF, Distributed Training \\
+Model Architectures: & Transformers, Vision-Language Models (CLIP, LLaVA), Diffusion Models, \\
+& Large Language Models, Parameter-Efficient Fine-tuning (LoRA, QLoRA) \\
+ML Frameworks: & PyTorch (expert), Hugging Face Transformers, DeepSpeed, FSDP, \\
+& Weights \& Biases, MLflow, LangChain, LangGraph \\
+Programming: & Python (expert), C++, CUDA, JavaScript/TypeScript \\
+Infrastructure: & Multi-GPU Training, Distributed Systems, Docker, Kubernetes, Azure ML, \\
+& High Performance Computing, FastAPI \\
+Models \& APIs: & OpenAI API, Anthropic Claude, LLaMA, Gemini \\
+\end{tabular}
+
+\end{rSection}
+
+\end{document}
