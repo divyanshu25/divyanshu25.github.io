@@ -2,13 +2,13 @@ export const profile = {
   name: "Divyanshu Goyal",
   title: "Applied Scientist at Adobe",
   institution: "Georgia Tech",
-  degree: "Master's in Computer Science",
+  degree: "M.S. in Computer Science",
   specialization: "Machine Learning",
-  bio: "Applied Scientist at Adobe specializing in cutting-edge machine learning solutions. I hold a Master's in Computer Science from Georgia Tech with a focus on Machine Learning. Passionate about training Large Language Models and Vision-Language Models, I thrive on solving real-world challenges and delivering innovative solutions that drive impact.",
+  bio: "Applied Scientist at Adobe specializing in cutting-edge machine learning solutions. I hold an M.S. in Computer Science from Georgia Tech with a focus on Machine Learning. Passionate about training Large Language Models and Vision-Language Models, I thrive on solving real-world challenges and delivering innovative solutions that drive impact.",
   
   education: [
     {
-      degree: "Master's in Computer Science",
+      degree: "M.S. in Computer Science",
       institution: "Georgia Institute of Technology",
       specialization: "Machine Learning"
     },
