@@ -33,15 +33,23 @@ export default function About() {
                   <span className="text-sm font-semibold text-white uppercase tracking-wide">Education</span>
                 </div>
                 
-                <h3 className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight">
-                  {profile.degree}
-                </h3>
-                <p className="text-xl text-blue-100">
-                  {profile.institution}
-                </p>
-                <p className="text-lg text-blue-200 mt-2">
-                  {profile.specialization}
-                </p>
+                <div className="space-y-6">
+                  {profile.education.map((edu, index) => (
+                    <div key={index} className={index > 0 ? "pt-6 border-t border-white/20" : ""}>
+                      <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 leading-tight">
+                        {edu.degree}
+                      </h3>
+                      <p className="text-lg text-blue-100">
+                        {edu.institution}
+                      </p>
+                      {edu.specialization && (
+                        <p className="text-base text-blue-200 mt-1">
+                          {edu.specialization}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
