@@ -1,5 +1,15 @@
 import { projects } from "@/data/projects";
 
+function renderDescription(description: string) {
+  const parts = description.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index} className="font-semibold text-gray-900">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
 export default function Projects() {
   return (
     <section id="projects" className="relative py-32 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
@@ -55,7 +65,7 @@ export default function Projects() {
                     </h3>
 
                     <p className="text-base text-gray-700 mb-6 leading-relaxed">
-                      {project.description}
+                      {renderDescription(project.description)}
                     </p>
 
                     <div className="flex flex-wrap items-center gap-4">
