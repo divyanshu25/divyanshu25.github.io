@@ -11,6 +11,18 @@ export interface Post {
 
 export const posts: Post[] = [
   {
+    id: "scaling-transformers",
+    title: "A Lazy Engineer's Guide to Scaling Transformers",
+    summary: "How to compress transformer configuration into a single integer — depth. By deriving architecture dimensions (n_layer, n_embed, n_head), batch size, learning rate, weight decay, and training horizon from one number, scaling sweeps across multiple model sizes become trivial and error-free.",
+    url: "https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91",
+    content: `Published on [Medium](https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91)
+
+[Read the full article on Medium →](https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91)`,
+    date: "2026-03-06",
+    tags: ["Transformers", "Scaling", "LLMs", "Training", "Deep Learning", "Scaling Laws"],
+    authors: ["Divyanshu Goyal"]
+  },
+  {
     id: "llm-training-optimizations",
     title: "Going Fast: Every Optimization That Made LLM Training Fly",
     summary: "Six concrete optimizations — TF32, BF16 mixed precision, torch.compile, Flash Attention, parallel DataLoaders, and pinned memory transfers — that collectively drove a significant jump in Model Flop Utilization (MFU) while training VibeNanoChat, a GPT-2 scale LLM. Each technique is explained with real code and the hardware-level reasoning behind it.",

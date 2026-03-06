@@ -73,6 +73,15 @@ export const profile = {
 
   blogs: [
     {
+      title: "A Lazy Engineer's Guide to Scaling Transformers",
+      authors: "Divyanshu Goyal",
+      venue: "Medium",
+      date: "March 6, 2026",
+      description: "How to compress transformer configuration into a single integer — depth. By deriving architecture dimensions (n_layer, n_embed, n_head), batch size, learning rate, weight decay, and training horizon from one number, scaling sweeps across multiple model sizes become trivial and error-free.",
+      link: "https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91",
+      tags: ["Transformers", "Scaling", "LLMs", "Training", "Deep Learning", "Scaling Laws"]
+    },
+    {
       title: "Engineering High-Throughput, Low-Latency Machine Learning Services",
       authors: "Shirsh Bansal, Divyanshu Goyal",
       venue: "Adobe Tech Blog",
