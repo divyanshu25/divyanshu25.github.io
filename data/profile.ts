@@ -68,6 +68,24 @@ export const profile = {
       abstract: "Systems and methods employ generative models to transform unstructured brand information into structured brand data and generate brand-aligned marketing content. The system uses natural language processing and machine learning to extract brand DNA elements, generate confidence scores for structured components, and create marketing content that accurately reflects an entity's brand identity across various channels.",
       link: "https://patents.google.com/patent/US20250117829A1/en",
       tags: ["Generative AI", "Marketing", "NLP", "Brand Management"]
+    },
+    {
+      title: "Cultural Adaptation of Images Using Generative Artificial Intelligence",
+      authors: "Divyanshu Goyal",
+      venue: "US Patent Application",
+      year: "2026",
+      abstract: "Explores cross-cultural visual adaptation via a multi-stage generative pipeline. A vision-language model grounds source images as text, which is then conditioned on region-specific cultural guidelines to produce a culturalized description. A text-to-image model renders the final output, enabling systematic and scalable cultural localization of visual content.",
+      link: "https://patents.google.com/patent/US20260051084A1/en",
+      tags: ["Generative AI", "Computer Vision", "Cultural Adaptation", "Image Generation"]
+    },
+    {
+      title: "Guiding Language Translation with Translation Documents Using Machine Learning",
+      authors: "Divyanshu Goyal",
+      venue: "US Patent Application",
+      year: "2026",
+      abstract: "Proposes a structured approach to constrained machine translation by grounding model outputs in entity-specific translation documents. Guidelines are extracted and categorized into language-agnostic translation facets, and facet-specific adherence scores are computed to quantify how well translations align with prescribed linguistic and stylistic constraints.",
+      link: "https://patents.google.com/patent/US20260050753A1/en",
+      tags: ["Machine Learning", "NLP", "Language Translation", "Localization"]
     }
   ],
 
