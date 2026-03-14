@@ -32,13 +32,15 @@ export const profile = {
     "Vision-Language Models (VLMs)",
     "Model Fine-tuning & RLHF",
     "Distributed Training",
-    "Multimodal Reasoning"
+    "Multimodal Reasoning",
+    "Cultural AI & Localization"
   ],
   
   social: {
     github: "https://github.com/divyanshu25",
     linkedin: "https://www.linkedin.com/in/divyanshu2594/",
-    email: "divyanshu.g25@gmail.com"
+    email: "divyanshu.g25@gmail.com",
+    scholar: "https://scholar.google.com/citations?user=5MJm4JsAAAAJ"
   },
 
   publications: [
@@ -89,24 +91,5 @@ export const profile = {
     }
   ],
 
-  blogs: [
-    {
-      title: "A Lazy Engineer's Guide to Scaling Transformers",
-      authors: "Divyanshu Goyal",
-      venue: "Medium",
-      date: "March 6, 2026",
-      description: "How to compress transformer configuration into a single integer — depth. By deriving architecture dimensions (n_layer, n_embed, n_head), batch size, learning rate, weight decay, and training horizon from one number, scaling sweeps across multiple model sizes become trivial and error-free.",
-      link: "https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91",
-      tags: ["Transformers", "Scaling", "LLMs", "Training", "Deep Learning", "Scaling Laws"]
-    },
-    {
-      title: "Engineering High-Throughput, Low-Latency Machine Learning Services",
-      authors: "Shirsh Bansal, Divyanshu Goyal",
-      venue: "Adobe Tech Blog",
-      date: "May 28, 2019",
-      description: "A deep dive into building Adobe's User Response Prediction Service that processes 3,500 requests per second with sub-5ms latency. Covers code optimization, garbage collection tuning, event generation, and performance benchmarking techniques for high-performance ML services.",
-      link: "https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271",
-      tags: ["Machine Learning", "System Architecture", "Performance Optimization", "Java", "Microservices"]
-    }
-  ]
+  // Blog data lives in data/posts.ts to avoid duplication
 };

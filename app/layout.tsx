@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Divyanshu Goyal - ML Engineer & Researcher",
-  description: "Graduate student at Georgia Tech specializing in Machine Learning, Computer Vision, and Deep Learning. Explore my projects and technical blog.",
-  keywords: ["Machine Learning", "Deep Learning", "Computer Vision", "Georgia Tech", "AI Research"],
+  title: "Divyanshu Goyal - Applied Scientist & ML Researcher",
+  description: "Applied Scientist at Adobe specializing in Large Language Models, Vision-Language Models, and multimodal reasoning systems. Author of 5 patents and peer-reviewed research.",
+  keywords: ["Machine Learning", "Large Language Models", "Vision-Language Models", "RLHF", "AI Research", "Adobe"],
   authors: [{ name: "Divyanshu Goyal" }],
   openGraph: {
-    title: "Divyanshu Goyal - ML Engineer & Researcher",
-    description: "Graduate student at Georgia Tech specializing in Machine Learning, Computer Vision, and Deep Learning.",
+    title: "Divyanshu Goyal - Applied Scientist & ML Researcher",
+    description: "Applied Scientist at Adobe specializing in Large Language Models, Vision-Language Models, and multimodal reasoning systems.",
     type: "website",
   },
 };

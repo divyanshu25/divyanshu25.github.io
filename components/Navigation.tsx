@@ -37,14 +37,20 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            <Link 
-              href="/#about" 
+            <Link
+              href="/#about"
               className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
             >
               About
             </Link>
-            <Link 
-              href="/#projects" 
+            <Link
+              href="/#experience"
+              className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
+            >
+              Experience
+            </Link>
+            <Link
+              href="/#projects"
               className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
             >
               Projects
@@ -53,7 +59,7 @@ export default function Navigation() {
               href="/#publications" 
               className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
             >
-              Publications
+              Research
             </Link>
             <Link 
               href="/#blog" 
@@ -108,6 +114,13 @@ export default function Navigation() {
               About
             </Link>
             <Link
+              href="/#experience"
+              className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
+              onClick={() => setIsOpen(false)}
+            >
+              Experience
+            </Link>
+            <Link
               href="/#projects"
               className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
               onClick={() => setIsOpen(false)}
@@ -119,7 +132,7 @@ export default function Navigation() {
               className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
               onClick={() => setIsOpen(false)}
             >
-              Publications
+              Research
             </Link>
             <Link
               href="/#blog"

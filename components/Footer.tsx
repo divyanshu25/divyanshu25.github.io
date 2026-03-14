@@ -19,6 +19,18 @@ export default function Footer() {
             <a href="#about" className="text-gray-400 hover:text-white transition-colors font-medium">
               About
             </a>
+            <a href="#experience" className="text-gray-400 hover:text-white transition-colors font-medium">
+              Experience
+            </a>
+            <a href="#projects" className="text-gray-400 hover:text-white transition-colors font-medium">
+              Projects
+            </a>
+            <a href="#publications" className="text-gray-400 hover:text-white transition-colors font-medium">
+              Research
+            </a>
+            <a href="#blog" className="text-gray-400 hover:text-white transition-colors font-medium">
+              Blog
+            </a>
             <a href="#contact" className="text-gray-400 hover:text-white transition-colors font-medium">
               Contact
             </a>
@@ -55,6 +67,17 @@ export default function Footer() {
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </a>
+            <a
+              href={profile.social.scholar}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-gray-400 hover:text-blue-400 transition-all duration-300 hover:scale-110 border border-white/10"
+              aria-label="Google Scholar"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/>
               </svg>
             </a>
           </div>

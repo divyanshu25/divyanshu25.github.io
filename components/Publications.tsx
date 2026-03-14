@@ -9,7 +9,7 @@ export default function Publications() {
       <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
         <div className="mb-12">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-            Publications
+            Publications & Patents
           </h2>
           <div className="w-20 h-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"></div>
         </div>
