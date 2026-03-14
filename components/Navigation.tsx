@@ -17,20 +17,17 @@ export default function Navigation() {
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-      scrolled 
-        ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50' 
-        : 'bg-white/70 backdrop-blur-md border-b border-gray-200/30'
+      scrolled
+        ? 'bg-[var(--bg)]/90 backdrop-blur-xl shadow-sm border-b border-[var(--border)]'
+        : 'bg-[var(--bg)]/70 backdrop-blur-md'
     }`}>
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
-        <div className="flex justify-between h-20">
+        <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="group flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <span className="text-white font-bold text-lg">DG</span>
-              </div>
-              <span className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors hidden sm:block">
-                Divyanshu Goyal
+            <Link href="/" className="group flex items-center">
+              <span className="text-lg font-bold text-[var(--text)] tracking-tight">
+                DG
               </span>
             </Link>
           </div>
@@ -38,40 +35,22 @@ export default function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             <Link
-              href="/#about"
-              className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
-            >
-              About
-            </Link>
-            <Link
               href="/#experience"
-              className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
+              className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
             >
               Experience
             </Link>
             <Link
-              href="/#projects"
-              className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
-            >
-              Projects
-            </Link>
-            <Link 
-              href="/#publications" 
-              className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
+              href="/#publications"
+              className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
             >
               Research
             </Link>
-            <Link 
-              href="/#blog" 
-              className="px-5 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
+            <Link
+              href="/#blog"
+              className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
             >
-              Blog
-            </Link>
-            <Link 
-              href="/#contact" 
-              className="ml-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-300/30 hover:scale-105"
-            >
-              Contact
+              Writing
             </Link>
           </div>
 
@@ -79,11 +58,11 @@ export default function Navigation() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
+              className="p-2 text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
               aria-label="Toggle menu"
             >
               <svg
-                className="h-6 w-6"
+                className="h-5 w-5"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -104,49 +83,28 @@ export default function Navigation() {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
-          <div className="px-6 pt-2 pb-6 space-y-2">
-            <Link
-              href="/#about"
-              className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              About
-            </Link>
+        <div className="md:hidden bg-[var(--bg)]/95 backdrop-blur-xl border-b border-[var(--border)]">
+          <div className="px-6 pt-2 pb-4 space-y-1">
             <Link
               href="/#experience"
-              className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
+              className="block px-4 py-2.5 text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors font-medium text-sm"
               onClick={() => setIsOpen(false)}
             >
               Experience
             </Link>
             <Link
-              href="/#projects"
-              className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              Projects
-            </Link>
-            <Link
               href="/#publications"
-              className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
+              className="block px-4 py-2.5 text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors font-medium text-sm"
               onClick={() => setIsOpen(false)}
             >
               Research
             </Link>
             <Link
               href="/#blog"
-              className="block px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all font-medium"
+              className="block px-4 py-2.5 text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors font-medium text-sm"
               onClick={() => setIsOpen(false)}
             >
-              Blog
-            </Link>
-            <Link
-              href="/#contact"
-              className="block px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl transition-all font-bold text-center shadow-lg"
-              onClick={() => setIsOpen(false)}
-            >
-              Contact
+              Writing
             </Link>
           </div>
         </div>

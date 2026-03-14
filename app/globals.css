@@ -1,12 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1d1d1f;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --gray-light: #f8fafc;
-  --gray-medium: #64748b;
+  --background: #f5f2ed;
+  --foreground: #111827;
+  --accent: #e05a00;
+  --accent-hover: #c44e00;
+  --gray-light: #f0ede8;
+  --gray-medium: #6b7280;
+
+  /* Sub-page variables */
+  --bg: #f5f2ed;
+  --bg-card: #ffffff;
+  --bg-warm: #f0ede8;
+  --text: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #9ca3af;
+  --border: #e5e7eb;
+  --accent-light: #f97316;
+  --accent-bg: #fff7ed;
+  --accent-border: #fed7aa;
 }
 
 @theme inline {
@@ -14,6 +26,12 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+@utility font-display {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
 
 
@@ -159,4 +177,15 @@ button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
   border-radius: 8px;
+}
+
+/* Card hover effect for sub-pages */
+.card-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-hover:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 4px 20px rgba(224, 90, 0, 0.08);
+  transform: translateY(-2px);
 }

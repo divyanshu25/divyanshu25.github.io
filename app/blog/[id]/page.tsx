@@ -19,14 +19,14 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[var(--bg)]">
       <Navigation />
-      
+
       <main className="flex-grow pt-24 pb-16">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
             href="/#blog"
-            className="inline-flex items-center text-[#007AFF] hover:text-[#0051D5] mb-8 group"
+            className="inline-flex items-center text-[var(--accent)] hover:text-[var(--accent-hover)] mb-8 group"
           >
             <svg
               className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform"
@@ -49,18 +49,18 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
                   {post.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-full border border-gray-200"
+                      className="px-3 py-1 bg-[var(--bg-warm)] text-[var(--text-secondary)] text-sm font-medium rounded-full border border-[var(--border)]"
                     >
                       {tag}
                     </span>
                   ))}
             </div>
 
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)] mb-4">
               {post.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-6">
+            <div className="flex flex-wrap items-center gap-4 text-[var(--text-secondary)] mb-6">
               <div className="flex items-center">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -76,7 +76,7 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
                   day: 'numeric',
                 })}
               </div>
-              
+
               {post.authors.length > 0 && (
                 <div className="flex items-center">
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,12 +94,12 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
           </div>
 
           <div className="prose prose-lg max-w-none">
-            <div className="bg-gradient-to-r from-blue-50/50 to-gray-50 p-6 rounded-lg mb-8 border border-gray-200">
-              <p className="text-lg text-gray-700 font-medium">{post.summary}</p>
+            <div className="bg-[var(--accent-bg)] p-6 rounded-lg mb-8 border border-[var(--accent-border)]">
+              <p className="text-lg text-[var(--text-secondary)] font-medium">{post.summary}</p>
             </div>
 
-            <div 
-              className="text-gray-700 leading-relaxed"
+            <div
+              className="text-[var(--text-secondary)] leading-relaxed"
               dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, '<br/>') }}
             />
           </div>

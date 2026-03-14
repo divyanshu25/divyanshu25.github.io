@@ -53,41 +53,38 @@ const experience = [
 
 export default function Experience() {
   return (
-    <section id="experience" className="relative py-14 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+    <section id="experience" className="relative py-14 bg-[var(--bg)] overflow-hidden">
       <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
         <div className="mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
+          <h2 className="text-2xl font-bold text-[var(--text)] mb-1 tracking-tight">
             Experience
           </h2>
-          <div className="w-16 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"></div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           {experience.map((role, index) => (
-            <div key={index} className="relative bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200">
-              {/* Header */}
+            <div key={index} className="relative bg-[var(--bg-card)] p-6 sm:p-8 rounded-xl border border-[var(--border)]">
               <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                <h3 className="text-lg font-bold text-[var(--text)]">
                   {role.title}
                 </h3>
-                <span className="text-gray-400">—</span>
-                <span className="text-base text-gray-600 font-medium">
+                <span className="text-[var(--text-tertiary)]">—</span>
+                <span className="text-sm text-[var(--text-secondary)] font-medium">
                   {role.company}, {role.location}
                 </span>
               </div>
-              <p className="text-sm text-blue-600 font-semibold mb-5">{role.period}</p>
+              <p className="text-xs font-mono text-[var(--text-tertiary)] mb-5">{role.period}</p>
 
-              {/* Highlight areas */}
               <div className="space-y-4">
                 {role.highlights.map((highlight, hIdx) => (
-                  <div key={hIdx} className={hIdx > 0 ? "pt-4 border-t border-gray-100" : ""}>
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+                  <div key={hIdx} className={hIdx > 0 ? "pt-4 border-t border-[var(--border)]" : ""}>
+                    <h4 className="text-xs font-mono text-[var(--text-tertiary)] uppercase tracking-widest mb-2">
                       {highlight.area}
                     </h4>
-                    <ul className="space-y-1">
+                    <ul className="space-y-1.5">
                       {highlight.bullets.map((bullet, bIdx) => (
-                        <li key={bIdx} className="flex gap-2 text-sm text-gray-700 leading-relaxed">
-                          <span className="text-blue-400 mt-0.5 flex-shrink-0">&bull;</span>
+                        <li key={bIdx} className="flex gap-2 text-sm text-[var(--text-secondary)] leading-relaxed">
+                          <span className="w-1 h-1 rounded-full bg-[var(--text-tertiary)] mt-2 shrink-0" />
                           <span>{bullet}</span>
                         </li>
                       ))}

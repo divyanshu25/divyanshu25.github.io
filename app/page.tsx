@@ -5,7 +5,6 @@ import Experience from "@/components/Experience";
 import Projects from "@/components/Projects";
 import Publications from "@/components/Publications";
 import Blog from "@/components/Blog";
-import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -18,7 +17,6 @@ export default function Home() {
       <Projects />
       <Publications />
       <Blog />
-      <Contact />
       <Footer />
     </div>
   );
