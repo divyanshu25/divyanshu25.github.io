@@ -71,7 +71,7 @@ export const profile = {
     },
     {
       title: "Cultural Adaptation of Images Using Generative Artificial Intelligence",
-      authors: "Divyanshu Goyal",
+      authors: "Akhil Eppa, Mayank Anand, Divyanshu Goyal",
       venue: "US Patent Application",
       year: "2026",
       abstract: "Explores cross-cultural visual adaptation via a multi-stage generative pipeline. A vision-language model grounds source images as text, which is then conditioned on region-specific cultural guidelines to produce a culturalized description. A text-to-image model renders the final output, enabling systematic and scalable cultural localization of visual content.",
@@ -80,7 +80,7 @@ export const profile = {
     },
     {
       title: "Guiding Language Translation with Translation Documents Using Machine Learning",
-      authors: "Divyanshu Goyal",
+      authors: "Divyanshu Goyal, Akhil Eppa, Mayank Anand",
       venue: "US Patent Application",
       year: "2026",
       abstract: "Proposes a structured approach to constrained machine translation by grounding model outputs in entity-specific translation documents. Guidelines are extracted and categorized into language-agnostic translation facets, and facet-specific adherence scores are computed to quantify how well translations align with prescribed linguistic and stylistic constraints.",
