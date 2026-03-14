@@ -41,6 +41,12 @@ export default function Navigation() {
               Experience
             </Link>
             <Link
+              href="/#projects"
+              className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
+            >
+              Projects
+            </Link>
+            <Link
               href="/#publications"
               className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
             >
@@ -91,6 +97,13 @@ export default function Navigation() {
               onClick={() => setIsOpen(false)}
             >
               Experience
+            </Link>
+            <Link
+              href="/#projects"
+              className="block px-4 py-2.5 text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors font-medium text-sm"
+              onClick={() => setIsOpen(false)}
+            >
+              Projects
             </Link>
             <Link
               href="/#publications"
