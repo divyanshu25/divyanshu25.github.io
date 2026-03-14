@@ -17,7 +17,12 @@
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
-\fancyfoot[R]{\small\thepage\ / \pageref{LastPage}}
+\fancyfoot[R]{\small Page \thepage\ / \pageref{LastPage}}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \fancyfoot[R]{\small Page \thepage\ / \pageref{LastPage}}%
+}
 
 %----------------------------------------------------------------------------------------
 %	HEADINGS COMMANDS
