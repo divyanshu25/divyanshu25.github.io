@@ -13,7 +13,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative bg-[var(--bg)] overflow-hidden pt-28 pb-16">
+    <section className="relative bg-[var(--bg)] overflow-hidden pt-28 pb-8">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-10">
           {/* Profile image */}
