@@ -22,7 +22,7 @@
 %----------------------------------------------------------------------------------------
 
 \begin{rSection}{Summary}
-Applied Scientist with 10 years of experience specializing in {\bf Large Language Models}, {\bf Vision-Language Models}, and {\bf multimodal reasoning systems}. Author of {\bf 5 patents} and peer-reviewed research on LLM evaluation. Experienced in {\bf model training}, {\bf fine-tuning}, {\bf RLHF}, and {\bf distributed systems}. Led development of {\bf Adobe GenStudio for Performance Marketing}, now serving Fortune 500 clients including Microsoft and AT\&T.
+Applied Scientist with 10 years of experience at the intersection of research and production engineering. At Adobe, trained {\bf 13B-parameter} vision-language models, invented novel LLM evaluation and alignment methods ({\bf 5 patents}, published research), and led the AI powering {\bf Adobe GenStudio for Performance Marketing} --- now serving Fortune 500 clients including Microsoft and AT\&T. Combines deep expertise in {\bf model training}, {\bf RLHF}, and {\bf multimodal reasoning} with the engineering foundation to build and scale the systems that serve them.
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
@@ -33,31 +33,27 @@ Applied Scientist with 10 years of experience specializing in {\bf Large Languag
 
 \begin{rSubsection}{Applied Scientist -- Adobe Unified Platform, San Jose}{June 2021 -- Present}{}{}
 
-\item[] \vspace{-0.5em}{\textit{\textbf{Vision-Language Model Training \& Evaluation}}}
+\item[] \vspace{-0.5em}{\textit{\textbf{$\diamond$ Vision-Language Model Training \& Evaluation}}}
 \item Designed and trained a {\bf 13B-parameter vision-language model} on {\bf 2M image-text pairs} across {\bf 8$\times$ H100 GPUs}, using novel {\bf observable injection techniques} that augment prompts with quantitative image metrics (sharpness, color balance, exposure, lighting distribution).
-\item Fine-tuned CLIP on custom vision-language datasets, applying contrastive learning and image-text augmentation to boost {\bf F1 score by 20\%} in multi-label classification tasks.
-\item Built distributed training infrastructure and implemented LoRA-based parameter-efficient fine-tuning methods.
-\item Developed {\bf MQCore evaluation benchmark} inspired by DCLM CORE for rigorous assessment of model performance on domain-specific quality tasks.
+\item Fine-tuned CLIP and LLaVA-style models on custom vision-language datasets, applying contrastive learning and instruction tuning to boost {\bf F1 score by 20\%} in multi-label classification tasks.
+\item Developed {\bf MQCore evaluation benchmark} inspired by DCLM CORE for rigorous model assessment on domain-specific quality tasks, with data decontamination and held-out test set curation.
 
-\item[] \vspace{0.2em}\textcolor{gray!35}{\rule{\linewidth}{0.3pt}}\vspace{0.2em}
-\item[] \vspace{-0.6em}{\textit{\textbf{LLM Alignment, Creativity \& Multimodal Reasoning}}}
-\item Created curiosity-driven LLM-as-a-judge framework for personalized creative evaluation (arXiv 2025). Achieved {\bf 18\%} improvement in human-likeness metrics and {\bf 25\%} improvement in response adherence.
-\item Pioneered creativity modeling using transformer architectures with Bayesian surprise as a quantifiable novelty signal, achieving {\bf 23\% improvement in F1 score} and {\bf 38\% improvement in correlation metrics}.
-\item Leading development of multimodal agent systems capable of complex reasoning and action orchestration for Photoshop image editing workflows.
-\item Built human-in-the-loop evaluation frameworks and synthetic data generation pipelines for large-scale model benchmarking.
+\item[] \vspace{0.2em}{\textit{\textbf{$\diamond$ LLM Alignment \& Multimodal Reasoning}}}
+\item Created a curiosity-driven LLM-as-a-judge framework for personalized creative evaluation (arXiv 2025). Achieved {\bf 18\%} improvement in human-likeness metrics and {\bf 25\%} improvement in response adherence.
+\item Pioneered creativity modeling using transformer architectures with Bayesian surprise as a quantifiable novelty signal, achieving {\bf 23\% F1 improvement} and {\bf 38\% improvement in correlation} with human judgments.
+\item Leading development of multimodal agentic systems for Photoshop image editing workflows, integrating vision encoders with LLM planners for tool-use and multi-step reasoning.
+\item Built synthetic data generation pipelines and human-in-the-loop evaluation frameworks for large-scale model benchmarking.
 
-\item[] \vspace{0.2em}\textcolor{gray!35}{\rule{\linewidth}{0.3pt}}\vspace{0.2em}
-\item[] \vspace{-0.6em}{\textit{\textbf{Applied Research \& Production AI}}}
-\item Led development of {\bf Adobe GenStudio for Performance Marketing}, launched October 2024 as a generative AI platform integrating LLMs and diffusion models for enterprise-scale content creation --- now serving Fortune 500 clients including Microsoft and AT\&T.
-\item Invented a multi-stage generative pipeline for {\bf cross-cultural image adaptation}: a vision-language model grounds source images as text, conditioned on region-specific cultural guidelines to produce culturalized descriptions rendered by a text-to-image model (US Patent 2026).
-\item Designed a {\bf constrained machine translation} system that extracts and categorizes entity-specific translation guidelines into language-agnostic facets, computing facet-specific adherence scores to quantify alignment with prescribed linguistic and stylistic constraints (US Patent 2026).
+\item[] \vspace{0.2em}{\textit{\textbf{$\diamond$ Production AI \& Patented Inventions}}}
+\item Led development of {\bf Adobe GenStudio for Performance Marketing} (launched Oct 2024): designed LLM orchestration, RAG, and diffusion model pipelines for enterprise-scale content creation --- now serving Fortune 500 clients including Microsoft and AT\&T.
+\item Invented a multi-stage generative pipeline for {\bf cross-cultural image adaptation}: a VLM grounds source images as structured text, conditioned on cultural guidelines, rendered by a text-to-image diffusion model (US Patent 2026).
+\item Designed a {\bf constrained machine translation} system that extracts entity-specific guidelines into language-agnostic facets and computes adherence scores to enforce linguistic and stylistic constraints (US Patent 2026).
 \end{rSubsection}
 
 \begin{rSubsection}{Machine Learning Engineer -- Adobe Inc., Bangalore}{July 2016 -- August 2019}{}{}
-\item Co-engineered Adobe's User Response Prediction Service, a high-throughput ML inference platform serving {\bf 3,500 QPS/node} at {\bf 0.3--0.6ms latency} (99th percentile), using CPU flame-graph profiling, JMH micro-benchmarking, and lock-free architectures.
-\item Designed a GC-free asynchronous event processing pipeline using the LMAX Disruptor ring buffer pattern, decoupling logging and feedback from prediction threads to eliminate back-pressure under peak load.
-\item Reduced garbage collection pauses to {\bf $\sim$30ms per 20s} through ThreadLocal object reuse, custom GC-free JSON serialization, and JVM generation sizing, enabling sustained high throughput with minimal memory overhead.
-\item Built a Model Management service on MLflow and Databricks, enabling end-to-end model lifecycle management with versioned deployment, real-time monitoring, and reproducible promotion across environments.
+\item Co-engineered Adobe's {\bf ML inference platform} serving {\bf 3,500 QPS/node} at {\bf 0.3--0.6ms latency} (p99), using CPU flame-graph profiling, JMH micro-benchmarking, and lock-free architectures.
+\item Designed a GC-free asynchronous event processing pipeline using the LMAX Disruptor ring buffer pattern, decoupling logging from prediction threads to eliminate back-pressure under peak load.
+\item Built a custom {\bf model lifecycle management} platform --- versioned deployment, real-time monitoring, and reproducible promotion across environments.
 \item Co-authored \href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog} on engineering high-throughput, low-latency ML services.
 \end{rSubsection}
 
@@ -117,10 +113,11 @@ M.\ Anand, J.\ Mathew, {\bf D.\ Goyal} \hfill \href{https://patents.google.com/p
 \begin{rSection}{Technical Skills}
 
 \begin{tabular}{ @{} >{\bfseries}l @{\hspace{2ex}} l }
-Research Areas: & Large Language Models, Vision-Language Models, Fine-tuning \& RLHF, \\
-& Distributed Training, Multimodal Reasoning, Cultural AI \& Localization \\
-ML Frameworks: & PyTorch, Hugging Face, DeepSpeed, vLLM, FSDP, CUDA, Weights \& Biases, \\
-& LangChain, Docker \\
+Research: & LLM Pretraining \& Alignment (SFT, RLHF, DPO), Vision-Language Models, \\
+& Multimodal Agents, Evaluation \& Benchmarking, Data Curation \\
+Training \& Serving: & PyTorch, Hugging Face Transformers/PEFT, DeepSpeed, FSDP, vLLM, \\
+& Flash Attention, LoRA/QLoRA, CUDA, Weights \& Biases \\
+Infrastructure: & Docker, LangChain, RAG pipelines \\
 Programming: & Python, C++, JavaScript \\
 \end{tabular}
 
