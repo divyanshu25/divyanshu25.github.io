@@ -2,7 +2,7 @@ import { profile } from "@/data/profile";
 
 export default function Footer() {
   return (
-    <footer className="relative bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 border-t border-gray-800 py-16 overflow-hidden">
+    <footer className="relative bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 border-t border-gray-800 py-10 overflow-hidden">
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/5 to-transparent"></div>
       
