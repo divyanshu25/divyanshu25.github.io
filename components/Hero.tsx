@@ -15,10 +15,10 @@ export default function Hero() {
   return (
     <section className="relative bg-[var(--bg)] overflow-hidden pt-28 pb-8">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
-        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-10">
+        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 lg:gap-10">
           {/* Profile image */}
           <div className={`shrink-0 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
-            <div className="relative w-48 h-48 sm:w-60 sm:h-60 lg:w-72 lg:h-72 rounded-full overflow-hidden ring-2 ring-[var(--border)]">
+            <div className="relative w-36 h-36 sm:w-48 sm:h-48 lg:w-72 lg:h-72 rounded-full overflow-hidden ring-2 ring-[var(--border)]">
               <Image
                 src="/profile.jpg"
                 alt="Divyanshu Goyal"
@@ -32,7 +32,7 @@ export default function Hero() {
           {/* Content next to photo */}
           <div className="text-center lg:text-left">
             <div className={`mb-4 ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.1s' }}>
-              <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text)] tracking-tight mb-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--text)] tracking-tight mb-1">
                 Divyanshu Goyal
               </h1>
               <p className="text-sm font-mono text-[var(--accent)]">
@@ -54,7 +54,7 @@ export default function Hero() {
             <div className={`flex items-center justify-center lg:justify-start gap-3 ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.25s' }}>
               <a
                 href={`mailto:${profile.social.email}`}
-                className="text-[var(--text-tertiary)] hover:text-[var(--text)] transition-colors"
+                className="p-2 -m-2 text-[var(--text-tertiary)] hover:text-[var(--text)] transition-colors"
                 aria-label="Email"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ export default function Hero() {
                 href={profile.social.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--text-tertiary)] hover:text-[var(--text)] transition-colors"
+                className="p-2 -m-2 text-[var(--text-tertiary)] hover:text-[var(--text)] transition-colors"
                 aria-label="GitHub"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -76,7 +76,7 @@ export default function Hero() {
                 href={profile.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--text-tertiary)] hover:text-[var(--text)] transition-colors"
+                className="p-2 -m-2 text-[var(--text-tertiary)] hover:text-[var(--text)] transition-colors"
                 aria-label="LinkedIn"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -87,7 +87,7 @@ export default function Hero() {
                 href={profile.social.scholar}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--text-tertiary)] hover:text-[var(--text)] transition-colors"
+                className="p-2 -m-2 text-[var(--text-tertiary)] hover:text-[var(--text)] transition-colors"
                 aria-label="Google Scholar"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

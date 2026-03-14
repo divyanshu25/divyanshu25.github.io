@@ -4,13 +4,13 @@ export default function About() {
   return (
     <section id="about" className="relative py-6 bg-[var(--bg)] overflow-hidden">
       <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
-        <div className="mb-8">
+        <div className="mb-4 sm:mb-6">
           <h2 className="text-2xl font-bold text-[var(--text)] mb-1 tracking-tight">
             About Me
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Education */}
           <div className="lg:col-span-1">
             <h3 className="text-xs font-mono text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Education</h3>

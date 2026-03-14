@@ -55,7 +55,7 @@ export default function Experience() {
   return (
     <section id="experience" className="relative py-6 bg-[var(--bg)] overflow-hidden">
       <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
-        <div className="mb-8">
+        <div className="mb-4 sm:mb-6">
           <h2 className="text-2xl font-bold text-[var(--text)] mb-1 tracking-tight">
             Experience
           </h2>
@@ -63,7 +63,7 @@ export default function Experience() {
 
         <div className="space-y-6">
           {experience.map((role, index) => (
-            <div key={index} className="relative bg-[var(--bg-card)] p-6 sm:p-8 rounded-xl border border-[var(--border)]">
+            <div key={index} className="relative bg-[var(--bg-card)] p-4 sm:p-6 lg:p-8 rounded-xl border border-[var(--border)]">
               <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
                 <h3 className="text-lg font-bold text-[var(--text)]">
                   {role.title}

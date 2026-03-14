@@ -22,7 +22,7 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
       <Navigation />
 
-      <main className="flex-grow pt-24 pb-16">
+      <main className="flex-grow pt-20 sm:pt-24 pb-12 sm:pb-16">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
             href="/#blog"
@@ -56,7 +56,7 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
                   ))}
             </div>
 
-            <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)] mb-4">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-[var(--text)] mb-4">
               {post.title}
             </h1>
 

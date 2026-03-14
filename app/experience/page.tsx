@@ -63,8 +63,8 @@ export default function ExperiencePage() {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
       <Navigation />
-      <main className="flex-grow pt-28 pb-20">
-        <div className="max-w-5xl mx-auto px-6 sm:px-10">
+      <main className="flex-grow pt-20 sm:pt-28 pb-12 sm:pb-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10">
           {/* Header */}
           <Link href="/" className="inline-flex items-center text-[var(--accent)] hover:text-[var(--accent-light)] mb-10 group text-sm font-medium">
             <svg className="w-4 h-4 mr-1.5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,13 +73,13 @@ export default function ExperiencePage() {
             Home
           </Link>
 
-          <h1 className="font-display text-4xl sm:text-5xl text-[var(--text)] mb-4">Experience</h1>
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] mb-4">Experience</h1>
           <p className="text-[var(--text-secondary)] text-lg mb-16 max-w-2xl">
             8+ years building ML systems at Adobe — from sub-millisecond inference engines to 13B-parameter vision-language models.
           </p>
 
           {/* Skills bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-20">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-12 sm:mb-20">
             <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5">
               <p className="font-mono text-[10px] tracking-widest text-[var(--text-tertiary)] uppercase mb-3">Education</p>
               <div className="space-y-2">

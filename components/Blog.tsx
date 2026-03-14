@@ -5,7 +5,7 @@ export default function Blog() {
   return (
     <section id="blog" className="relative py-6 bg-[var(--bg)] overflow-hidden">
       <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
-        <div className="mb-8">
+        <div className="mb-4 sm:mb-6">
           <h2 className="text-2xl font-bold text-[var(--text)] mb-1 tracking-tight">
             Writing
           </h2>

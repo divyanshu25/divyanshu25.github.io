@@ -10,8 +10,8 @@ export default function ResearchPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
       <Navigation />
-      <main className="flex-grow pt-28 pb-20">
-        <div className="max-w-5xl mx-auto px-6 sm:px-10">
+      <main className="flex-grow pt-20 sm:pt-28 pb-12 sm:pb-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10">
           <Link href="/" className="inline-flex items-center text-[var(--accent)] hover:text-[var(--accent-light)] mb-10 group text-sm font-medium">
             <svg className="w-4 h-4 mr-1.5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -19,8 +19,8 @@ export default function ResearchPage() {
             Home
           </Link>
 
-          <h1 className="font-display text-4xl sm:text-5xl text-[var(--text)] mb-4">Research & Patents</h1>
-          <p className="text-[var(--text-secondary)] text-lg mb-16 max-w-2xl">
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] mb-4">Research & Patents</h1>
+          <p className="text-[var(--text-secondary)] text-base sm:text-lg mb-10 sm:mb-16 max-w-2xl">
             1 peer-reviewed publication and 4 US patent applications — spanning creative AI, VLMs, cultural adaptation, and machine translation.
           </p>
 
