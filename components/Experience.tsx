@@ -44,7 +44,7 @@ const experience = [
         bullets: [
           "Co-engineered Adobe's ML inference platform — 3,500 QPS/node at 0.3–0.6ms latency (p99).",
           "Designed GC-free async event pipeline using LMAX Disruptor, eliminating back-pressure under peak load.",
-          "Built custom model lifecycle management platform — versioned deployment, monitoring, and promotion.",
+          "Built custom model lifecycle management platform — versioned deployment, monitoring, and staged rollout across environments.",
         ],
       },
     ],
