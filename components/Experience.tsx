@@ -27,7 +27,7 @@ const experience = [
         bullets: [
           "Architected the Unified Brand Service (90K+ LOC across 3 global regions) powering Adobe GenStudio:multimodal brand-DNA extraction, RAG-based retrieval, and GPT-4-Vision content validation.",
           "Built a multimodal agent that drives Adobe Photoshop from natural language via a 49-tool observe-think-act loop with vision grounding and an iterative quality-critic refinement layer.",
-          "Led the foundational prototype of Adobe GenStudio for Performance Marketing (Oct 2024):now serving Fortune 500 clients including Microsoft and AT&T:and invented patented VLM pipelines for cross-cultural image adaptation and constrained translation (US Patents 2026).",
+          "Led the foundational prototype of Adobe GenStudio for Performance Marketing (Oct 2024, now serving Fortune 500 clients including Microsoft and AT&T) and invented patented VLM pipelines for cross-cultural image adaptation and constrained translation (US Patents 2026).",
         ],
       },
     ],
