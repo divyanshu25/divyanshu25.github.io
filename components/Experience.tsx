@@ -9,25 +9,25 @@ const experience = [
       {
         area: "Vision-Language Model Training & Evaluation",
         bullets: [
-          "Designed and trained a 13B-parameter VLM on 2M image-text pairs across 8x H100 GPUs, using novel observable injection techniques.",
-          "Fine-tuned CLIP and LLaVA-style models, boosting F1 score by 20% in multi-label classification tasks.",
-          "Developed MQCore evaluation benchmark inspired by DCLM CORE for domain-specific quality assessment.",
+          "Fine-tuned a Gemma-3-12B vision-language model with LoRA across 8× H100 GPUs (DDP, bfloat16, Flash Attention 2 + Liger kernels) for large-scale marketing-quality assessment.",
+          "Pioneered an \"observable injection\" technique that grounds VLM quality reasoning in 14+ computed pixel-level metrics (sharpness, exposure, color balance), yielding an interpretable scorer at Pearson r ≈ 0.88 that outperforms GPT-4 and Claude (MAE 0.77 vs. 1.34).",
+          "Built the MQCore evaluation benchmark (inspired by DCLM CORE) and a fault-tolerant async annotation pipeline processing 100+ images/min over the 700K-image KADIS corpus.",
         ],
       },
       {
-        area: "LLM Alignment & Multimodal Reasoning",
+        area: "Multimodal Research & Benchmarking",
         bullets: [
-          "Created curiosity-driven LLM-as-a-judge framework for personalized creative evaluation (arXiv 2025).",
-          "Pioneered creativity modeling with Bayesian surprise, achieving 23% F1 and 38% correlation improvements.",
-          "Leading development of multimodal agentic systems for Photoshop editing workflows.",
+          "Authored DistortBench (CVPR FGVC13 Workshop 2026) — a 13.5K-question diagnostic benchmark spanning 27 distortion types, 6 perceptual categories, and 5 severity levels.",
+          "Evaluated 18+ frontier VLMs (GPT-5.4, Claude Sonnet 4.6, Qwen, InternVL, Gemma) with bootstrap CIs and balanced-accuracy metrics, exposing low-level perception as a major weakness — top model 61.9% vs. 65.7% human baseline.",
+          "Created a curiosity-driven LLM-as-a-judge framework for personalized creative evaluation using Bayesian surprise (arXiv 2025) — +23% F1 and +38% correlation over baselines.",
         ],
       },
       {
-        area: "Production AI & Patented Inventions",
+        area: "Production Multimodal Systems & Agents",
         bullets: [
-          "Led development of Adobe GenStudio for Performance Marketing (Oct 2024) — now serving Fortune 500 clients including Microsoft and AT&T.",
-          "Invented cross-cultural image adaptation pipeline using VLM grounding + diffusion models (US Patent 2026).",
-          "Designed constrained machine translation system with facet-level adherence scoring (US Patent 2026).",
+          "Architected the Unified Brand Service (90K+ LOC across 3 global regions) powering Adobe GenStudio — multimodal brand-DNA extraction, RAG-based retrieval, and GPT-4-Vision content validation.",
+          "Built a multimodal agent that drives Adobe Photoshop from natural language via a 49-tool observe-think-act loop with vision grounding and an iterative quality-critic refinement layer.",
+          "Led the foundational prototype of Adobe GenStudio for Performance Marketing (Oct 2024) — now serving Fortune 500 clients including Microsoft and AT&T — and invented patented VLM pipelines for cross-cultural image adaptation and constrained translation (US Patents 2026).",
         ],
       },
     ],
