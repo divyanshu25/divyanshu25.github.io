@@ -45,6 +45,15 @@ export const profile = {
 
   publications: [
     {
+      title: "DistortBench: Benchmarking Vision Language Models on Image Distortion Identification",
+      authors: "Divyanshu Goyal, Akhil Eppa, Vanya Bannihatti Kumar",
+      venue: "CVPR FGVC13 Workshop",
+      year: "2026",
+      abstract: "DistortBench is a diagnostic benchmark evaluating how well vision-language models can identify image distortions. The benchmark comprises 13,500 multiple-choice questions spanning 27 distortion types across six perceptual categories and five severity levels. Despite strong performance on high-level vision tasks, the top-performing VLM achieved only 61.9% accuracy—below the human baseline of 65.7%—revealing that low-level perceptual understanding remains a major weakness of current models.",
+      link: "https://arxiv.org/abs/2604.19966",
+      tags: ["Vision-Language Models", "Computer Vision", "Benchmarking", "Image Quality"]
+    },
+    {
       title: "Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment",
       authors: "Vanya Bannihatti Kumar, Divyanshu Goyal, Akhil Eppa, Neel Bhandari",
       venue: "arXiv preprint",
