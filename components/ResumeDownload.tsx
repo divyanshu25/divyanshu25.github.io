@@ -4,7 +4,8 @@ export default function ResumeDownload() {
   return (
     <a
       href="/resume.pdf"
-      download="Divyanshu_Goyal_Resume.pdf"
+      target="_blank"
+      rel="noopener noreferrer"
       className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--text)] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-90 transition-all duration-300"
       aria-label="Download Resume"
     >
