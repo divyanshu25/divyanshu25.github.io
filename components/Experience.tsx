@@ -10,7 +10,7 @@ const experience = [
         area: "Vision-Language Model Training & Evaluation",
         bullets: [
           "Fine-tuned a Gemma-3-12B vision-language model with LoRA across 8× H100 GPUs (DDP, bfloat16, Flash Attention 2 + Liger kernels) for large-scale marketing-quality assessment.",
-          "Pioneered an \"observable injection\" technique that grounds VLM quality reasoning in 14+ computed pixel-level metrics (sharpness, exposure, color balance), yielding an interpretable scorer at Pearson r ≈ 0.88 that outperforms GPT-4 and Claude (MAE 0.77 vs. 1.34).",
+          "Pioneered an \"observable injection\" technique that grounds VLM quality reasoning in 14+ computed pixel-level metrics (sharpness, exposure, color balance), yielding an interpretable scorer at Pearson r ≈ 0.88 and MAE 0.77 that outperforms GPT-5.4 (MAE 1.34) and Claude Opus 4.7 (MAE 1.95).",
           "Built the MQCore evaluation benchmark (inspired by DCLM CORE) and a fault-tolerant async annotation pipeline processing 100+ images/min over the 700K-image KADIS corpus.",
         ],
       },
