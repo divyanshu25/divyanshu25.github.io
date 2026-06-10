@@ -16,11 +16,12 @@
 #   make help          - Show available targets
 #########################################################################################
 
-.PHONY: resume resume-docker clean help check-latex
+.PHONY: resume resume-docker clean help check-latex dev
 
 # Default target
 help:
 	@echo "Available targets:"
+	@echo "  make dev           - Start local development server at http://localhost:3000"
 	@echo "  make resume        - Generate resume PDF using local pdflatex"
 	@echo "  make resume-docker - Generate resume PDF using Docker (no LaTeX install needed)"
 	@echo "  make clean         - Remove auxiliary LaTeX files"
@@ -30,6 +31,11 @@ help:
 	@echo "  macOS:   brew install --cask mactex-no-gui"
 	@echo "  Ubuntu:  sudo apt-get install texlive-latex-extra texlive-fonts-recommended"
 	@echo "  Or use:  make resume-docker (requires Docker)"
+
+# Start local development server
+dev:
+	@echo "Starting development server at http://localhost:3000..."
+	@npm run dev
 
 # Check if pdflatex is installed
 check-latex:
