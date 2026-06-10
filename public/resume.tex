@@ -23,7 +23,7 @@
 
 \begin{rSection}{Summary}
 \raggedright
-Applied Scientist and multimodal researcher with 10 years at the intersection of frontier ML research and production engineering. At Adobe, trains and fine-tunes {\bf vision-language models} at scale, designs novel {\bf evaluation and alignment} methods ({\bf 5 patents}, peer-reviewed and arXiv publications), and led the AI powering {\bf Adobe GenStudio for Performance Marketing} --- now serving Fortune 500 clients including Microsoft and AT\&T. Deep expertise across {\bf VLM training}, {\bf multimodal reasoning}, and {\bf LLM pretraining \& scaling laws}, paired with the systems engineering to deploy them in production.
+Applied Scientist and multimodal researcher with 10 years at the intersection of frontier ML research and production engineering. I lead the training and fine-tuning of {\bf vision-language models} at scale, design novel {\bf evaluation and alignment} methods ({\bf 5 patents}, peer-reviewed and arXiv publications), and previously led the AI powering {\bf Adobe GenStudio for Performance Marketing}:now serving Fortune 500 clients including Microsoft and AT\&T. Deep expertise across {\bf VLM training}, {\bf multimodal reasoning}, and {\bf LLM pretraining \& scaling laws}, paired with the systems engineering to deploy them in production.
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
@@ -40,21 +40,21 @@ Applied Scientist and multimodal researcher with 10 years at the intersection of
 \item Developed the {\bf MQCore evaluation benchmark} (inspired by DCLM CORE) and a fault-tolerant async annotation pipeline processing {\bf 100+ images/min} over the {\bf 700K-image KADIS} corpus.
 
 \item[] \vspace{0.2em}{\textit{\textbf{$\diamond$ Multimodal Research \& Benchmarking}}}
-\item Authored {\bf DistortBench} (CVPR FGVC13 Workshop 2026) --- a {\bf 13.5K-question} diagnostic benchmark spanning {\bf 27 distortion types}, 6 perceptual categories, and 5 severity levels.
-\item Evaluated {\bf 18+ frontier VLMs} (GPT-5.4, Claude Sonnet 4.6, Qwen, InternVL, Gemma) with bootstrap confidence intervals and balanced-accuracy metrics, exposing low-level perception as a major weakness --- top model {\bf 61.9\%} vs.\ {\bf 65.7\% human baseline}.
+\item Authored {\bf DistortBench} (CVPR FGVC13 Workshop 2026):a {\bf 13.5K-question} diagnostic benchmark spanning {\bf 27 distortion types}, 6 perceptual categories, and 5 severity levels.
+\item Evaluated {\bf 18+ frontier VLMs} (GPT-5.4, Claude Sonnet 4.6, Qwen, InternVL, Gemma) with bootstrap confidence intervals and balanced-accuracy metrics, exposing low-level perception as a major weakness:top model {\bf 61.9\%} vs.\ {\bf 65.7\% human baseline}.
 \item Created a curiosity-driven {\bf LLM-as-a-judge} framework for personalized creative evaluation using Bayesian surprise as a quantifiable novelty signal (arXiv 2025), achieving {\bf 23\% F1} and {\bf 38\% correlation} improvements over baselines.
 
 \item[] \vspace{0.2em}{\textit{\textbf{$\diamond$ Production Multimodal Systems \& Agents}}}
-\item Architected the {\bf Unified Brand Service} (90K+ LOC across 3 global regions) powering {\bf Adobe GenStudio} --- multimodal brand-DNA extraction, RAG-based retrieval, and GPT-4-Vision content validation.
+\item Architected the {\bf Unified Brand Service} (90K+ LOC across 3 global regions) powering {\bf Adobe GenStudio}:multimodal brand-DNA extraction, RAG-based retrieval, and GPT-4-Vision content validation.
 \item Built a {\bf multimodal agent} that drives Adobe Photoshop from natural language via a {\bf 49-tool} observe-think-act loop with vision grounding and an iterative quality-critic refinement layer.
-\item Led the foundational prototype of {\bf Adobe GenStudio for Performance Marketing} (launched Oct 2024), now serving Fortune 500 clients including Microsoft and AT\&T; invented patented VLM pipelines for {\bf cross-cultural image adaptation} and {\bf constrained machine translation} (US Patents 2026).
+\item Built the founding prototype of {\bf Adobe GenStudio for Performance Marketing} (launched Oct 2024), now serving Fortune 500 clients including Microsoft and AT\&T; invented patented VLM pipelines for {\bf cross-cultural image adaptation} and {\bf constrained machine translation} (US Patents 2026).
 \end{rSubsection}
 
 \begin{rSubsection}{Machine Learning Engineer -- Adobe Inc., Bangalore}{July 2016 -- August 2019}{}{}
-\item Co-engineered Adobe's {\bf ML inference platform} serving {\bf 3,500 QPS/node} at {\bf 0.3--0.6ms latency} (p99), using CPU flame-graph profiling, JMH micro-benchmarking, and lock-free architectures.
-\item Designed a GC-free asynchronous event processing pipeline using the LMAX Disruptor ring buffer pattern, decoupling logging from prediction threads to eliminate back-pressure under peak load.
-\item Built a custom {\bf model lifecycle management} platform --- versioned deployment, real-time monitoring, and staged rollout across dev, staging, and production environments.
-\item Co-authored \href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog} on engineering high-throughput, low-latency ML services.
+\item Co-engineered Adobe's production {\bf ML inference platform}, sustaining {\bf 3,500 QPS/node} at {\bf 0.3--0.6ms} p99 latency through flame-graph profiling, JMH micro-benchmarking, and lock-free design.
+\item Architected a {\bf GC-free asynchronous event pipeline} on the LMAX Disruptor ring buffer, decoupling telemetry from prediction to eliminate back-pressure at peak load.
+\item Built an end-to-end {\bf model lifecycle platform}:versioned deployment, live monitoring, and staged rollout across dev, staging, and production.
+\item Co-authored the \href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog} on engineering high-throughput, low-latency ML services.
 \end{rSubsection}
 
 \end{rSection}
@@ -67,7 +67,7 @@ Applied Scientist and multimodal researcher with 10 years at the intersection of
 
 \textbf{Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment} \hfill arXiv 2025 \\
 V.\ Bannihatti Kumar, {\bf D.\ Goyal}, A.\ Eppa, N.\ Bhandari \hfill \href{https://arxiv.org/abs/2510.05135}{[paper]} \\
-{\small Novel curiosity-driven framework that personalizes creative writing evaluation to individual judgments using LLM-as-a-judge, addressing the gap in subjective assessment capabilities of LLMs.}
+{\small A curiosity-driven framework that personalizes creative-writing evaluation to individual judgments via LLM-as-a-judge, targeting the subjectivity gap in LLM assessment.}
 
 \vspace{0.6em}
 \textbf{Cultural Adaptation of Images Using Generative AI} \hfill US Patent App.\ 2026 \\
@@ -97,7 +97,7 @@ M.\ Anand, J.\ Mathew, {\bf D.\ Goyal} \hfill \href{https://patents.google.com/p
 
 \begin{rSection}{Selected Projects \& Technical Writing}
 
-\textbf{VibeNanoChat --- GPT-2 Scale LLM Pretraining Framework} \hfill 2026 \\
+\textbf{VibeNanoChat:GPT-2 Scale LLM Pretraining Framework} \hfill 2026 \\
 {\small From-scratch decoder-only transformer (RoPE, RMSNorm, sliding-window attention) with one-knob depth-parameterized scaling, a custom distributed {\bf Muon} optimizer with ZeRO-2 state sharding, and Flash-Attention-3 / bfloat16 training on 8$\times$ H100. Empirically verified the {\bf C = 6ND} compute law across 40+ scaling-law runs.} \hfill \href{https://github.com/divyanshu25/VibeNanoChat}{[code]}
 
 \vspace{0.6em}
@@ -106,7 +106,7 @@ M.\ Anand, J.\ Mathew, {\bf D.\ Goyal} \hfill \href{https://patents.google.com/p
 
 \vspace{0.6em}
 \textbf{Going Fast: Every Optimization That Made LLM Training Fly} \hfill March 2026 \\
-{\small Six concrete optimizations --- TF32, BF16 mixed precision, torch.compile, Flash Attention, parallel DataLoaders, and pinned memory --- that collectively drove significant MFU improvements during GPT-2 scale training.} \hfill \href{https://medium.com/@divyanshugoyal/going-fast-every-optimization-that-made-llm-training-fly-f465f3cf3588}{[blog]}
+{\small Six concrete optimizations:TF32, BF16 mixed precision, torch.compile, Flash Attention, parallel DataLoaders, and pinned memory:that collectively drove significant MFU improvements during GPT-2 scale training.} \hfill \href{https://medium.com/@divyanshugoyal/going-fast-every-optimization-that-made-llm-training-fly-f465f3cf3588}{[blog]}
 
 \end{rSection}
 

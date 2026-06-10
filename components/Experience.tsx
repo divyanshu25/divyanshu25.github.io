@@ -4,7 +4,7 @@ const experience = [
     company: "Adobe",
     team: "Unified Platform",
     location: "San Jose, CA",
-    period: "June 2021 — Present",
+    period: "June 2021:Present",
     highlights: [
       {
         area: "Vision-Language Model Training & Evaluation",
@@ -17,17 +17,17 @@ const experience = [
       {
         area: "Multimodal Research & Benchmarking",
         bullets: [
-          "Authored DistortBench (CVPR FGVC13 Workshop 2026) — a 13.5K-question diagnostic benchmark spanning 27 distortion types, 6 perceptual categories, and 5 severity levels.",
-          "Evaluated 18+ frontier VLMs (GPT-5.4, Claude Sonnet 4.6, Qwen, InternVL, Gemma) with bootstrap CIs and balanced-accuracy metrics, exposing low-level perception as a major weakness — top model 61.9% vs. 65.7% human baseline.",
-          "Created a curiosity-driven LLM-as-a-judge framework for personalized creative evaluation using Bayesian surprise (arXiv 2025) — +23% F1 and +38% correlation over baselines.",
+          "Authored DistortBench (CVPR FGVC13 Workshop 2026):a 13.5K-question diagnostic benchmark spanning 27 distortion types, 6 perceptual categories, and 5 severity levels.",
+          "Evaluated 18+ frontier VLMs (GPT-5.4, Claude Sonnet 4.6, Qwen, InternVL, Gemma) with bootstrap CIs and balanced-accuracy metrics, exposing low-level perception as a major weakness:top model 61.9% vs. 65.7% human baseline.",
+          "Created a curiosity-driven LLM-as-a-judge framework for personalized creative evaluation using Bayesian surprise (arXiv 2025):+23% F1 and +38% correlation over baselines.",
         ],
       },
       {
         area: "Production Multimodal Systems & Agents",
         bullets: [
-          "Architected the Unified Brand Service (90K+ LOC across 3 global regions) powering Adobe GenStudio — multimodal brand-DNA extraction, RAG-based retrieval, and GPT-4-Vision content validation.",
+          "Architected the Unified Brand Service (90K+ LOC across 3 global regions) powering Adobe GenStudio:multimodal brand-DNA extraction, RAG-based retrieval, and GPT-4-Vision content validation.",
           "Built a multimodal agent that drives Adobe Photoshop from natural language via a 49-tool observe-think-act loop with vision grounding and an iterative quality-critic refinement layer.",
-          "Led the foundational prototype of Adobe GenStudio for Performance Marketing (Oct 2024) — now serving Fortune 500 clients including Microsoft and AT&T — and invented patented VLM pipelines for cross-cultural image adaptation and constrained translation (US Patents 2026).",
+          "Led the foundational prototype of Adobe GenStudio for Performance Marketing (Oct 2024):now serving Fortune 500 clients including Microsoft and AT&T:and invented patented VLM pipelines for cross-cultural image adaptation and constrained translation (US Patents 2026).",
         ],
       },
     ],
@@ -37,14 +37,14 @@ const experience = [
     company: "Adobe",
     team: "Adobe Inc.",
     location: "Bangalore, India",
-    period: "July 2016 — August 2019",
+    period: "July 2016:August 2019",
     highlights: [
       {
         area: "ML Infrastructure & Serving",
         bullets: [
-          "Co-engineered Adobe's ML inference platform — 3,500 QPS/node at 0.3–0.6ms latency (p99).",
+          "Co-engineered Adobe's ML inference platform:3,500 QPS/node at 0.3–0.6ms latency (p99).",
           "Designed GC-free async event pipeline using LMAX Disruptor, eliminating back-pressure under peak load.",
-          "Built custom model lifecycle management platform — versioned deployment, monitoring, and staged rollout across environments.",
+          "Built custom model lifecycle management platform:versioned deployment, monitoring, and staged rollout across environments.",
         ],
       },
     ],
@@ -68,7 +68,7 @@ export default function Experience() {
                 <h3 className="text-lg font-bold text-[var(--text)]">
                   {role.title}
                 </h3>
-                <span className="text-[var(--text-tertiary)]">—</span>
+                <span className="text-[var(--text-tertiary)]">/</span>
                 <span className="text-sm text-[var(--text-secondary)] font-medium">
                   {role.company}, {role.location}
                 </span>

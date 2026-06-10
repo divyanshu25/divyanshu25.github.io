@@ -11,13 +11,13 @@ const roles = [
     title: "Applied Scientist",
     company: "Adobe",
     location: "San Jose, CA",
-    period: "2021 — Present",
+    period: "2021:Present",
     blocks: [
       {
         area: "Vision-Language Model Training",
         items: [
           "Trained a 13B-parameter VLM on 2M image-text pairs across 8x H100 GPUs with novel observable injection.",
-          "Fine-tuned CLIP and LLaVA-style models — +20% F1 in multi-label classification.",
+          "Fine-tuned CLIP and LLaVA-style models:+20% F1 in multi-label classification.",
           "Built MQCore evaluation benchmark inspired by DCLM CORE.",
         ],
       },
@@ -25,14 +25,14 @@ const roles = [
         area: "LLM Alignment & Reasoning",
         items: [
           "Created curiosity-driven LLM-as-a-judge for personalized creative evaluation (arXiv 2025).",
-          "Bayesian surprise for creativity modeling — +23% F1, +38% correlation.",
+          "Bayesian surprise for creativity modeling:+23% F1, +38% correlation.",
           "Leading multimodal agentic systems for Photoshop editing workflows.",
         ],
       },
       {
         area: "Production AI & Patents",
         items: [
-          "Led Adobe GenStudio for Performance Marketing — now serving Microsoft, AT&T, and other Fortune 500 clients.",
+          "Led Adobe GenStudio for Performance Marketing:now serving Microsoft, AT&T, and other Fortune 500 clients.",
           "Cross-cultural image adaptation via VLM grounding + diffusion models (US Patent 2026).",
           "Constrained machine translation with facet-level adherence scoring (US Patent 2026).",
         ],
@@ -43,14 +43,14 @@ const roles = [
     title: "Machine Learning Engineer",
     company: "Adobe",
     location: "Bangalore, India",
-    period: "2016 — 2019",
+    period: "2016:2019",
     blocks: [
       {
         area: "ML Infrastructure & Serving",
         items: [
-          "Co-engineered inference platform — 3,500 QPS/node at 0.3–0.6ms latency (p99).",
-          "GC-free async event pipeline using LMAX Disruptor — zero back-pressure under peak load.",
-          "Model lifecycle management — versioned deployment, monitoring, staged rollout.",
+          "Co-engineered inference platform:3,500 QPS/node at 0.3–0.6ms latency (p99).",
+          "GC-free async event pipeline using LMAX Disruptor:zero back-pressure under peak load.",
+          "Model lifecycle management:versioned deployment, monitoring, staged rollout.",
         ],
       },
     ],
@@ -75,7 +75,7 @@ export default function ExperiencePage() {
 
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] mb-4">Experience</h1>
           <p className="text-[var(--text-secondary)] text-lg mb-16 max-w-2xl">
-            8+ years building ML systems at Adobe — from sub-millisecond inference engines to 13B-parameter vision-language models.
+            8+ years building ML systems at Adobe:from sub-millisecond inference engines to 13B-parameter vision-language models.
           </p>
 
           {/* Skills bar */}

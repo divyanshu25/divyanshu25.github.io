@@ -42,7 +42,7 @@ export default function Hero() {
 
             {/* Bio */}
             <p className={`text-base text-[var(--text-secondary)] leading-relaxed mb-6 max-w-xl ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.15s' }}>
-              Applied Scientist at Adobe specializing in cutting-edge machine learning solutions. I hold an M.S. in Computer Science from Georgia Tech with a focus on Machine Learning. Passionate about training Large Language Models and Vision-Language Models, I thrive on solving real-world challenges that drive meaningful impact.
+              {profile.bio}
             </p>
 
             {/* Actions */}
