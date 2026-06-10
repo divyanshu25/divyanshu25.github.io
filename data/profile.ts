@@ -73,7 +73,7 @@ export const profile = {
     },
     {
       title: "Brand-Aligned Marketing Content Generation Using Structured Brand Data and Generative Models",
-      authors: "Mayank Anand, Jose Mathew, Divyanshu Goyal",
+      authors: "Divyanshu Goyal, Mayank Anand, Jose Mathew",
       venue: "US Patent Application",
       year: "2025",
       abstract: "Systems and methods employ generative models to transform unstructured brand information into structured brand data and generate brand-aligned marketing content. The system uses natural language processing and machine learning to extract brand DNA elements, generate confidence scores for structured components, and create marketing content that accurately reflects an entity's brand identity across various channels.",
