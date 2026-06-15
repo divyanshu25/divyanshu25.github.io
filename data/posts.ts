@@ -15,7 +15,7 @@ export const posts: Post[] = [
   {
     id: "rl-from-first-principles",
     title: "Reinforcement Learning, from First Principles",
-    summary: "A ground-up derivation of how RL works for LLMs: starting from why SFT hits a ceiling, through the policy gradient theorem, the log-derivative trick, REINFORCE, baselines, and GRPO, with every step grounded in code.",
+    summary: "A ground-up derivation of how RL works for LLMs: starting from why SFT hits a ceiling, through the policy gradient theorem, the log-derivative trick, REINFORCE, baselines, GRPO and beyond...",
     content: "",
     contentFile: "docs/rl_basics.md",
     heroImage: "/rl_blog_hero_image.png",

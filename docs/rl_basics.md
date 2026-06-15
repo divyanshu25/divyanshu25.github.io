@@ -57,7 +57,7 @@ def reward(self, conversation, assistant_response):
     return float(is_correct)   # 1.0 if final number matches, else 0.0
 ```
 
-That's it. We parse the number after the `####` marker out of the model's completion, compare it to ground truth, and return `1.0` or `0.0`. Notice what we are **not** doing: we are not checking whether the reasoning matches, not scoring partial credit, not looking at style. Pure outcome. The model is free to reason however it likes; we only grade the final answer. This is the thing SFT structurally could not do.
+That's it. We parse the number after the `####` marker out of the model's completion, compare it to ground truth, and return `1.0` or `0.0`. Notice what we are **not** doing: we are not checking whether the reasoning matches, not scoring partial credit, not looking at style. The model is free to reason however it likes; we only grade the final answer. This is the thing SFT structurally could not do.
 
 > **A note on what makes a good reward.** GSM8K is a gift: the answer is a number, so it's *automatically verifiable*. We can check correctness with a regex, no human and no second model in the loop. This is why math and code are the poster children of LLM RL: the reward is cheap, objective, and un-gameable. The moment your reward needs a human or a learned reward model to judge it, everything gets harder and more expensive. We'll stick to the easy, verifiable case on purpose.
 
@@ -71,7 +71,7 @@ Now what? We want to "make this work more likely." But the model didn't make one
 
 This is the **credit assignment problem**, and it's the central difficulty of RL. The reward arrives once, at the very end, but it has to be distributed back over every decision that led to it.
 
-The beautiful, almost-too-simple answer that **policy gradients** give: *don't try to be clever about it. Give every token in the trajectory the same credit: the trajectory's total reward.* Scale each token's nudge by how well its rollout did: strongly upward for good rollouts, and weakly (or, once we add a refinement in §5, actively downward) for bad ones. Average over enough rollouts and the tokens that systematically lead to good outcomes float up, while the rest wash out as noise.
+The beautiful, almost-too-simple answer that **policy gradients** give: *don't try to be clever about it. Give every token in the trajectory the same credit: the trajectory's total reward.* Scale each token's nudge by how well its rollout did:  upward for good rollouts, and downward for bad ones. Average over enough rollouts and the tokens that systematically lead to good outcomes float up, while the rest wash out as noise.
 
 Let's make that precise.
 
@@ -79,7 +79,7 @@ Let's make that precise.
 
 ## 4. Deriving the policy gradient (the one piece of math)
 
-### 4.1 Step 0: what a "gradient" means here
+### 4.1 Step 0: What a "gradient" means here
 
 If you've done SFT you already know the training loop: compute a loss, call `.backward()`, the optimizer takes a step. The gradient ($\nabla_\theta$) is just a long vector, one number per weight in the model, that says "increase this weight to decrease the loss." Gradient *descent* follows that direction to reduce loss.
 
@@ -87,7 +87,7 @@ Here we want to *maximize* reward instead of minimize loss, so we follow the gra
 
 ---
 
-### 4.2 Step 1: the objective: maximize expected reward
+### 4.2 Step 1: The objective: maximize expected reward
 
 When we say "maximize expected reward," concretely it means: over many different problems and rollouts, we want the average reward to be as high as possible. In math, if $\tau$ is one rollout (trajectory) and $R(\tau)$ is its reward:
 
@@ -99,7 +99,7 @@ We want $\nabla_\theta J(\theta)$: the gradient of this average reward with resp
 
 ---
 
-### 4.3 Step 2: a simpler idea first, and why we want more
+### 4.3 Step 2: A simpler idea first, and why we want more
 
 You might think: out of 4 rollouts, if 2 got the answer right (reward=1) and 2 didn't (reward=0), why not just do SFT on the 2 correct ones? Ignore the failures, treat the successes as gold demonstrations, backpropagate normally.
 
@@ -107,11 +107,11 @@ This is a real algorithm (called **rejection sampling fine-tuning (RFT)**) and i
 
 **But there's a better version.** The failures aren't just noise to be ignored: they're information. A rollout that got the wrong answer is actively telling you "don't do this." If you could also *push down* the probability of incorrect responses, you'd use the full signal from every rollout, not just half of it.
 
-That calls for a framework where each rollout is weighted by an arbitrary *signed* number, not the binary keep-or-discard of RFT. The **log-derivative trick** (next) builds exactly that road: a gradient of the form *(weight) × (push this rollout up)*, where the weight can be any real number. A heads-up on what it does and doesn't buy us: with a plain 0/1 reward that weight is never negative, so the bare gradient *still* only pushes good rollouts up and ignores the rest: it does **not** suppress failures yet. The suppression arrives one section later, when a **baseline** (§5) makes the weight (then called the *advantage*) go negative for below-average rollouts. So the trick lays the road; the baseline is what finally drives down it.
+That calls for a gradient that looks like: *(some signed weight) × (push this rollout up or down)*. If the weight is positive, reinforce the rollout. If it's negative, suppress it. The **log-derivative trick** (next section) gives us exactly this form. One thing to be clear about upfront: with a plain 0/1 reward, the weight is the reward itself, which is never negative. So right after deriving the trick, we still won't have suppression of bad rollouts. That arrives in §5, when we replace the raw reward with an **advantage** (reward minus a baseline), which *can* go negative. The trick gives us the right structure; the baseline is what puts negative weights in it.
 
 ---
 
-### 4.4 Step 3: the log-derivative trick (one algebraic identity)
+### 4.4 Step 3: The log-derivative trick (one algebraic identity)
 
 Before the algebra, let's make one piece of notation concrete: **what is $p_\theta(\tau)$?**
 
@@ -126,7 +126,7 @@ This gives us **two distinct objects, and it's worth keeping them straight** (th
 - **$\pi_\theta(a_t \mid s_t)$: the policy.** The per-token distribution the network outputs at one step: given the context $s_t$, the probability of each possible next token $a_t$. This is literally the model's softmax. It's *the* fundamental object: when we say "the policy," this is it.
 - **$p_\theta(\tau)$: the trajectory probability.** A single number for the *whole* rollout, obtained by multiplying the policy's per-step probabilities together: $p_\theta(\tau) = \prod_t \pi_\theta(a_t \mid s_t)$.
 
-So $p_\theta$ is *built from* $\pi_\theta$: they're related by that product, not the same thing. (In general RL the trajectory probability would also include environment-transition terms, but for an LLM the "environment" is deterministic, appending the chosen token simply *is* the next state, so the product is purely policy terms.)
+So $p_\theta(\tau)$ is *built from* $\pi_\theta$: it's just the product of all the per-token probabilities along the trajectory. They're related, but not the same thing. $\pi_\theta$ is one step; $p_\theta(\tau)$ is the whole sequence.
 
 The $\theta$ subscript on both is a reminder that these probabilities change when the weights change: that's what training does. A gradient step adjusts $\theta$ to make $p_\theta(\tau)$ higher for good trajectories and lower for bad ones.
 
@@ -136,7 +136,7 @@ There's a clever identity from calculus. For any function $p(\tau)$:
 
 $$\nabla_\theta \, p(\tau) = p(\tau) \cdot \nabla_\theta \log p(\tau)$$
 
-*Why is this true?* Chain rule. $\log p$ is a function of $p$, so $\frac{d}{d\theta} \log p = \frac{1}{p} \frac{dp}{d\theta}$, rearranged: $\frac{dp}{d\theta} = p \cdot \frac{d \log p}{d\theta}$. That's it. High school chain rule.
+*Why is this true?* Chain rule. $\log p$ is a function of $p$, so $\frac{d}{d\theta} \log p = \frac{1}{p} \frac{dp}{d\theta}$, rearranged: $\frac{dp}{d\theta} = p \cdot \frac{d \log p}{d\theta}$. That's it. *High school chain rule.*
 
 *Why is this useful?* First, a quick note on notation: $\mathbb{E}[f(\tau)]$ (expectation) and $\int p(\tau) f(\tau) \, d\tau$ (integral) are the same thing written two ways. Expectation *is* a weighted average, and in math a weighted average over a continuous space is written as an integral. So:
 
@@ -154,7 +154,7 @@ Now apply the identity to swap $\nabla p$ for $p \cdot \nabla \log p$:
 
 $$= \int p_\theta(\tau) \cdot \nabla_\theta \log p_\theta(\tau) \cdot R(\tau) \, d\tau$$
 
-And now flip back to expectation notation: an integral weighted by $p_\theta(\tau)$ is exactly the definition of $\mathbb{E}_{\tau \sim \pi_\theta}[\cdot]$. (The subscript $\tau \sim \pi_\theta$ is the conventional shorthand for "trajectories produced by rolling out the policy $\pi_\theta$", which is sampling from $p_\theta$. People name it by the policy because the policy is the thing you actually control.)
+And now flip back to expectation notation: an integral weighted by $p_\theta(\tau)$ is exactly the definition of $\mathbb{E}_{\tau \sim \pi_\theta}[\cdot]$.
 
 $$\boxed{\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\big[ R(\tau)\, \nabla_\theta \log p_\theta(\tau) \big]}$$
 
