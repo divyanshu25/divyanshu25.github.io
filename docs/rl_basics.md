@@ -286,21 +286,19 @@ That's the entire "GRPO." Let that sink in: the famous algorithm is `rewards - r
 
 ## 6. From REINFORCE to GRPO: the family tree
 
-We've actually already built the entire algorithm: REINFORCE + a group-mean baseline. That's essentially what "GRPO" is. But the literature has a zoo of acronyms (PPO, TRPO, GRPO, DAPO) that all sound like prerequisites. They're not. Each one is just **REINFORCE plus a patch for a specific pain**. Build the family tree from scratch and "GRPO" reads as "REINFORCE with a couple of patches," which is exactly what it is.
+We've actually already built the entire algorithm: REINFORCE + a group-mean baseline. That's essentially what "GRPO" is. But the literature has a zoo of acronyms **(PPO, TRPO, GRPO, DAPO)** that all sound like prerequisites. They're not. Each one is just **REINFORCE plus a patch for a specific pain**. Build the family tree from scratch and "GRPO" reads as "REINFORCE with a couple of patches," which is exactly what it is.
 
 ### 6.1 The family tree: each algorithm just patches the last one's headache
 
 The most useful thing to realize about the acronym soup (REINFORCE, TRPO, PPO, GRPO, DAPO) is that it isn't five rival algorithms you study separately. It's **one** algorithm, REINFORCE, with a chain of patches bolted on. Every node below is just "the previous one **plus** a fix for the specific headache it created." Here's the whole chain on one line; then we walk it node by node:
 
-```
-              reuse a batch         bound the           cheap             drop the             scaling
-              (fix the bias)        drift              version             critic               fixes
-  REINFORCE ───────────────────▶     TRPO     ───────▶  PPO        ──────▶  GRPO        ──────▶  DAPO
-   (base)    via importance         (KL trust           (the                (group             (4 long-CoT
-             sampling                region)            clip)               baseline)           tweaks)
-```
+1. **REINFORCE** — the base algorithm. One gradient step per batch of rollouts.
+2. **+ Importance sampling → TRPO** — lets you reuse a batch for multiple steps, but needs a trust region to stop the policy from drifting too far.
+3. **+ PPO clip** — replaces TRPO's expensive second-order trust region with a cheap one-line clamp. Same protection, 10x simpler.
+4. **+ Group baseline → GRPO** — ditches PPO's learned value network. Uses the mean reward across a group of rollouts for the same question as the baseline instead.
+5. **+ DAPO tweaks** — four practical fixes for large-scale, long chain-of-thought training (asymmetric clip, dynamic sampling, token-level normalization, overlong reward shaping).
 
-Each patch earns its keep only when your setting actually feels the pain it fixes, so depending on where you are, you may need all of them or almost none. Let's meet them.
+*If that felt like a lot, don't worry, we'll walk through each one step by step.*
 
 #### 6.1.1 REINFORCE: the base case
 
@@ -310,7 +308,7 @@ REINFORCE is the original policy gradient algorithm; everything else in this tre
 2. **Score them.** Run the reward function on each: for GSM8K, 1.0 if the final number matches, else 0.0.
 3. **Update.** For each token in each rollout, take the gradient of its log-probability (the direction that makes that token more likely) and scale it by the rollout's **reward**. Sum over all tokens and rollouts, step.
 
-The core insight, which §4 derived: **it's the SFT cross-entropy gradient, scaled by a reward instead of treating every token as correct.** With a 0/1 reward that means a correct rollout (reward = 1) gets all its tokens pushed up, and a wrong rollout (reward = 0) contributes nothing: its gradient is multiplied by zero. Run enough questions through it and the distribution concentrates on the reasoning paths that work. You can run exactly this, today, on one GPU.
+The core insight, which §4 derived: **it's the SFT cross-entropy gradient, scaled by a reward instead of treating every token as correct.** With a 0/1 reward that means a correct rollout (reward = 1) gets all its tokens pushed up, and a wrong rollout (reward = 0) contributes nothing: its gradient is multiplied by zero. Run enough questions through it and the distribution concentrates on the reasoning paths that work.
 
 **The limitation that kicks off the chain.** REINFORCE is strictly **on-policy**: the gradient is only valid for the exact model that generated the rollouts. The instant you step, the model changes and the rollouts in your hand are stale: reusing them for a second step would bias the gradient. So one batch of rollouts buys exactly **one** step, then it's trash. Since generating rollouts is the expensive part (decoding tokens one at a time, across many samples), spending all that compute on a single update *stings*, and that sting is what the next node fixes.
 
