@@ -403,7 +403,7 @@ Step back and look at what that critic costs. It's a second model roughly as lar
 
 3. **Token-Level Loss**: divides the loss by total tokens, not total sequences. Without this, a 50-token response and a 500-token response each count as "one example," which quietly biases the model toward short answers.
 
-4. **Overlong Reward Shaping**: if a response hits the length limit mid-generation and gets cut off, a hard penalty is unfair — the model had no way to know it was about to be truncated. DAPO softens or removes the penalty for truncated responses to keep the reward signal clean.
+4. **Overlong Reward Shaping**: if a response hits the length limit mid-generation and gets cut off, a hard penalty is unfair, the model had no way to know it was about to be truncated. DAPO softens or removes the penalty for truncated responses to keep the reward signal clean.
 
 These fixes matter most when training on long chain-of-thought tasks at scale. For short, simple tasks with a clean verifiable reward, you can usually skip them.
 
