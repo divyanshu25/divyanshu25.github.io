@@ -220,7 +220,7 @@ SFT gradient:    gradient of log π  ×  1           (constant, always reinforce
 RL gradient:     gradient of log π  ×  R(τ)        (scale by reward, varies per rollout)
 ```
 
-SFT is the special case where every demonstration gets reward = 1 (it's shown as correct by assumption). RL lets the reward vary: good rollouts get reinforced strongly, bad rollouts get suppressed, and the signal is proportional to outcome quality. Same engine, smarter throttle.
+SFT is the special case where every demonstration gets reward = 1 (it's shown as correct by assumption). RL lets the reward vary: good rollouts get reinforced strongly, bad rollouts get suppressed, and the signal is proportional to outcome quality. **Same engine, smarter throttle**.
 
 ---
 
@@ -233,9 +233,9 @@ Here's the thing that should bother you about the gradient we just derived. On G
 - Correct rollout ($R=1$): push all its tokens **up**.
 - Wrong rollout ($R=0$): multiply by zero → do **nothing**.
 
-Stare at that for a second. **You never push anything down.** Every single step is some flavor of "make these sequences more likely," and the *only* thing separating a brilliant rollout from a mediocre one is how *hard* you shove it up. The model is supposed to deduce which behaviors are good purely from the fact that the good ones get shoved up slightly more often than the bad ones. That does work in the limit, the softmax is normalized, so relentlessly upvoting the good stuff implicitly downvotes everything else, but it's a maddeningly indirect signal. It's like coaching chess by only ever saying "nice!" at varying volumes and never once saying "no, not that."
+Stare at that for a second. **You never push anything down.** Every step is "make these sequences more likely," and the only signal the model gets is how *hard* it gets pushed up. A correct rollout gets a nudge of 1; a wrong rollout contributes nothing. The softmax is normalized, so relentlessly upvoting correct responses does implicitly downvote everything else, but it's a maddeningly indirect signal. It's like coaching chess by only ever saying "nice!" and never once saying "no, not that."
 
-Now make it concrete. Take a question the model already nails 90% of the time. Sample 16 rollouts → ~14 correct, ~2 wrong. The gradient cheerfully reinforces all 14 correct ones at full strength, even though the model *already knows how to solve this*. We're blowing almost the entire gradient budget applauding behavior that's already locked in, while the 2 genuinely informative failures contribute exactly nothing. Huge update, near-zero learning. **That's the variance problem: the size of the gradient has almost nothing to do with how much there actually is to learn.**
+But it gets worse. This binary signal tells the model nothing about *how much* better one correct rollout is compared to another, or how much it still needs to learn on easy questions it already knows well. Take a question the model already nails 90% of the time. Sample 16 rollouts → ~14 correct, ~2 wrong. The gradient cheerfully reinforces all 14 correct ones at full strength, even though the model *already knows how to solve this*. We're blowing almost the entire gradient budget applauding behavior that's already locked in, while the 2 genuinely informative failures contribute exactly nothing. Huge update, near-zero learning. **That's the variance problem: the size of the gradient has almost nothing to do with how much there actually is to learn.**
 
 The fix is a **baseline**. Instead of scaling by the raw reward, scale by reward *minus some reference value* $b$:
 
@@ -243,9 +243,13 @@ $$\nabla_\theta J = \mathbb{E}\Big[ (R(\tau) - b) \sum_t \nabla_\theta \log \pi_
 
 Two things make this beautiful.
 
-**First, it's free: you can subtract any $b$ without biasing the gradient.** The intuition: REINFORCE only ever responds to *differences* between rollouts. Shift every reward down by the same constant and you haven't changed which rollouts are above the pack and which are below: you've only moved the goalposts equally for everyone. So the baseline can recalibrate *what counts as good*, but it cannot tug the gradient in any direction.
+**First, it brings back the "down."** Pick $b$ to be roughly the average reward for a question, and suddenly $R(\tau) - b$ is positive for better-than-average rollouts and *negative* for worse-than-average ones. Now the gradient pushes good rollouts up **and bad rollouts down**, both halves of the signal, finally. The quantity $R(\tau) - b$ gets a name: the **advantage**. It stops asking "was this rollout good?" and starts asking the only question that actually teaches: "was this rollout better or worse than what I'd normally do here?"
 
-The formal reason is a tidy identity (**the expected score is zero**, $\mathbb{E}_\tau[\nabla_\theta \log p_\theta(\tau)] = 0$), which makes the entire baseline term $\mathbb{E}[\,b \cdot \nabla_\theta \log p_\theta(\tau)\,]$ vanish. Here's why it's zero (the punchline is *not* that some expectation equals 1: it's that a probability distribution always integrates to 1 *regardless of $\theta$*, so its gradient is 0):
+**Second, it's free.** You might worry: we just changed the weights on every rollout — doesn't that corrupt what we're optimizing? No, because subtracting $b$ doesn't change the *expected* gradient. To see why, expand the new objective by linearity of expectation:
+
+$$\mathbb{E}\big[(R(\tau) - b)\,\nabla_\theta \log p_\theta\big] = \underbrace{\mathbb{E}\big[R(\tau)\,\nabla_\theta \log p_\theta\big]}_{\text{original REINFORCE gradient}} - \underbrace{\mathbb{E}\big[b\,\nabla_\theta \log p_\theta\big]}_{\text{= 0, proved below}}$$
+
+The second term vanishes. Here's the proof (the key is that any probability distribution integrates to 1 regardless of $\theta$, so its gradient with respect to $\theta$ must be zero):
 
 $$
 \mathbb{E}_{\tau}\big[\nabla_\theta \log p_\theta(\tau)\big]
@@ -255,9 +259,7 @@ $$
 = \nabla_\theta\, 1 = 0
 $$
 
-The middle step runs the log-derivative trick backwards ($p\,\nabla\log p = \nabla p$); the last step is just "the gradient of a constant is zero."
-
-**Second, it brings back the "down."** Pick $b$ to be roughly the average reward, and suddenly $R(\tau) - b$ is positive for better-than-average rollouts and *negative* for worse-than-average ones. Now the gradient pushes the good ones up **and the bad ones down**, both halves of the signal, finally. The quantity $R(\tau) - b$ gets a name: the **advantage**. It stops asking "was this rollout good?" and starts asking the only question that actually teaches: "was this rollout better or worse than what I'd normally do here?"
+The middle step runs the log-derivative trick backwards ($p\,\nabla\log p = \nabla p$); the last step is just "the gradient of a constant is zero." So the baseline term is exactly zero in expectation, and you can choose any $b$ you like without introducing bias.
 
 Now: what's a good baseline? The cleverest choice, and this is the central idea of **GRPO** (Group Relative Policy Optimization), is to use *the average reward of other attempts at the same question*.
 
@@ -282,7 +284,7 @@ That's the entire "GRPO." Let that sink in: the famous algorithm is `rewards - r
 
 ---
 
-## 6. "GRPO," in quotes
+## 6. From REINFORCE to GRPO: the family tree
 
 We've actually already built the entire algorithm: REINFORCE + a group-mean baseline. That's essentially what "GRPO" is. But the literature has a zoo of acronyms (PPO, TRPO, GRPO, DAPO) that all sound like prerequisites. They're not. Each one is just **REINFORCE plus a patch for a specific pain**. Build the family tree from scratch and "GRPO" reads as "REINFORCE with a couple of patches," which is exactly what it is.
 
