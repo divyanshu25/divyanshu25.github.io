@@ -3,6 +3,8 @@ export interface Post {
   title: string;
   summary: string;
   content: string;
+  contentFile?: string; // path relative to project root, loaded at build time
+  heroImage?: string;
   date: string;
   tags: string[];
   authors: string[];
@@ -10,6 +12,17 @@ export interface Post {
 }
 
 export const posts: Post[] = [
+  {
+    id: "rl-from-first-principles",
+    title: "Reinforcement Learning, from First Principles",
+    summary: "A ground-up derivation of how RL works for LLMs: starting from why SFT hits a ceiling, through the policy gradient theorem, the log-derivative trick, REINFORCE, baselines, and GRPO, with every step grounded in code.",
+    content: "",
+    contentFile: "docs/rl_basics.md",
+    heroImage: "/rl_blog_hero_image.png",
+    date: "2026-06-14",
+    tags: ["Reinforcement Learning", "LLMs", "GRPO", "Policy Gradient", "Deep Learning"],
+    authors: ["Divyanshu Goyal"]
+  },
   {
     id: "scaling-transformers",
     title: "A Lazy Engineer's Guide to Scaling Transformers",
