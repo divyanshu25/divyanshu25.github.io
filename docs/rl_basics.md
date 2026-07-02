@@ -16,7 +16,8 @@ Both of these are the same thing under the hood. **Imitation.** You show the mod
 
 That's fine, and it gets you surprisingly far. But imitation has a ceiling, and the ceiling is your data.
 
-**Here's where it breaks down.** Throughout this post we'll use **GSM8K** as our running example. It's the perfect RL toy problem. GSM8K is a dataset of 8,500 grade-school math word problems. Each one has a plain English question and a single integer answer. A typical problem looks like this:
+
+> **Note:** Throughout this post we'll use **GSM8K** as our running example. It's the perfect RL toy problem. GSM8K is a dataset of 8,500 grade-school math word problems. Each one has a plain English question and a single integer answer. A typical problem looks like this:
 
 > **Question:** James has 3 bags of apples. Each bag has 6 apples. He eats 4 apples. How many apples does he have left?
 >
@@ -26,7 +27,7 @@ The `####` marker is GSM8K's convention for the final answer. The model can writ
 
 Now here's the problem with SFT on this task. What we actually want is for the model to **reason its way to the correct final number**. But there are hundreds of valid reasoning paths to any given answer. We might have one demonstration in our training data showing one particular path. SFT trains the model to copy *that path*. If the model tries a slightly different sequence of steps and gets the right answer, SFT would penalize it, because those aren't the exact tokens in the training example.
 
-More fundamentally: the thing we actually care about is a property of the *outcome*,  **"is the final number correct?"**, not a property of any particular string. SFT has no way to express that. SFT's only question is "does the output match the target?" not "is the output correct?"
+More fundamentally: the thing we actually care about is a property of the *outcome*,  **"is the final number correct?"**, not a property of any particular string. SFT has no way to express that. SFT's only question is *"does the output match the target?"*, whereas we care about *"is the output correct?"*
 
 RL is the answer. Instead of showing the model the right answer, you let it try, and then tell it whether it was right.
 
@@ -37,6 +38,8 @@ RL:    try to answer. I'll tell you if you were right.    (trial and error)
 ```
 
 That's the whole idea. The rest of this post is deriving exactly how to do the last line.
+
+> **Note**: This is where Andrej Karpathy's observation that **RL is like sucking intelligence through a straw** feels most apt. The model's trajectory can be completely nonsensical, but as long as it lands on the right answer, RL will still reward it. Addressing that issue, though, is beyond the scope of this article.
 
 ---
 
