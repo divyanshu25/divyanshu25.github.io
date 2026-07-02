@@ -82,7 +82,7 @@ Let's make that precise.
 
 ## 4. Deriving the policy gradient (the one piece of math)
 
-### 4.1 Step 0: What a "gradient" means here
+### 4.1 Step 1: What a "gradient" means here
 
 If you've done SFT you already know the training loop: compute a loss, call `.backward()`, the optimizer takes a step. The gradient ($\nabla_\theta$) is just a long vector, one number per weight in the model, that says "increase this weight to decrease the loss." Gradient *descent* follows that direction to reduce loss.
 
@@ -90,7 +90,7 @@ Here we want to *maximize* reward instead of minimize loss, so we follow the gra
 
 ---
 
-### 4.2 Step 1: The objective: maximize expected reward
+### 4.2 Step 2: The objective: maximize expected reward
 
 When we say "maximize expected reward," concretely it means: over many different problems and rollouts, we want the average reward to be as high as possible. In math, if $\tau$ is one rollout (trajectory) and $R(\tau)$ is its reward:
 
@@ -102,7 +102,7 @@ We want $\nabla_\theta J(\theta)$: the gradient of this average reward with resp
 
 ---
 
-### 4.3 Step 2: A simpler idea first, and why we want more
+### 4.3 Step 3: A simpler idea first, and why we want more
 
 You might think: out of 4 rollouts, if 2 got the answer right (reward=1) and 2 didn't (reward=0), why not just do SFT on the 2 correct ones? Ignore the failures, treat the successes as gold demonstrations, backpropagate normally.
 
@@ -114,7 +114,7 @@ That calls for a gradient that looks like: *(some signed weight) × (push this r
 
 ---
 
-### 4.4 Step 3: The log-derivative trick (one algebraic identity)
+### 4.4 Step 4: The log-derivative trick (one algebraic identity)
 
 Before the algebra, let's make one piece of notation concrete: **what is $p_\theta(\tau)$?**
 
@@ -165,7 +165,7 @@ The sampling is now *inside* the expectation and we only need to differentiate t
 
 ---
 
-### 4.5 Step 4: breaking the trajectory into tokens
+### 4.5 Step 5: breaking the trajectory into tokens
 
 The boxed result has a $\log p_\theta(\tau)$: the log-probability of the *whole trajectory*. But the network doesn't output trajectory probabilities; it outputs per-token policy probabilities $\pi_\theta(a_t \mid s_t)$. So we crack the trajectory term open using the relationship from Step 3:
 
