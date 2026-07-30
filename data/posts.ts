@@ -13,6 +13,17 @@ export interface Post {
 
 export const posts: Post[] = [
   {
+    id: "image-embeddings-from-first-principles",
+    title: "Image Embeddings, from First Principles",
+    summary: "Every image embedding model is an answer to one question: who gets to define what \"similar\" means? Labels, language, or the image itself. A from-scratch walk through CLIP, SigLIP, DINO and their descendants that organizes them all into one family tree, and ends with a practical map of which encoder to reach for and when.",
+    content: "",
+    contentFile: "docs/image_embeddings.md",
+    heroImage: "/image_embedding_blog_hero.png",
+    date: "2026-07-29",
+    tags: ["Computer Vision", "Embeddings", "CLIP", "SigLIP", "DINOv2", "Self-Supervised Learning", "Deep Learning"],
+    authors: ["Divyanshu Goyal"]
+  },
+  {
     id: "rl-from-first-principles",
     title: "Reinforcement Learning, from First Principles",
     summary: "A ground-up derivation of how RL works for LLMs: starting from why SFT hits a ceiling, through the policy gradient theorem, the log-derivative trick, REINFORCE, baselines, GRPO and beyond...",
