@@ -398,14 +398,14 @@ The VLM row deserves a closer look: multimodal LLMs overwhelmingly use CLIP-fami
 
 **A field guide to other names you'll meet**, each placeable on the map:
 
-- **[OpenCLIP](https://github.com/mlfoundations/open_clip)**: an open reproduction of CLIP on open data; same math.
+- **[OpenCLIP](https://github.com/mlfoundations/open_clip)**: an open-source reproduction of CLIP trained on open datasets; the loss and architecture are unchanged.
 - **[ALIGN](https://arxiv.org/abs/2102.05918)** (A Large-scale ImaGe and Noisy-text embedding): Google's CLIP counterpart, the same loss on 1.8B noisier pairs; proof that scale can make up for noisy alt-text.
-- **[CoCa](https://arxiv.org/abs/2205.01917)**: contrastive matching and caption generation in one model; the idea SigLIP 2's decoder descends from.
-- **[EVA-CLIP](https://arxiv.org/abs/2303.15389)**: CLIP warm-started from masked-image-modeling weights; Route B boosting Route A.
+- **[CoCa](https://arxiv.org/abs/2205.01917)**: trains contrastive matching and caption generation together in one model; the idea SigLIP 2's captioning decoder descends from.
+- **[EVA-CLIP](https://arxiv.org/abs/2303.15389)**: a CLIP whose image tower starts from weights already pretrained with masked image modeling (a Route B objective) instead of from scratch; the head start makes the contrastive training cheaper and the final model stronger.
 - **[I-JEPA](https://arxiv.org/abs/2301.08243)** (Image-based Joint-Embedding Predictive Architecture): masked prediction in latent space like iBOT, but with no augmentations at all; predict hidden regions from context and position alone.
-- **[AIMv2](https://arxiv.org/abs/2411.14402)** (Autoregressive Image Models, v2): Route A rebuilt on autoregressive prediction instead of contrast; generate the caption (and pixels), GPT-style.
+- **[AIMv2](https://arxiv.org/abs/2411.14402)** (Autoregressive Image Models, v2): keeps language as the supervisor but drops the contrastive loss entirely; the encoder's features must support *generating* the caption (and the pixels) token by token, the way GPT generates text.
 - **[Perception Encoder](https://arxiv.org/abs/2504.13181)**: Meta's 2025 bet that a single well-tuned contrastive model, probed at the *right internal layers*, can serve global and dense tasks at once.
-- **[RADIO](https://arxiv.org/abs/2312.06709)** (Reduce All Domains Into One) and **[Theia](https://arxiv.org/abs/2407.20179)**: "agglomerative" backbones that distill several teachers into one student (CLIP + DINOv2 + [SAM](https://arxiv.org/abs/2304.02643), the Segment Anything Model, in RADIO's case); the convergence of the routes, done by direct distillation.
+- **[RADIO](https://arxiv.org/abs/2312.06709)** (Reduce All Domains Into One) and **[Theia](https://arxiv.org/abs/2407.20179)**: "agglomerative" backbones that distill several pretrained teachers into one student (CLIP + DINOv2 + [SAM](https://arxiv.org/abs/2304.02643), the Segment Anything Model, in RADIO's case), so a single encoder inherits text alignment and dense features at once.
 - **[E5-V](https://arxiv.org/abs/2407.12580)** and **[VLM2Vec](https://arxiv.org/abs/2410.05160)**: skip the standalone encoder entirely; prompt a full multimodal LLM and read the embedding out of its hidden state. A genuinely new answer to *who defines similar*: the LLM does.
 - **[Matryoshka embeddings](https://arxiv.org/abs/2205.13147)**: a training trick, not a model; train so every prefix of the vector is a usable embedding, letting you truncate to your storage budget.
 
