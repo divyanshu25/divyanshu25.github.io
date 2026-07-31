@@ -184,10 +184,6 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
                 />
               </div>
             )}
-
-            <div className="bg-[var(--accent-bg)] p-5 rounded-xl border border-[var(--accent-border)]">
-              <p className="text-base text-[var(--text-secondary)] leading-relaxed">{post.summary}</p>
-            </div>
           </div>
 
           {toc.length > 2 ? (
