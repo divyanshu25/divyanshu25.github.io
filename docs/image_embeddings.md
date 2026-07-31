@@ -80,7 +80,7 @@ Now build the $N \times N$ matrix of all pairwise similarities: $S_{ij} = u_i \c
 
 ![The N by N similarity matrix: diagonal cells are true pairs pushed up, all other cells are mismatches pushed down](/clip_similarity_matrix.png)
 
-*Every batch builds this matrix. The diagonal holds the true pairs, whose similarity training pushes up; every other cell is a mismatch, pushed down.*
+**Fig. 1:** *Every batch builds this matrix. The diagonal holds the true pairs, whose similarity training pushes up; every other cell is a mismatch, pushed down.*
 
 Here's the reframe that makes the loss obvious. For image $i$, ask: **"which of the $N$ captions in this batch is yours?"** That is an $N$-way classification problem, and classification comes with a standard loss: softmax cross-entropy.
 
@@ -130,7 +130,7 @@ The shared image-text space gives you a party trick that was science fiction in 
 
 ![Zero-shot CLIP versus a fully supervised ResNet-50 linear probe across 27 datasets](/clip_zero_shot_vs_resnet50.png)
 
-*Zero-shot CLIP (ViT-L/14@336px) against a fully supervised linear classifier trained on ResNet-50 features, across the paper's 27-dataset evaluation suite. Replotted from the data in [Radford et al., 2021](https://arxiv.org/abs/2103.00020), Figure 5 and appendix Tables 9 to 11.*
+**Fig. 2:** *Zero-shot CLIP (ViT-L/14@336px) against a fully supervised linear classifier trained on ResNet-50 features, across the paper's 27-dataset evaluation suite. Replotted from the data in [Radford et al., 2021](https://arxiv.org/abs/2103.00020), Figure 5 and appendix Tables 9 to 11.*
 
 The full picture is worth staring at, because the pattern of wins and losses is exactly what the training task predicts. Zero-shot CLIP wins on 16 of the 27 datasets, and **it wins where the categories are things people write about**: cars, food, scenes, actions. **It loses where the task is specialized and nobody captions it**: satellite imagery, traffic signs, counting objects, tumor tissue. An embedding knows what its supervision talked about, and alt-text does not talk about lymph node histology.
 
@@ -208,7 +208,7 @@ That leaves CLIP's other problem: the features are global-only. The matching tas
 
 ![SigLIP 2 trains one shared vision encoder on four tasks at once: sigmoid matching, captioning, self-distillation, and masked prediction](/siglip2_one_encoder_four_graders.png)
 
-*One shared encoder, four tasks pulling on it at once. Each grades a property of the embedding that the others cannot see.*
+**Fig. 3:** *One shared encoder, four tasks pulling on it at once. Each grades a property of the embedding that the others cannot see.*
 
 Two practical upgrades round it out: the training data is multilingual, and the model accepts images at their native resolution and aspect ratio instead of forcing everything into a square (a real difference for documents, screenshots, and anything tall or wide). The result is the text-aligned encoder most new systems reach for today: aligned to language like CLIP, cheap to train like SigLIP, and competent at dense tasks thanks to what it borrowed from Route B.
 
@@ -228,17 +228,25 @@ So the objective is: make the embeddings of two views of the same image agree. T
 
 ### 4.2 The collapse problem: the central difficulty
 
-Here is the objective we just wrote: *"output the same vector for both views."* Now find its global minimum. Easy: **output the same vector for everything.** A constant. Zero loss, perfect agreement, every image on Earth mapped to the same point. The embedding space collapses to a dot, and the encoder has learned precisely nothing.
+Recall the objective we just wrote: two views of the same image should get the same embedding. Now ask: what is the *easiest* way for the encoder to satisfy it? Notice that the loss only ever rewards agreement. Nothing anywhere rewards telling images apart. So the laziest strategy wins, perfectly: **ignore the input and always output one fixed vector.** Two views of the beach photo agree (they get the identical vector), two views of every other photo agree just as well, and the loss sits at exactly zero, forever. Every image on Earth lands on the same point, the embedding space collapses to a dot, and the encoder has learned nothing.
 
-Stare at that for a second, because it's not a bug in one method; it's a structural hole in the whole idea. Supervised learning never had this problem: the labels *differ* across images, so constant output has high loss. CLIP never had it either: the other captions in the batch punish a constant. But the moment your only signal is "agree with yourself," the laziest possible agreement wins. **Every self-supervised method is, at its core, an answer to the question: what stops the collapse?** The field produced four answers: **negatives**, **asymmetry**, **regularization**, and **clustering**. The first two built the models you've heard of; the other two survive as ingredients inside them.
+Stare at that for a second, because it's not a bug in one method; it's a structural hole in the whole idea. Supervised learning never had this problem: the labels *differ* across images, so constant output has high loss. CLIP never had it either: the other captions in the batch punish a constant. But the moment your only signal is "agree with yourself," the laziest possible agreement wins. **Every self-supervised method is, at its core, an answer to the question: what stops the collapse?** The field produced four answers: **negatives**, **asymmetry**, **regularization**, and **clustering**.
 
 ### 4.3 Answer 1: negatives (SimCLR and MoCo)
 
-The first answer: reuse CLIP's medicine. Pull the two views together **and push them away from every other image in the batch**. A constant output now fails, because agreeing with your positive means also agreeing with all your negatives, and the repulsion term punishes that.
+The first answer reuses the mechanism CLIP already relies on: pull the two views together **and push them away from every other image in the batch**. A constant output now fails, because agreeing with your positive means also agreeing with all your negatives, and the repulsion term punishes that.
 
-Mechanically this is **InfoNCE again, the exact boxed equation from §3.2**, with one substitution: the "caption" is just another augmented view, and both towers are the same network. **[SimCLR](https://arxiv.org/abs/2002.05709)** (a Simple framework for Contrastive Learning of visual Representations) is, quite literally, CLIP where the text tower is a mirror.
+Mechanically this is **InfoNCE again, the exact boxed equation from §3.2**, with one substitution: where CLIP pairs an image with its caption, here an image is paired with *its other augmented view*, and both sides go through the same image encoder. That is all **[SimCLR](https://arxiv.org/abs/2002.05709)** (a Simple framework for Contrastive Learning of visual Representations) is: CLIP with the text tower thrown away and the image tower used for both sides.
 
-And because it's the same loss, **it inherits the same hunger for negatives**: they come from the batch, so you need thousands of them for the task to be hard. SimCLR ran at batch 4096. **[MoCo](https://arxiv.org/abs/1911.05722)** (Momentum Contrast) decoupled the negatives from the batch: it keeps a *queue* of embeddings from recent batches and uses those as negatives, so the model can compare against tens of thousands of them while the actual batch stays small. One catch: the queued embeddings were produced by slightly older versions of the encoder, so MoCo computes them with a slowly updated moving-average copy of the network to keep them consistent. That copy is the "momentum" in the name. Remember it, because the same idea is about to take center stage. But there's a nagging aesthetic problem too: the loss actively pushes apart two *different* photos of golden retrievers on beaches, because they happen to be "negatives." The repulsion that prevents collapse is also fighting the semantics you want.
+And because it's the same loss, **it inherits the same batch-size problem from §3.4**: the negatives come from the batch, so the batch must hold thousands of them for the task to be hard. SimCLR answered by simply paying the cost: it ran at batch 4096.
+
+**[MoCo](https://arxiv.org/abs/1911.05722)** (Momentum Contrast) answered by questioning the premise. A negative is just an embedding you push away from, and nothing says it has to come from the *current* batch. So MoCo keeps a *queue* of embeddings from the last several batches and uses those as the negatives: the model compares against tens of thousands of them while the actual batch stays small. One catch: the queued embeddings were produced by slightly older versions of the encoder, so MoCo computes them with a slowly updated moving-average copy of the network to keep them consistent. That copy is the "momentum" in the name. Remember it, because the same idea is about to take center stage.
+
+![MoCo: two views of one image go through the trained encoder and the momentum encoder; the query is pulled toward its key and pushed away from a queue of keys from recent batches](/moco_queue.png)
+
+**Fig. 4:** *MoCo's split of labor: the current batch supplies each query's positive; the queue of keys from recent batches supplies the negatives. The momentum encoder, a slowly updated moving average of the trained encoder, keeps the queued keys consistent.*
+
+Whichever way the negatives are supplied, one problem remains, and it belongs to the whole family: the loss actively pushes apart two *different* photos of golden retrievers on beaches, because they happen to be "negatives." The repulsion that prevents collapse is also fighting the semantics you want.
 
 ### 4.4 Answer 2: no negatives, an unequal fight (BYOL and DINO)
 
@@ -247,29 +255,19 @@ The second answer is stranger, and it turned out to be the winner. Keep the obje
 - The **student** is the network being trained. It gets the gradients, as usual.
 - The **teacher** is a second copy of the same architecture. It is never trained. Instead, after every step, its weights drift a small fraction of the way toward the student's current weights, making it a slow-moving average of the student's own past (an exponential moving average, EMA). This is exactly MoCo's momentum copy, promoted from a supporting role to the main mechanism.
 
-```
-              +---------+
-  view 1 ---> | STUDENT | ---> student's output --+
-              +---------+                         |  loss: make these match
-              +---------+                         |  (gradients -> student only)
-  view 2 ---> | TEACHER | ---> teacher's output --+
-              +---------+
-                   ^
-                   |  after each step: teacher weights drift a little
-                   +--- toward the student's weights (no gradients, ever)
-```
-
 The training rule: **looking at view 1, the student must predict what the teacher outputs for view 2.** **[BYOL](https://arxiv.org/abs/2006.07733)** (Bootstrap Your Own Latent, DeepMind 2020) was the first to show this works with no negatives at all. **[DINO](https://arxiv.org/abs/2104.14294)** (self-**di**stillation with **no** labels, Meta 2021) is the version that conquered ViTs, and the one worth understanding in detail.
 
-**First, a gap to fill**: an encoder outputs an embedding vector, so what does "predict what the teacher outputs" actually mean? DINO adds a small projection head that maps the embedding to scores over $K$ slots (DINO uses $K = 65{,}536$). Nobody labels the slots. They are pseudo-categories the model is free to invent, and over training they come to stand for recurring visual patterns. A softmax turns the scores into a probability distribution over the slots, and the loss is the familiar cross-entropy: the student's distribution for its view must match the teacher's distribution for the other view. Mechanically this is classification yet again, except the "correct answers" come from the teacher instead of from human labels. Training one model to match another model's output distribution is called **distillation**, hence DINO's full name; the twist is that there is no pretrained teacher. The teacher is the student's own past, averaged. The model distills itself.
+**First, a gap to fill**: an encoder outputs an embedding vector, so what does "predict what the teacher outputs" actually mean? DINO adds a small projection head that maps the embedding to scores over $K$ slots (DINO uses $K = 65{,}536$). Nobody labels the slots. They are pseudo-categories the model is free to invent, and over training each slot ends up firing for some recurring visual pattern: one slot for furry textures, say, another for sunsets, another for wheels. A softmax turns the scores into a probability distribution over the slots, and the loss is the familiar cross-entropy: the student's distribution for its view must match the teacher's distribution for the other view. Mechanically this is classification yet again, except the "correct answers" come from the teacher instead of from human labels. Training one model to match another model's output distribution is called **distillation**, hence DINO's full name; the twist is that there is no pretrained teacher. The teacher is the student's own past, averaged. The model distills itself.
+
+![DINO: two augmented views of one image; the student must reproduce, from its view, the slot distribution the teacher produced from the other view](/dino_student_teacher.png)
+
+**Fig. 5:** *One DINO training step. The student, from its view, must reproduce the slot distribution the teacher produced from the other view. The teacher is never trained; after every step its weights only drift a little toward the student's.*
 
 **Now, why doesn't this collapse?** The asymmetry closes the fast lane: the teacher takes no gradients, so the optimizer cannot drag the target down into a constant the way it could when both sides were the same trained network. But a slow drift into collapse is still possible, and for an output that is a distribution over slots, collapse has exactly two flavors:
 
-```
-collapse #1: one slot dominates            collapse #2: total vagueness
-every image -> (0, 0, .99, 0, ...)         every image -> (1/K, 1/K, ..., 1/K)
-the same confident answer, always          the same shrug, always
-```
+![The two collapse modes: every image maps to one dominant slot, or every image maps to the uniform distribution](/dino_collapse_modes.png)
+
+**Fig. 6:** *The two ways a distribution over slots goes dead. Left: one slot wins for every image, so the output is the same confident answer no matter what comes in. Right: every slot gets the same score $1/K$ for every image, the same shrug no matter what comes in. Different failures, same symptom: the output stopped depending on the input.*
 
 Both are dead for the same reason: the output no longer depends on the input. DINO blocks each with a correction applied to the teacher's scores, and the two corrections deliberately pull in opposite directions:
 
@@ -278,52 +276,46 @@ Both are dead for the same reason: the output no longer depends on the input. DI
 
 Centering alone herds every output toward the uniform shrug; sharpening alone lets one slot run away with everything. Balanced against each other, they leave exactly one stable option: outputs that are confident *and* different from image to image. Which is another way of saying: informative.
 
-```
-   vague <------------------------------------------> confident
+![A vague-to-confident axis with a collapse at each end; sharpening pulls right away from the uniform shrug, centering pulls left away from the fixed winner, and the balance point is outputs that are confident and different per image](/dino_centering_sharpening.png)
 
-   collapse #2                              collapse #1
-   every image gets                         every image gets
-   the uniform shrug                        the same winning slot
-
-   centering pulls left; sharpening pulls right.
-
-   Balanced, the teacher must stay confident, yet no slot may
-   dominate across images. The only way to do both:
-
-   dog photo    -> slot 412 high      }  confident, and different
-   sunset photo -> slot 7 high        }  per image = informative
-```
+**Fig. 7:** *The tug-of-war. Each collapse sits at one end of the vague-to-confident axis, and each correction pulls away from one of them: sharpening away from the shrug, centering away from the fixed winner. Where they balance, the teacher must stay confident while no slot dominates across images, and the only way to do both is for different images to win different slots.*
 
 > **Note:** It's fair to be suspicious of the whole arrangement. Why would a model chasing an average of *its own past outputs* learn anything, rather than chase its tail? The honest intuition: an EMA of many past students behaves like an *ensemble* of them, and ensembles are reliably a bit better than any single member. So the target is always slightly ahead of the student, the student improves to catch it, which improves the teacher, which moves the target ahead again. It shouldn't work as well as it does, and the theory still trails the practice. But it works.
 
-The whole training loop:
+The whole training loop, with one detail the diagram above simplified away: the prediction rule works in either direction, so both networks embed *both* views and the loss adds the two crossed pairings (student on view 2 chasing teacher on view 1, and the reverse). Same rule, applied twice, two training signals from one pair of views:
 
 ```python
 for x in loader:
     v1, v2 = augment(x), augment(x)               # two views of the same image
 
-    t1 = softmax((teacher(v1) - center) / tau_t)  # teacher's slot distributions:
-    t2 = softmax((teacher(v2) - center) / tau_t)  #   centered, sharpened, no gradients
+    r1, r2 = teacher(v1), teacher(v2)             # teacher's raw slot scores, no gradients
+
+    t1 = softmax((r1 - center) / tau_t)           # teacher's slot distributions:
+    t2 = softmax((r2 - center) / tau_t)           #   centered, then sharpened (tau_t < tau_s)
 
     s1 = softmax(student(v1) / tau_s)             # student's slot distributions
     s2 = softmax(student(v2) / tau_s)
 
-    loss = H(t1, s2) + H(t2, s1)                  # cross-entropy, views crossed: student on v2
+    loss = H(t1, s2) / 2 + H(t2, s1) / 2          # cross-entropy, views crossed: student on v2
     loss.backward(); opt.step()                   #   chases teacher on v1, and vice versa
 
-    teacher_w = m * teacher_w + (1 - m) * student_w           # teacher drifts toward student
-    center    = c * center + (1 - c) * teacher_scores.mean()  # running mean used for centering
+    teacher_w = m * teacher_w + (1 - m) * student_w         # teacher drifts toward student
+    center    = c * center + (1 - c) * cat(r1, r2).mean(0)  # running mean of RAW teacher scores
 ```
 
 **One more ingredient matters: multi-crop.** The teacher only ever sees large crops that cover most of the image; the student also receives several tiny crops and must still match the teacher from them. From a patch of sand and one paw, predict the summary of the whole scene. This local-to-global prediction is a big part of why DINO's features come to understand objects and context rather than just textures. It is also the exact task SigLIP 2 later imported as its "self-distillation" objective (§3.6); this is where that idea lives natively.
 
-Then came the result that put DINO on the map. Visualize the attention of the trained ViT and it has, with **no labels and no segmentation supervision, learned to segment objects**: the attention maps trace the dog against the beach cleanly. Ask CLIP's encoder where the dog *is* and it shrugs; it was never asked. DINO was never asked either, but the task of matching views across aggressive crops apparently *requires* knowing what's foreground. This is the moment it became clear Route B wasn't a budget substitute for labels; it was learning things labels don't teach.
+Then came the result that put DINO on the map. In a ViT, the CLS token's attention weights record which patches it is reading from when it builds its summary. Plot those weights for a trained DINO model as a heatmap over the image, and the heatmap traces the dog against the beach cleanly: with **no labels and no segmentation supervision, the model has learned to segment objects**. Ask CLIP's encoder where the dog *is* and it shrugs; it was never asked. DINO was never asked either, but the task of matching views across aggressive crops apparently *requires* knowing what's foreground. This is the moment it became clear Route B wasn't a budget substitute for labels; it was learning things labels don't teach.
+
+![A pretrained DINO ViT-S/16 run on this post's hero image: the CLS attention heatmap and its overlay both pick out the robot against the cluttered workshop](/dino_attention_hero.png)
+
+**Fig. 8:** *A pretrained DINO ViT-S/16 run on the robot image from the top of this post, using the visualization from [Caron et al., 2021](https://arxiv.org/abs/2104.14294). Middle: the final layer's CLS-token attention over patches, averaged across heads. Right: the same map overlaid on the image. Nothing ever told the model the robot is the subject; separating foreground from clutter fell out of training.*
 
 ### 4.5 The answers nobody scaled: regularizers and clusters
 
 Two more answers to collapse deserve a paragraph each: partly for completeness, mostly because their DNA shows up inside the winners.
 
-**Answer 3: outlaw collapse directly.** **[Barlow Twins](https://arxiv.org/abs/2103.03230)** and **[VICReg](https://arxiv.org/abs/2105.04906)** (Variance-Invariance-Covariance Regularization) use no negatives and no teacher. They pull the two views together and attack collapse with regularization. VICReg is the explicit version: a variance term forces every embedding dimension to keep high variance across the batch (a collapsed embedding has zero variance, which is now simply *illegal*), and a covariance term forces different dimensions to stay decorrelated, so the embedding can't hide redundant copies of one feature. Barlow Twins gets the same effect more slyly: batch-normalize the embeddings, then push the cross-correlation matrix between the two views toward the identity; the diagonal enforces invariance, the off-diagonal enforces decorrelation, and a collapsed embedding can't satisfy either. No adversarial game, no shadow teacher; collapse is written out of the loss by hand. (**[SimSiam](https://arxiv.org/abs/2011.10566)** is the strange little datapoint at the minimal end: no negatives, no EMA, no regularizer. Just a predictor head on one branch and a stop-gradient on the other, and it still doesn't collapse. Why, exactly, is still not fully settled, which tells you how empirical this corner of the field remains.)
+**Answer 3: outlaw collapse directly.** **[Barlow Twins](https://arxiv.org/abs/2103.03230)** and **[VICReg](https://arxiv.org/abs/2105.04906)** (Variance-Invariance-Covariance Regularization) use no negatives and no teacher. They pull the two views together and attack collapse with regularization. VICReg is the explicit version: a variance term forces every embedding dimension to keep high variance across the batch (a collapsed embedding has zero variance, which is now simply *illegal*), and a covariance term forces different dimensions to stay decorrelated, so the embedding can't hide redundant copies of one feature. Barlow Twins gets the same effect more slyly: batch-normalize the embeddings, then push the cross-correlation matrix between the two views toward the identity; the diagonal enforces invariance, the off-diagonal enforces decorrelation, and a collapsed embedding can't satisfy either. Collapse is not outmaneuvered here; it is written out of the loss by hand. (**[SimSiam](https://arxiv.org/abs/2011.10566)** is the strange little datapoint at the minimal end: no negatives, no EMA, no regularizer. Just a predictor head on one branch and a stop-gradient on the other, and it still doesn't collapse. Why, exactly, is still not fully settled, which tells you how empirical this corner of the field remains.)
 
 **Answer 4: cluster, but keep the clusters balanced.** **[DeepCluster](https://arxiv.org/abs/1807.05520)** and **[SwAV](https://arxiv.org/abs/2006.09882)** (Swapping Assignments between Views) assign images to learned clusters and require two views of the same image to land in the same cluster, with the assignments explicitly *balanced* (SwAV uses the Sinkhorn-Knopp algorithm for this) so that everything can't pile into one mega-cluster. Balanced clusters are themselves an anti-collapse constraint.
 

@@ -136,6 +136,27 @@
   line-height: 1.5;
 }
 
+/* Figures: images in the post body, with the following paragraph as caption */
+.blog-content img {
+  display: block;
+  margin: 2.25rem auto 0.8rem;
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.blog-content p:has(> img) + p {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--gray-medium);
+  max-width: 44rem;
+  margin: 0 auto 2.5rem;
+  line-height: 1.55;
+}
+
+.blog-content p:has(> img) + p strong {
+  color: var(--gray-medium);
+}
+
 :root {
   --background: #f5f2ed;
   --foreground: #111827;
