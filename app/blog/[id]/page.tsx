@@ -5,6 +5,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
@@ -199,7 +200,7 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
               {/* Body */}
               <div className="blog-content min-w-0">
                 <ReactMarkdown
-                  remarkPlugins={[remarkMath]}
+                  remarkPlugins={[remarkMath, remarkGfm]}
                   rehypePlugins={[rehypeSlug, rehypeKatex, rehypeHighlight]}
                 >
                   {content}
@@ -209,7 +210,7 @@ export default async function BlogPost({ params }: { params: Promise<{ id: strin
           ) : (
             <div className="blog-content max-w-3xl">
               <ReactMarkdown
-                remarkPlugins={[remarkMath]}
+                remarkPlugins={[remarkMath, remarkGfm]}
                 rehypePlugins={[rehypeSlug, rehypeKatex, rehypeHighlight]}
               >
                 {content}
