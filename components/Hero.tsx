@@ -20,7 +20,7 @@ export default function Hero() {
           <div className={`shrink-0 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
             <div className="relative w-36 h-36 sm:w-48 sm:h-48 lg:w-72 lg:h-72 rounded-full overflow-hidden ring-2 ring-[var(--border)]">
               <Image
-                src="/profile.jpg"
+                src="/images/profile.jpg"
                 alt="Divyanshu Goyal"
                 fill
                 className="object-cover"
