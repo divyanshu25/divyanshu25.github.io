@@ -13,6 +13,17 @@ export interface Post {
 
 export const posts: Post[] = [
   {
+    id: "audio-embeddings-from-first-principles",
+    title: "Audio Embeddings, from First Principles",
+    summary: "Play one clip to five professionals and they hear five different things: the words, the voice, the place, the mood, the dog. An audio embedding model is a mechanical listener, and its training task decides which of those layers it keeps. A ground-up tour of machine listening, from the supervised era through the self-supervised turn (wav2vec 2.0, HuBERT, WavLM, BEATs) to language's late arrival (Whisper, CLAP), ending with a practical map of which encoder to reach for and when.",
+    content: "",
+    contentFile: "docs/audio_embeddings.md",
+    heroImage: "/blog/audio-embeddings/hero.png",
+    date: "2026-08-01",
+    tags: ["Audio", "Speech", "Embeddings", "CLAP", "Whisper", "HuBERT", "Self-Supervised Learning", "Deep Learning"],
+    authors: ["Divyanshu Goyal"]
+  },
+  {
     id: "image-embeddings-from-first-principles",
     title: "Image Embeddings, from First Principles",
     summary: "Every image embedding model is an answer to one question: who gets to define what \"similar\" means? Labels, language, or the image itself. A from-scratch walk through CLIP, SigLIP, DINO and their descendants that organizes them all into one family tree, and ends with a practical map of which encoder to reach for and when.",
