@@ -15,7 +15,7 @@ export const posts: Post[] = [
   {
     id: "audio-embeddings-from-first-principles",
     title: "Audio Embeddings, from First Principles",
-    summary: "Play one clip to five professionals and they hear five different things: the words, the voice, the place, the mood, the dog. An audio embedding model is a mechanical listener, and its training task decides which of those layers it keeps. A ground-up tour of machine listening, from the supervised era through the self-supervised turn (wav2vec 2.0, HuBERT, WavLM, BEATs) to language's late arrival (Whisper, CLAP), ending with a practical map of which encoder to reach for and when.",
+    summary: "A ten-second clip is 160,000 floats, and everything else is a choice about what to keep. Starting from air pressure and sampling, this post builds up to every major audio encoder: why speech dropped labels years before it was cool (wav2vec 2.0, HuBERT, WavLM, BEATs), why language supervision arrived late and split in two (Whisper, CLAP), and which encoder to reach for when. Everything derived from scratch, nothing assumed but transformers.",
     content: "",
     contentFile: "docs/audio_embeddings.md",
     heroImage: "/blog/audio-embeddings/hero.png",
