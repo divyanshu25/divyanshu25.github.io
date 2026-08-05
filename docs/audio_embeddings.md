@@ -6,130 +6,169 @@
 
 ## 1. Sound is a list of numbers
 
-Let's start at the very bottom, because audio is one of those modalities that feels mysterious until you look at the actual data, and then it becomes almost disappointingly concrete.
+Sound is a pressure wave in air. When someone speaks, their vocal cords vibrate, the vibration propagates through the room, and a microphone converts the arriving pressure fluctuations into a voltage. To digitize it, we sample that voltage at regular intervals, 16,000 times per second for speech (music typically uses 44,100), and store each sample as a float.
 
-Sound is air pressure wiggling. Someone talks, their vocal cords slap air molecules around, a pressure wave spreads through the room, and your eardrum wiggles in sympathy. That's the entire physical phenomenon. A microphone is an artificial eardrum: a little membrane that wiggles, attached to something that converts the wiggle into voltage.
+So a ten-second clip of speech at 16 kHz is a 1-D array of **160,000 floats**, each one recording the air pressure at one instant. When you see a waveform plot, you are looking at these numbers. Every model in this post is a function of this one array.
 
-To get this into a computer we measure that voltage repeatedly and write down the numbers. Measure it 16,000 times per second (the standard rate for speech; music tends to use 44,100) and store each measurement as a float. That's it. That is literally all a digital audio file is.
-
-So a ten-second clip of someone talking at 16 kHz is a 1-D array of 160,000 floats, each one saying "here's where the air pressure was at this instant." When you see a waveform plot, you are looking at these numbers. Everything in this post, every model, every embedding, every clever trick, is a function of this one array. I want you to hold onto that, because it keeps the whole subject honest: there is no magic anywhere below us, just 160,000 floats.
-
-And here is the first interesting problem: those floats are a terrible input representation. The number at index 84,001 tells you essentially nothing; it's the co-movement of thousands of samples that encodes a vowel or a dog bark. The array is also brutally long: 160,000 tokens is not a sequence you want to feed a transformer raw. So before anything intelligent happens, every audio model first compresses the array into something more digestible. There are exactly two popular ways to do it, and the split turns out to shape the whole field.
+And here is the first problem: those floats are a terrible input representation. A single sample tells you essentially nothing; **meaningful sounds are patterns spread over thousands of samples.** A vowel lasts about 100 ms, which is 1,600 consecutive samples at 16 kHz, and what makes it an "ah" rather than an "ee" is the shape of the oscillation across that whole stretch, not the value of any individual sample. The array is also far too long: a transformer cannot attend over 160,000 positions directly. So before anything intelligent happens, every audio model first compresses the array into something more digestible. There are exactly two popular ways to do it, and the split turns out to shape the whole field.
 
 ## 2. Two ways to chop up a waveform
 
-**Option 1: let a neural net do it.** Run the raw waveform through a small stack of 1-D convolutions with big strides. Each conv layer summarizes a longer window, and after a few layers you get one vector per ~20 milliseconds of audio, each vector summarizing about 25 ms of signal. Our ten-second clip becomes a sequence of ~500 vectors. That's a shape a transformer is happy with, and it looks exactly like a sequence of token embeddings. This is what wav2vec 2.0, HuBERT, and WavLM do, and it's why those models are, at heart, BERTs that listen.
+**Option 1: let a neural net do it** (wav2vec 2.0, HuBERT, WavLM). The building block is a strided 1-D convolution. A **filter** is a short array of learned weights, say 10 of them. Take its dot product with the first 10 samples to get one output number, hop forward 5 samples (the **stride**), and repeat down the whole waveform. Because each hop skips samples, the output is 5× shorter than the input. A layer runs hundreds of filters in parallel, each detecting its own pattern, and they all slide along the waveform together. At each stop, collect every filter's output number into a stack and you get a vector: one entry per filter, describing what that stretch of audio contains. So the layer's output is a sequence of vectors, one per stop.
 
-**Option 2: use a hundred years of signal processing.** Take a short window of the waveform, say 25 ms, and ask: which frequencies are present in this window, and how strongly? (This is the Fourier transform; if you haven't met it, it's a change of coordinates from "pressure over time" to "energy per frequency," and it's the single most useful trick in signal processing.) Slide the window along the clip in 10 ms hops and stack the results into a 2-D array: time on one axis, frequency on the other, energy as brightness. Squash the frequency axis onto a log-like scale called the mel scale, because human ears resolve low frequencies much more finely than high ones, and you get a **mel-spectrogram**. For our clip: roughly 1,000 time steps by 80 frequency bins.
+wav2vec 2.0 stacks seven of these layers. Each new layer reads windows of the previous layer's output, so it sees a wider stretch of audio through summaries of summaries. The downsampling compounds too: the first layer has stride 5 and the next six have stride 2, so the sequence shrinks by 5 × 2 × 2 × 2 × 2 × 2 × 2 = 320 overall, taking **16,000 samples per second down to 50 vectors per second**. Each vector lands 20 ms after the previous one: the combined stride is 320 samples, and **320 / 16,000 = 0.02 s**.
 
-Look at what we just did: we turned sound into an *image*. Harmonics show up as stacked bright bands, a dog bark is a vertical smear, wind is low-frequency fuzz along the bottom. And once your audio is an image, you can throw the entire computer vision toolbox at it: cut it into patches, feed a ViT. This is what AST, AudioMAE, and BEATs do.
+**How much raw signal does one final vector depend on?** We can compute it exactly with one rule. Take any single layer, and define:
+
+- $k$: the filter's window width (how many consecutive inputs it reads at a time)
+- $s$: the stride (how far the window hops between reads)
+- $R$: how many consecutive outputs of this layer the final vector depends on
+
+Each of the $R$ outputs was computed from one window of $k$ inputs, and consecutive windows start $s$ inputs apart. Number the input positions so that the first output's window starts at position $0$. Then:
+
+$$\text{last window starts at } (R-1) \cdot s, \qquad \text{last window ends at } (R-1) \cdot s + k - 1$$
+
+Positions $0$ through $(R-1) \cdot s + k - 1$ are the full span, so the $R$ outputs depend on
+
+$$R_{\text{below}} = (R-1) \cdot s + k \;\; \text{consecutive inputs of this layer.}$$
+
+Apply that rule once per layer, top to bottom, starting from $R = 1$ (the final vector itself). wav2vec 2.0's window widths are (10, 3, 3, 3, 3, 2, 2) with strides (5, 2, 2, 2, 2, 2, 2), so:
+
+```
+layer 7 (k=2,  s=2, R=1):    (1-1)*2  + 2  = 2
+layer 6 (k=2,  s=2, R=2):    (2-1)*2  + 2  = 4
+layer 5 (k=3,  s=2, R=4):    (4-1)*2  + 3  = 9
+layer 4 (k=3,  s=2, R=9):    (9-1)*2  + 3  = 19
+layer 3 (k=3,  s=2, R=19):  (19-1)*2  + 3  = 39
+layer 2 (k=3,  s=2, R=39):  (39-1)*2  + 3  = 79
+layer 1 (k=10, s=5, R=79):  (79-1)*5  + 10 = 400
+```
+
+One final vector depends on **400 consecutive raw samples**: 400 / 16,000 = **25 ms** of signal. Vectors land 20 ms apart but each depends on 25 ms, so neighboring vectors share a small overlap of audio. A ten-second clip is now a sequence of **~500 vectors**, which a transformer processes exactly the way BERT (Bidirectional Encoder Representations from Transformers) processes text tokens.
+
+![Strided convolutions compressing 16,000 samples per second into 50 vectors per second](/blog/audio-embeddings/conv_downsampling.png)
+
+**Fig. 1:** *The convolution stack that turns a waveform into frame vectors. Conv 1 slides its window over raw samples; conv 2 slides its window over conv 1's output, not the waveform; and each layer's stride shrinks the sequence again. Seven layers compound to 320×: 16,000 samples per second become 50 vectors per second, each covering 25 ms of signal.*
+
+**Option 2: use a hundred years of signal processing** (AST, AudioMAE, BEATs). The building block is the **Fourier transform**. It rests on one mathematical fact: any stretch of signal, however messy, can be rewritten as a sum of sine waves of different frequencies, and the transform computes how much of each frequency that sum contains. A **frequency band** is just a range of those frequencies: 0 to 100 Hz, 100 to 200 Hz, and so on up to 8,000 Hz (the highest frequency a 16 kHz recording can represent). The number recorded for each band is the **energy**: how strongly the signal oscillates at those rates within the window.
+
+So: apply the transform to a 25 ms window of waveform (400 samples) and you get a list of energies, one per band, a single column of numbers summarizing that slice of the signal. Concretely, a voice speaking at a 120 Hz pitch puts large numbers in the bands around 120 Hz; wind puts moderate numbers across the lowest bands; hiss puts small numbers across the high ones.
+
+Now slide. The window is 25 ms wide but moves forward only 10 ms per step, so consecutive windows overlap by 15 ms and you get 100 columns per second. Stack the columns side by side and you have a 2-D array: time on one axis, frequency on the other, energy as brightness. One last adjustment: human ears resolve low frequencies much more finely than high ones, so warp the frequency axis onto a matching log-like scale (the **mel scale**) and keep 80 bins. The result is a **mel-spectrogram**: for our ten-second clip, roughly 1,000 time steps by 80 frequency bins.
+
+![A sliding window over the waveform is Fourier-transformed into one spectrum column, and the columns stack into a mel-spectrogram](/blog/audio-embeddings/mel_spectrogram.png)
+
+**Fig. 2:** *From waveform to mel-spectrogram. Each 25 ms window becomes one column of energies via the Fourier transform; slide the window in 10 ms hops and the columns stack into a 2-D array with time on one axis, frequency on the other, and energy as brightness.*
+
+Look at what we just did: **we turned sound into an image**, and different sounds look visibly different in it. A voice draws horizontal bright bands (its pitch and the frequencies it emphasizes, held over time), a short bark is a brief vertical stripe (energy at many frequencies at once, for a moment), and steady wind fills the low-frequency rows. And once your audio is an image, computer vision methods apply directly: cut it into patches and run a ViT (Vision Transformer) over them. That is exactly what AST, AudioMAE, and BEATs do.
 
 ![The two input pipelines: waveform to conv frames to transformer, and waveform to mel-spectrogram patches to ViT](/blog/audio-embeddings/two_front_doors.png)
 
-**Fig. 1:** *The two front doors. Learn your own filterbank with 1-D convs and treat audio like a token sequence, or compute a mel-spectrogram and treat it like an image.*
+**Fig. 3:** *The two input pipelines. Option 1: learn filters with 1-D convolutions and treat audio like a token sequence. Option 2: compute a mel-spectrogram and treat it like an image.*
 
-Neither door is more correct. Speech genuinely has token-sequence structure (a smallish inventory of sounds, strung out in time, with grammar-ish rules), so the BERT toolbox fits. Ambient sound genuinely has texture structure (energy patterns spread over time-frequency), so the vision toolbox fits. Audio is both, so the field kept both, and knowing which door a model walked through tells you a lot about it immediately.
+Neither option is more correct. Speech is structured like text: a language uses only a few dozen distinct sounds (phonemes), produced one after another, with rules about which can follow which, the same way text is a sequence of words drawn from a vocabulary. That is the kind of data BERT-style methods were built for. Ambient sound is structured like an image texture, energy patterns spread over time and frequency, which is the kind of data vision-style methods were built for. A real recording usually contains both at once (a sentence and the wind, in one waveform), so neither view can be dismissed, and the field kept both approaches. Knowing which input representation a model uses tells you a lot about it immediately.
 
 Fine. We can get audio into a network. Now, what do we want out?
 
 ## 3. What we actually want: a vector where distance means something
 
-For most practical purposes, what you want from an audio model is an **embedding**: one vector, maybe 768 floats, summarizing a clip, arranged so that geometry means something. Similar clips nearby, different clips far apart. Get that and a pile of hard problems become one-liners:
+For most practical purposes, what you want from an audio model is an **embedding**: one vector, maybe 768 floats, summarizing a clip, with the property that distances in the vector space are meaningful: the embeddings of similar clips should sit close together, and the embeddings of different clips far apart. Get that and a pile of hard problems reduce to distance computations:
 
 - **Search**: embed your library, embed the query, return nearest neighbors.
-- **Classification**: frozen embeddings + a linear layer, trained in minutes.
+- **Classification**: keep the encoder frozen, and train just a small linear layer on top of its embeddings.
 - **Speaker verification**: "is this the same voice?" becomes a cosine similarity against a threshold.
-- **Recommendation, dedup, clustering**: all just distances.
-- **Multimodal LLMs**: every model that "hears" is an audio embedding model bolted onto a language model.
+- **Recommendation, deduplication, clustering**: each reduces to comparing distances between embeddings.
+- **Multimodal LLMs** (large language models): every model that "hears" is an audio embedding model bolted onto a language model.
 
-One technicality to file away before we go on. Audio encoders are built on sequences, so what they naturally produce is a vector *per frame*, one every ~20 ms; a single vector per clip only exists if you make one, usually by averaging the frames. Some training objectives grade the frames, some grade the clip summary, and this distinction will matter later. Pocket it.
+Note the mismatch with §2, though: the encoders there produce a vector **per frame**, while everything on this list wants one vector **per clip**. The clip vector only exists if you make one, usually by averaging the frame vectors. Some training objectives grade the frames, some grade the clip summary, and this distinction will matter later.
 
-Now the real problem, and it's not an engineering problem. I said "similar clips nearby." Similar *how*? Take a concrete five-second recording: **a woman says "the tide is coming in" on a windy beach, and a dog barks in the background.** What should be near it?
+Everything so far is engineering. The real problem is conceptual: I said the embeddings of similar clips should sit close together. **Similar how?** Take a concrete five-second recording: **a woman says "the tide is coming in" on a windy beach, and a dog barks in the background.** What should be near it?
 
 - The same sentence read by a stranger in a studio? (Same *words*.)
 - The same woman saying something else? (Same *voice*.)
 - The same beach with nobody talking? (Same *scene*.)
 - A different dog in a park? (Same *event*.)
 
-Every answer is defensible, and they point in completely different directions. Here's a way to feel it: play that clip to a court stenographer, a casting director, a film sound editor, a triage nurse, and a dog trainer, and ask them what they heard. You get five different, correct answers, because the signal carries all five things *at once*, superimposed in one waveform, and each listener's training decides which layer they pull out.
+Every answer is defensible, and they point in completely different directions. The reason the question has no single answer is a fact about the signal itself: **the words, the voice, the scene, and the events are all present simultaneously**, superimposed in one waveform. Any definition of "similar" privileges one of these layers, and a model that pulls two clips together along one layer must, to some degree, ignore the others.
 
-![Five professionals hearing five different things in the same waveform](/blog/audio-embeddings/five_listeners.png)
+So "similar" is not a property of audio. **It's a choice.** And *you never get to make the choice directly*. There is no principled "embedding loss" you write down that says "please arrange clips by meaning." What actually happens, in every model in this post, is this: **you train the network on some task, and the embedding is the residue**, the internal arrangement of inputs the network was forced into in order to do the task. **Pick the task and you've picked which layers of the signal survive into the vector and which get erased.** A network trained to transcribe keeps the words and forgets the voice. A network trained to detect barks keeps the events and forgets the words.
 
-**Fig. 2:** *One recording, five correct descriptions. Every audio embedding model is one of these listeners, implemented in weights.*
-
-So "similar" is not a property of audio. It's a choice. And, this is the part I find genuinely deep, *you never get to make the choice directly*. There is no principled "embedding loss" you write down that says "please arrange clips by meaning." What actually happens, in every model we're about to meet, is this: **you train the network on some task, and the embedding is the residue**, the internal arrangement of inputs the network was forced into in order to do the task. Pick the task and you've picked which layers of the signal survive into the vector and which get erased. A network trained to transcribe becomes the stenographer and forgets the voice. A network trained to spot barks becomes the trainer and forgets the words.
-
-The rest of this post is just the history of that choice: the tasks people trained on, what each task's residue kept and destroyed, and how the field clawed its way toward embeddings that keep more. The history has a shape you might not expect, so here's the plan: first labels (§4), then, unusually early, *no* labels (§5), and only years later, language (§6).
+The rest of this post is the history of that choice: the tasks people trained on, what each task's residue kept and destroyed, and how the field moved toward embeddings that keep more. The history ran in three phases: **supervised labels** first (§4), then **self-supervision with no labels at all** (§5), and **language supervision** last (§6).
 
 ## 4. The obvious thing first: supervised classification
 
-The first decade of deep audio did the obvious thing, the same thing every field did: collect labels, train a classifier with cross-entropy, and afterwards notice that the penultimate layer is a decent embedding. This is a happy accident that's worth understanding rather than accepting: to classify well, the network must arrange inputs in its last hidden layer so that a linear boundary can separate the classes, and any arrangement good enough for that turns out to transfer to other tasks. The embedding was never the goal. It's residue, exactly as promised.
+Through the 2010s the standard approach was: collect labels, train a classifier with cross-entropy, and use the trained network's penultimate layer as the embedding. The mechanism: to classify well, the network must arrange inputs in its last hidden layer so that a linear boundary can separate the classes, and any arrangement good enough for that turns out to transfer to other tasks.
 
-Audio ran this recipe separately for each kind of listener:
+Recall from §3 that one clip carries several layers of information at once: the events, the voice, the words. Under supervised training, each of these got its own labels and its own models:
 
-- **Events**: [AudioSet](https://research.google.com/audioset/) (Google, 2017), 2 million YouTube clips tagged with 527 classes ("dog bark", "sirens", "acoustic guitar"), and classifiers trained on it: [VGGish](https://arxiv.org/abs/1609.09430), then [PANNs](https://arxiv.org/abs/1912.10211), then the transformer [AST](https://arxiv.org/abs/2104.01778).
-- **Voice**: train a network to answer "which of these 7,000 speakers is talking?", keep the penultimate layer, and you get a voice embedding ([x-vectors](https://www.danielpovey.com/files/2018_icassp_xvectors.pdf), 2018): same person close together, regardless of what they say.
-- **Words**: classic supervised speech recognition, whose internals encode spoken content.
+| Signal layer | Training task | Models | Where the embedding comes from |
+|---|---|---|---|
+| **Events** | Tag a clip with the sounds it contains. Dataset: [AudioSet](https://research.google.com/audioset/) (Google, 2017), 2 million YouTube clips labeled with 527 classes ("dog bark", "siren", "acoustic guitar"). | [VGGish](https://arxiv.org/abs/1609.09430) (a CNN, trained on a YouTube precursor of AudioSet), then [PANNs](https://arxiv.org/abs/1912.10211) (larger CNNs), then [AST](https://arxiv.org/abs/2104.01778) (Audio Spectrogram Transformer) | The penultimate layer, reused as a general-purpose sound-event embedding. |
+| **Voice** | Classify "which of these 7,000 speakers is talking?" | [x-vectors](https://www.danielpovey.com/files/2018_icassp_xvectors.pdf) (2018) | The penultimate layer. To tell speakers apart it must place clips of the same person close together regardless of what is being said: a voice embedding. |
+| **Words** | Transcribe audio into text (ASR, automatic speech recognition). | [Deep Speech 2](https://arxiv.org/abs/1512.02595) (Baidu, 2015), [Listen, Attend and Spell](https://arxiv.org/abs/1508.01211) (Google, 2015) | The late layers, one vector per frame rather than per clip, since the output is a character sequence and not a single class. A network cannot transcribe a clip without internally representing its words. |
 
-It works, and you should notice the two ways it's stuck. First, the label list is a ceiling: a 527-way classifier is only ever asked one question per clip, and the objective actively *rewards* discarding everything the labels don't mention, because invariance to it makes classification easier. The event model destroys the words and the voice on purpose; the speaker model destroys the words and the beach on purpose. One clip, five layers, and every label list picks one and shreds the rest.
+This approach works, but it has two problems. First, **the label list is a ceiling**: a 527-way classifier is only ever asked one question per clip, and the objective actively *rewards* discarding everything the labels don't mention, because invariance to it makes classification easier. The event model discards the words and the voice; the speaker model discards the words and the scene. One clip, four layers, and every label list picks one and discards the rest.
 
-Second, labels are painfully expensive, and in audio more than anywhere. AudioSet took a Google team years and is still noisy. Transcription is worse: an hour of speech costs many hours of human labeling, and most of the world's languages have essentially no transcribed audio at all. Meanwhile unlabeled audio (podcasts, radio, videos, voice notes) is functionally infinite.
+Second, **labels are expensive**, and in audio more than anywhere. AudioSet took a Google team years and is still noisy. Transcription is worse: an hour of speech costs many hours of human labeling, and most of the world's languages have essentially no transcribed audio at all. Meanwhile unlabeled audio (podcasts, radio, videos, voice notes) is functionally infinite.
 
-Here's where audio's history forks from vision's, and it's worth appreciating why. When vision hit its label ceiling, it found billions of images with free text attached (alt-text) and escaped through language: that's CLIP, 2021. Audio checked its pockets and found nothing; the internet does not caption sound at scale. So speech research, sitting on infinite unlabeled audio and unaffordable labels, went the other way, hard, and years before "self-supervised" became fashionable elsewhere: **drop the labels entirely and make the audio teach itself.**
+Here's where audio's history forks from vision's. When vision hit its label ceiling, it found billions of images with free text attached (alt-text) and trained on that text instead of labels: that's CLIP (Contrastive Language-Image Pretraining), 2021. Audio had no equivalent; the internet does not caption sound at scale. Speech research had unlimited unlabeled audio and could not afford labels, so it did what only became standard elsewhere years later: **drop the labels entirely and make the audio teach itself.**
 
 ## 5. Let the audio teach itself
 
 ### 5.1 The idea, and the trap
 
-How can data with no labels teach anything? The trick is old, it's the one BERT is built on: **hide part of the input and predict it from the rest.**
+How can data with no labels teach anything? The answer is the same idea BERT uses for text: **hide part of the input and predict it from the rest.**
 
-Mask out a few hundred milliseconds from the middle of our beach clip and ask the model to fill in what belongs there. Think about what it takes to do this well. The missing frames were *her* voice, so her timbre must be encoded to predict them. The wind blows straight through the gap, so the ambience must be tracked. The sentence so far is "the tide is...", so the missing word is far likelier "coming" than "purple": that's phonetics, vocabulary, a shadow of grammar. Nothing needed a label. Better, nothing needed a *name*: the exact texture of wind and the rasp of a voice have no words for them, and fill-in-the-blank teaches them anyway. Squint and you can see the promise: the residue of this task could be a listener with all five ears at once.
+Mask out a few hundred milliseconds from the middle of our beach clip and ask the model to predict the missing frames. Predicting them well requires encoding several things at once. The missing frames contain the woman's voice, so the model must encode how her voice sounds. The wind continues across the masked region, so the model must encode the background sound. The sentence so far is "the tide is...", so predicting the rest requires phonetics and vocabulary: "coming" is far more likely than "purple". **None of this needed a label.** It did not even need a name: there is no word for the exact sound of this wind or this voice, but the prediction task forces the model to represent them anyway. The residue of this task could be an embedding that **keeps every layer of the signal at once**.
 
-But try to implement it naively and you fall into a hole. Say the encoder embeds the visible audio, the same encoder embeds the hidden audio, and the loss is "make the prediction match the target." Now ask, the way you should always ask of a loss: what is the *cheapest* way to drive this to zero? Notice the loss only rewards prediction matching target. Nothing anywhere rewards telling clips apart. So the cheapest solution is total: **ignore the input, output the same constant vector, always.** Prediction equals target (both are the constant) for every frame of every clip on Earth. Loss: zero. Knowledge: none.
+But the naive implementation fails. The obvious setup is: run the encoder on the masked clip, and take its output at each masked position as the **prediction**; run the same encoder on the audio that was masked out, and take its output as the **target**; make the loss the distance between prediction and target. To see the failure, ask what the cheapest way to drive this loss to zero is. The loss only rewards making the prediction match the target; nothing rewards distinguishing one clip from another. So the cheapest solution is to **ignore the input and always output the same constant vector**. Prediction equals target for every frame of every clip, the loss is zero, and the model has learned nothing.
 
 ![Left: an embedding space with meaningful clusters. Right: every clip collapsed onto a single point](/blog/audio-embeddings/collapse.png)
 
-**Fig. 3:** *Collapse. Nothing in "predict yourself" rewards distinguishing clips, so the constant output wins and the embedding space implodes to a dot.*
+**Fig. 4:** *Collapse. Nothing in "predict yourself" rewards distinguishing clips, so the constant output wins and every clip maps to the same point.*
 
-This is called **collapse**, and it's not a bug in one paper, it's a structural hole in the entire idea of a model grading itself against itself. Supervised training never had this problem (the labels differ across inputs, so a constant scores terribly); the instant your targets come from the model, the temptation exists. All of self-supervised audio is the art of predicting yourself without being allowed to cheat, and every landmark model is one anti-cheating scheme. The cleanest way to tour them is by a single question: **what exactly should the model predict at the masked position?** Watch the answers to that question evolve; there's a punchline at the end.
+This is called **collapse**, and it's not a bug in one paper; it is inherent to any setup where a model grades itself against itself. Supervised training never had this problem: the labels differ across inputs, so a constant output scores terribly. The moment the targets come from the model itself, the constant solution becomes available. Every landmark self-supervised audio model is a different way of blocking it, and the easiest way to organize them is by a single question: **what exactly should the model predict at the masked position?**
 
 ### 5.2 Answer 1: the true frame, picked out of a lineup (wav2vec 2.0)
 
-First answer: don't *reproduce* the missing frame, *recognize* it. Show the model the true frame plus a crowd of impostors and train it to point at the right one. Now the constant solution is worthless: a constant points at every suspect equally. This is contrastive learning, and it reached speech in three steps, each fixing a weakness of the last:
+First answer: don't **reproduce** the missing frame, **recognize** it. Show the model the true frame plus a crowd of impostors and train it to point at the right one. Now the constant solution is worthless: a constant points at every suspect equally. This is contrastive learning. It came to speech through three models, each fixing a weakness of the previous one:
 
-- **[CPC](https://arxiv.org/abs/1807.03748)** (Contrastive Predictive Coding, 2018) introduced the game itself: encode a sequence, and from the context so far, pick the *future* latent frames out of a lineup of impostors. Not audio-specific; the paper ran it on speech, images, and text.
-- **[wav2vec](https://arxiv.org/abs/1904.05862)** (Meta, 2019) was CPC rebuilt for speech: a fully convolutional network playing predict-the-future on raw waveforms, whose features knocked a solid dent in speech recognition error rates. It worked, but predicting only the future from the past limits what the model can use, and the follow-up [vq-wav2vec](https://arxiv.org/abs/1910.05453) bolted on a quantizer so the latents became discrete, BERT-friendly units.
-- **[wav2vec 2.0](https://arxiv.org/abs/2006.11477)** (Meta, 2020) merged all of it into one end-to-end model and made the decisive swap: instead of predicting the future from the past, mask spans *in the middle* and predict them from context on both sides, exactly like BERT. That's the version that changed the field, and the one worth understanding in detail.
+- **[CPC](https://arxiv.org/abs/1807.03748)** (Contrastive Predictive Coding, 2018) introduced the setup. Encode the clip into a sequence of frame vectors. Given the frames up to some point, train the model to pick the true *next* frame out of a small set that also contains frames taken from other positions and other clips. The method is not audio-specific: the paper ran it on speech, images, and text.
+- **[wav2vec](https://arxiv.org/abs/1904.05862)** (Meta, 2019) applied CPC to raw speech waveforms and showed that it pays off: pretrain this way on unlabeled speech, then train a speech recognizer on the resulting frame vectors, and the error rate drops. But it had two limits. First, it predicts the future from the past, so the audio *after* a position is never used as context. Second, its frame vectors are continuous, while BERT-style training predicts discrete tokens. The follow-up [vq-wav2vec](https://arxiv.org/abs/1910.05453) addressed the second limit with a quantization step. Keep a small table of vectors called a **codebook**; its entries start random and are trained along with the rest of the network. Replace each frame vector with the codebook entry nearest to it. Every frame is now one of a fixed set of entries, so the audio becomes a sequence of discrete units that can be treated like text tokens.
+- **[wav2vec 2.0](https://arxiv.org/abs/2006.11477)** (Meta, 2020) combined the pieces into a single model and removed the first limit: instead of predicting the future from the past, mask spans *in the middle* of the clip and predict them using context from both sides, exactly like BERT. This is the version the rest of the field built on, and the one worth understanding in detail.
 
 Concretely:
 
-1. The 1-D conv front end from §2 turns the waveform into latent frames $z_t$, one per 20 ms.
+1. The 1-D convolution stack from §2 turns the waveform into frame vectors $z_t$, one per 20 ms.
 2. Spans of frames get masked; a transformer reads the corrupted sequence and outputs a context vector $c_t$ at each position.
-3. Each *true* latent gets quantized, snapped to entries of a small learned codebook, giving a discrete target $q_t$. (Discrete targets keep the lineup crisp; continuous ones are too easy to fudge.)
-4. At each masked position, the model faces $q_t$ plus 100 impostors (quantized latents from other masked positions in the same utterance) and must say which one belongs.
+3. Each *true* frame vector gets **quantized**: replaced with the nearest entry of a learned codebook, the vq-wav2vec mechanism from above. This gives a discrete target $q_t$. Quantizing keeps the lineup well defined: the candidates are distinct codebook entries rather than continuous vectors that can sit arbitrarily close to each other.
+4. At each masked position, the model is given $q_t$ plus 100 impostors (quantized frame vectors from other masked positions in the same clip) and must identify the true one.
 
 ![The wav2vec 2.0 pipeline: waveform to latents, masking, transformer context vector, quantized target, and the lineup](/blog/audio-embeddings/wav2vec2_lineup.png)
 
-**Fig. 4:** *One wav2vec 2.0 training step at one masked position: the context vector $c_t$ must pick the true quantized frame $q_t$ out of a lineup of impostors from the same utterance.*
+**Fig. 5:** *One wav2vec 2.0 training step at one masked position: the context vector $c_t$ must pick the true quantized frame $q_t$ out of a lineup of impostors from the same utterance.*
 
-"Pick the right one out of K" is just classification, so we can score it with classification's standard loss. Quick refresher if it's rusty: a classifier ends in one raw score per candidate (logits); softmax exponentiates and normalizes them into probabilities; cross-entropy is minus the log of the probability given to the correct candidate, near zero when confidently right, huge when confidently wrong. Here the logits are similarities between $c_t$ and each candidate:
+"Pick the right one out of K" is a classification problem, so the loss is **cross-entropy**, the same loss used in supervised classification. As a reminder of how it works: a classifier ends with one raw score per candidate (the **logits**); softmax turns the scores into probabilities; cross-entropy is minus the log of the probability assigned to the correct candidate, near zero when the model is confidently right and large when it is confidently wrong. Here the logits are similarities between $c_t$ and each candidate:
 
 $$\mathcal{L}_t = -\log \frac{\exp(\mathrm{sim}(c_t, q_t)/\kappa)}{\sum_{\tilde{q} \in Q_t} \exp(\mathrm{sim}(c_t, \tilde{q})/\kappa)}$$
 
-where $Q_t$ is the lineup, $\mathrm{sim}$ is cosine similarity, and $\kappa$ is a temperature (cosines live in $[-1, 1]$, too flat a range for a softmax to bite on, so we stretch them). The literature calls this **InfoNCE**, which sounds fancier than it is: cross-entropy where the classes are improvised from the lineup. Remember the plain reading, because this exact loss shows up again later with a different lineup.
+where $Q_t$ is the lineup, $\mathrm{sim}$ is cosine similarity, and $\kappa$ is a temperature (cosines live in $[-1, 1]$, too flat a range for a softmax to bite on, so we stretch them). The literature calls this loss **InfoNCE**: cross-entropy where the classes are the members of the lineup, assembled fresh at each masked position instead of fixed in advance.
 
-Two footnotes with teeth. One: the codebook itself can collapse (every frame snapping to one entry makes the lineup trivial), so there's a diversity penalty keeping all entries in use. Anti-cheating schemes need their own anti-cheating schemes; welcome to self-supervision. Two: the impostors are other frames of the *same utterance*, so the model gets paid to distinguish the target from frames that may contain the exact same phoneme. The repulsion that defeats collapse also fights a bit of the structure you actually want. Keep that itch in mind.
+Two caveats:
 
-None of this dampened the result, which made the whole field sit up: pretrain on 60,000 hours of unlabeled speech, then fine-tune on **ten minutes** of transcribed audio, and you get a working speech recognizer. Ten minutes. The embeddings had learned nearly everything transcription needs before seeing a single label.
+1. **The codebook can collapse too.** Nothing forces the network to use all of the codebook entries, and the prediction task gets easier if it uses fewer: if every frame snaps to the same entry, the target and the impostors become identical vectors, and the lineup can be won without learning anything. wav2vec 2.0 adds a **diversity penalty**, an extra loss term that rewards using all codebook entries at similar rates across a batch.
+2. **The impostors come from the same clip as the target.** That includes frames that contain the same sound, for example the "s" in one word and the "s" in another word. The loss pushes their representations apart even though they sound alike, so the objective that prevents collapse also erases some genuine similarity.
 
-### 5.3 Answer 2: a tag from a phrasebook nobody wrote (HuBERT, WavLM)
+The headline result from the paper: pretrain on 60,000 hours of unlabeled speech, then fine-tune on **ten minutes** of transcribed audio, and the model reaches a **4.8% word error rate** on the clean LibriSpeech test set. Ten minutes of labels is enough because pretraining had already forced the representations to encode the phonetic structure that transcription needs.
 
-The second answer sounds like a prank when you first hear it. **[HuBERT](https://arxiv.org/abs/2106.07447)** (Hidden-unit BERT, Meta 2021) builds its prediction targets *before training, out of junk*:
+### 5.3 Answer 2: cluster tags, fixed before training (HuBERT, WavLM)
 
-1. Compute MFCCs for every frame of the corpus. (MFCCs are a handcrafted acoustic summary from the 1970s; think "crude spectrogram statistics.")
+The second answer changes what the classes are. In wav2vec 2.0 the candidate set was rebuilt at every masked position: the true frame plus impostors sampled on the spot. The second answer instead uses **one fixed list of classes shared by every frame in the corpus**, like BERT's token vocabulary. That requires a class label for every frame, and no such labels exist. **[HuBERT](https://arxiv.org/abs/2106.07447)** (Hidden-unit BERT, Meta 2021) manufactures them: **before training starts, it assigns every frame a pseudo-label**, built from simple handcrafted audio features:
+
+1. Compute MFCCs (Mel-Frequency Cepstral Coefficients) for every frame of the corpus. MFCCs are a handcrafted acoustic summary from the 1970s; think "crude spectrogram statistics."
 2. Run k-means with 100 clusters over them. Now every frame in the corpus carries a cluster ID, 0 to 99. These tags are bad. MFCC clusters mean little beyond "sounds vaguely alike."
 3. Train exactly like BERT: mask spans, predict each masked frame's tag, plain cross-entropy over 100 classes.
-4. Then the bootstrap: your trained model's internal features are now far better than MFCCs. So re-cluster the corpus using *the model's own middle-layer features* (500 clusters this time), throw the old tags away, and train again.
+4. After this first round of training, the model's internal features describe the audio far better than MFCCs do. The paper scores cluster quality by how well cluster IDs align with ground-truth phoneme labels (phone purity and mutual information), and clusters built from the model's middle-layer features score far higher than MFCC clusters. So re-cluster the corpus using *the model's own middle-layer features* (500 clusters this time), replace the old pseudo-labels with the new cluster IDs, and train again.
 
 ```python
 labels = kmeans(mfcc(corpus), k=100)                # crude tags, fixed before training
@@ -142,107 +181,117 @@ for iteration in range(2):
 
 ![The HuBERT loop: MFCC features to k-means tags to BERT-style training to better features, and back around](/blog/audio-embeddings/hubert_loop.png)
 
-**Fig. 5:** *The HuBERT bootstrap. Junk features get clustered into tags, the tags supervise masked prediction, and the model's much better features get re-clustered into the next round's tags.*
+**Fig. 6:** *The HuBERT bootstrap. Crude features get clustered into tags, the tags supervise masked prediction, and the model's much better features get re-clustered into the next round's tags.*
 
-Notice collapse never even gets a vote here: the targets are computed offline and never move during training, so there's no loop for laziness to exploit. The real question is why garbage tags teach anything at all, and the answer is my favorite sentence in this whole subject: **targets don't need to be correct, they need to be consistent.** If the same vowel sound gets tag 37 everywhere it occurs, then learning to predict "37 goes here" from context forces the model to learn everything that *predicts* that vowel: the phonetic environment, the speaker's habits, the acoustics of the room. Whether tag 37 "means" anything is irrelevant. A phrasebook nobody wrote, applied consistently, is still a curriculum. (If this feels like it shouldn't work, I sympathize. The field's best tricks all have this flavor, and the theory limps along behind the practice.)
+Notice collapse never even gets a vote here: the targets are computed offline and never move during training, so there's no loop for laziness to exploit. The real question is why bad tags teach anything at all: **targets don't need to be correct, they need to be consistent.** If the same vowel sound gets tag 37 everywhere it occurs, then learning to predict "37 goes here" from context forces the model to learn everything that *predicts* that vowel: the phonetic environment, the speaker's habits, the acoustics of the room. Whether tag 37 "means" anything is irrelevant.
 
-A historical aside that I think is genuinely beautiful. Vision tried clustering-as-supervision too ([DeepCluster](https://arxiv.org/abs/1807.05520), [SwAV](https://arxiv.org/abs/2006.09882)), and there it stayed a side branch; vision's crown went to self-distillation ([BYOL](https://arxiv.org/abs/2006.07733), [DINO](https://arxiv.org/abs/2104.14294)). In speech, clustering *won*: HuBERT became the field's backbone. Why the reversal? Most likely because speech, unlike photographs, really is built from a small discrete inventory (phonemes, a few dozen per language), so cluster IDs match the data's true shape, and there is no analogous finite alphabet of image patches. When a method's structure matches the signal's structure, it sticks.
+> **A historical aside.** Vision tried clustering-as-supervision too ([DeepCluster](https://arxiv.org/abs/1807.05520), [SwAV](https://arxiv.org/abs/2006.09882)), and there it stayed a side branch; vision's crown went to self-distillation ([BYOL](https://arxiv.org/abs/2006.07733), [DINO](https://arxiv.org/abs/2104.14294)). In speech, clustering **won**: HuBERT became the field's backbone. Why the reversal? Most likely because speech, unlike photographs, really is built from a small discrete inventory (phonemes, a few dozen per language), so cluster IDs match the data's true shape, and there is no analogous finite alphabet of image patches. When a method's structure matches the signal's structure, it sticks.
 
-**[WavLM](https://arxiv.org/abs/2110.13900)** (Microsoft, 2021) then added one devious twist. During training, corrupt the input: overlay a second speaker, or noise, on part of the clip. **But keep the targets from the clean original.** To predict the clean tags through the interference, the model has to track *who* the main speaker is, not just what's being said. Look at what that did through the lens of §3: pure content prediction was slowly erasing the voice layer, and this one edit forced the model to keep it. WavLM promptly swept [SUPERB](https://arxiv.org/abs/2105.01051), the benchmark that probes one frozen encoder on a dozen different tasks (recognition, speaker ID, emotion, diarization), precisely because its residue kept more layers alive than anyone else's.
+**[WavLM](https://arxiv.org/abs/2110.13900)** (Microsoft, 2021) is HuBERT with one change to the input. The training objective is identical: mask spans, predict each masked frame's cluster tag. But during training the input gets corrupted: a second speaker, or noise, is overlaid on part of the clip, **while the targets stay the ones computed from the clean original**. To predict the clean tags through the interference, the model has to track which speaker is the main one, not just what is being said. In §3's terms: pure content prediction was slowly erasing the voice layer, and this change forced the model to keep it. WavLM ranked first on the [SUPERB](https://arxiv.org/abs/2105.01051) leaderboard (Speech processing Universal PERformance Benchmark), which evaluates one frozen encoder on a dozen tasks (recognition, speaker ID, emotion, and **diarization**, which means splitting a recording by who speaks when), because its embedding keeps more layers of the signal than encoders trained on clean input alone.
 
-One unplanned side effect worth knowing: HuBERT's tags are discrete, so you can treat them as *tokens* and train a language model directly on speech, with no text anywhere in the pipeline. That's "textless NLP" ([GSLM](https://arxiv.org/abs/2102.01192)), and it seeded today's speech-native LLMs.
+One unplanned side effect worth knowing: HuBERT's tags are discrete, so you can treat them as *tokens* and train a language model directly on speech, with no text anywhere in the pipeline. That's "textless NLP" ([GSLM](https://arxiv.org/abs/2102.01192), Generative Spoken Language Modeling), and it seeded today's speech-native LLMs.
 
-### 5.4 Answer 3: whatever a slightly older you would say (data2vec)
+### 5.4 Answer 3: an EMA teacher (data2vec)
 
-Third answer, imported from vision's winners. Keep two copies of the network. The **student** trains normally. The **teacher** is never trained: after each step its weights just drift a small fraction toward the student's, making it an exponential moving average (EMA) of the student's own past. The student, looking at the masked clip, must regress the features the teacher computed from the *unmasked* clip.
+Third answer, imported from vision's winners. Keep two copies of the network, identical at initialization. The **student** trains normally. The **teacher** is never trained by gradients: after each step its weights just drift a small fraction toward the student's, making it an exponential moving average (EMA) of the student's own past. The student receives the masked clip; the teacher receives the *unmasked* clip. At each masked position, the student is trained to predict the feature vector the teacher produced there, with a plain regression loss: match the teacher's vector directly.
 
-Why doesn't this collapse? Follow the gradients. They flow only through the student; the teacher takes none. So the optimizer has no lever with which to drag the *targets* toward some convenient constant. The cheap exit is bricked over, and the only way for the student to reduce its loss is to genuinely predict what a slightly older, slightly better version of itself says about the hidden audio.
+Why doesn't this collapse? Because gradients flow only through the student; the teacher's weights receive none. Collapse required the optimizer to move the *targets* toward a constant, and here the targets come from the teacher, which the optimizer cannot touch. This closes the direct route to collapse, but not every route: the teacher's weights follow the student's through the EMA update, so a student drifting toward constant outputs would slowly pull the teacher's targets along with it. That remaining pressure is why data2vec also normalizes its targets, as described below.
 
 ![data2vec: a student sees the masked clip and regresses features produced by an EMA teacher that sees the full clip](/blog/audio-embeddings/data2vec_teacher.png)
 
-**Fig. 6:** *data2vec. Student sees the masked clip, teacher sees the whole clip, and the student regresses the teacher's features at the masked frames. The teacher only ever drifts toward the student.*
+**Fig. 7:** *data2vec. Student sees the masked clip, teacher sees the whole clip, and the student regresses the teacher's features at the masked frames. The teacher only ever drifts toward the student.*
 
-In audio this is **[data2vec](https://arxiv.org/abs/2202.03555)** (Meta, 2022), and the paper's real point was that the recipe is modality-blind: the identical scheme trains speech, image, and text encoders, and on speech it matches or beats wav2vec 2.0 and HuBERT. (Implementation details that matter: the targets are averages over the teacher's top several layers, normalized so their variance can't quietly shrink toward zero. The collapse pressure never disappears; it just gets managed.) In speech, this answer shares the podium rather than owning it, but it's the cleanest expression of the EMA idea you'll find anywhere.
+In audio this is **[data2vec](https://arxiv.org/abs/2202.03555)** (Meta, 2022). The paper's central claim is that the method is **modality-independent**: the identical scheme trains speech, image, and text encoders, and on speech it matches or beats wav2vec 2.0 and HuBERT. Two implementation details carry weight. First, the targets are an average of the teacher's top several transformer layers, not just its final one. Second, the targets are normalized, so their variance cannot shrink toward zero during training; this blocks the slow route to collapse described above. In practice HuBERT and WavLM remained the more widely used speech encoders, but data2vec demonstrated that one masked-prediction scheme can serve every modality.
 
-### 5.5 Answer 4: a random tattoo (BEST-RQ)
+### 5.5 Answer 4: frozen random targets (BEST-RQ)
 
-The last answer is audio's own invention, and it reads like a dare. HuBERT showed the targets only need to be consistent. **[BEST-RQ](https://arxiv.org/abs/2202.01855)** (Google, 2022) asks the obvious follow-up: then why learn them at all? Take each frame's spectral features, project them through a **frozen random matrix**, snap the result to the nearest entry of a **frozen random codebook**, and use that as the tag for masked prediction. No k-means, no iterations, no learning anywhere in the target path.
+HuBERT showed the targets only need to be consistent. **[BEST-RQ](https://arxiv.org/abs/2202.01855)** (BERT-based Speech pre-Training with Random-projection Quantizer, Google 2022) asks the obvious follow-up: **if the targets only need to be consistent, why learn the targets at all?** Its targets are built in three steps:
 
-Run the checklist. Can the tags collapse? No, they never move. Can the student game them? No, they never respond. Are they consistent? Automatically: the projection is deterministic, so the same sound gets the same tag everywhere, forever. Every property that §5.3 said actually matters, obtained for free, with zero machinery. And it scales absurdly well: BEST-RQ is the pretraining under Google's [USM](https://arxiv.org/abs/2303.01037) family, trained on millions of hours.
+1. Take each frame's mel-spectrogram vector (the Option 2 features from §2).
+2. Multiply it by a **random matrix** that is fixed at initialization and never trained.
+3. Find the nearest entry in a codebook of **random vectors**, also fixed and never trained. The index of that entry is the frame's tag.
 
-Now step back and look at the four answers in a row, because there's a punchline. wav2vec 2.0's targets were a codebook *trained jointly with the model*. HuBERT's were *clustered offline from junk*. data2vec's were *a moving average of the past*. BEST-RQ's are *frozen random noise*. The targets got dumber at every step, and the models kept getting better. For masked prediction, **the intelligence belongs in the student, not in the targets**; the target's only job is to be a consistent mirror the student can't fog.
+Steps 2 and 3 do the same job k-means did for HuBERT: partition the feature space into regions and give every frame the ID of the region it lands in. The difference is where the region boundaries come from. k-means fits them to the data, and HuBERT re-fits them each iteration with better features; BEST-RQ draws them at random once and never moves them. Training is then identical to HuBERT: mask spans, predict each masked frame's tag with cross-entropy. No k-means, no iterations, no learning anywhere in the target path.
+
+Random targets have every property the previous sections showed matters. They cannot collapse: they are fixed before training and never move. The model cannot make them easier: nothing in the target path is trainable. And they are consistent: the projection and the codebook are deterministic, so the same input features get the same tag every time. The approach also scales: BEST-RQ is the pretraining behind Google's [USM](https://arxiv.org/abs/2303.01037) (Universal Speech Model) family, trained on millions of hours of speech.
+
+Now line up the four answers. wav2vec 2.0's targets were a codebook *trained jointly with the model*. HuBERT's were *clustered offline from crude features*. data2vec's were *a moving average of the past*. BEST-RQ's are *frozen random noise*. The targets got simpler at every step, and the models kept getting better. For masked prediction, **the intelligence belongs in the model, not in the targets**; the target's only job is to be consistent and out of the model's control.
 
 ![Four boxes from wav2vec 2.0's learned codebook to BEST-RQ's frozen random tags, with targets getting simpler left to right](/blog/audio-embeddings/target_progression.png)
 
-**Fig. 7:** *The arc of the target. Each generation asked less of the target and more of the student, and quality kept going up.*
+**Fig. 8:** *The arc of the target. Each generation asked less of the target and more of the model, and quality kept going up.*
 
 ### 5.6 The same game, played on pictures of sound
 
-Everything above walked through §2's first door (waveform, conv frames, BERT-style). The second door ran the identical playbook with vision's tools. **[AudioMAE](https://arxiv.org/abs/2207.06405)** (Meta, 2022) masks 80% of the spectrogram patches and regresses the missing values through a lightweight decoder that gets thrown away after training; reconstruction targets are the input itself, so collapse is off the table by construction. **[BEATs](https://arxiv.org/abs/2212.09058)** (Microsoft, 2022) plays HuBERT on patches: predict masked patches as discrete tokens, starting from a random tokenizer (recognize the BEST-RQ move), then alternating: model distills a better tokenizer, tokenizer trains a better model. BEATs took the state of the art on AudioSet tagging without using a single label during pretraining, and its encoder is now one of the standard "ears" bolted onto audio LLMs.
+Every model in §5 so far reads the raw waveform, chopped into frame vectors by a convolution stack (Option 1 from §2). The same self-supervised ideas also work on the other input representation, the mel-spectrogram (Option 2), cut into patches and treated the way vision models treat an image.
 
-At this point you can read any new audio self-supervision paper and place it in about a paragraph: which door did it walk through, and what does it predict at the mask?
+**[AudioMAE](https://arxiv.org/abs/2207.06405)** (Meta, 2022) applies masked autoencoding to the spectrogram: mask 80% of the patches and train the model to reconstruct the missing values. The reconstruction runs through a small decoder that is discarded after training; only the encoder is kept. Collapse is not a concern here, because the targets are the input values themselves, which the model cannot change.
 
-### 5.7 One more family: similarity by decree
+**[BEATs](https://arxiv.org/abs/2212.09058)** (Bidirectional Encoder representation from Audio Transformers, Microsoft 2022) runs HuBERT's recipe on spectrogram patches: convert each patch to a discrete token, mask patches, and predict the tokens at the masked positions. The first tokenizer is random, as in BEST-RQ. Training then alternates, the same bootstrap as HuBERT's re-clustering: the trained model is used to build a better tokenizer, and the better tokenizer's tokens train a better model. BEATs set the state of the art on AudioSet tagging without using any labels during pretraining, and its encoder is now one of the standard audio encoders attached to audio LLMs.
 
-There's one more self-supervised strain, minor in audio but worth meeting because it's the purest illustration of the §3 thesis. Instead of masking, just *declare* two things similar and train the encoder to agree:
+At this point you can read any new audio self-supervision paper and place it in about a paragraph: **which input representation does it use, and what does it predict at the mask?**
 
-- **[TRILL](https://arxiv.org/abs/2002.12764)** (Google, 2020) declares: two segments cut from the same recording, a few seconds apart, are similar. Now ask what survives a few seconds of gap. The voice, the room, the mood. What changes? The words. So TRILL is deliberately word-deaf, built for speaker, emotion, and health signals: an anti-stenographer, by construction.
-- **[COLA](https://arxiv.org/abs/2010.10915)** (2020): same declaration, scored with an InfoNCE lineup whose impostors are segments of other clips. (Told you that loss would come back.)
-- **[BYOL-A](https://arxiv.org/abs/2103.06695)** (2021): two *augmented* versions of one segment (mix in background noise, warp the spectrum), matched through an EMA teacher.
+### 5.7 One more family: declared similarity (TRILL, COLA, BYOL-A)
 
-The lesson is written right into the recipes: **write down what counts as "the same," and you have written down which layers of the signal your embedding keeps.** Nowhere in the field is the choice more naked.
+One more self-supervised family remains. It is minor in audio, but it shows §3's point, that "similar" is a choice, more directly than any other method. Instead of masking, these methods *declare* two things similar and train the encoder to place them close together:
+
+- **[TRILL](https://arxiv.org/abs/2002.12764)** (Google, 2020) declares two segments cut from the same recording, a few seconds apart, to be similar. Consider what that choice keeps. Across a few seconds of gap, the voice, the recording conditions, and the speaking style stay the same; the words change. So the embedding keeps the stable properties and discards the words. TRILL was built for exactly that: speaker, emotion, and health signals, the complement of a transcription model.
+- **[COLA](https://arxiv.org/abs/2010.10915)** (2020) makes the same declaration as TRILL (two segments of the same recording are similar), but trains with the InfoNCE loss from §5.2: the lineup for a segment contains its partner segment as the true answer and segments from other clips in the batch as impostors.
+- **[BYOL-A](https://arxiv.org/abs/2103.06695)** (2021) declares two *augmented* versions of the same segment similar: mix in background noise, warp the spectrum. The two versions are matched through an EMA teacher, the same mechanism as §5.4, so no impostors are needed.
+
+In all three, **the definition of "the same" determines which layers of the signal the embedding keeps.**
 
 ## 6. Language finally shows up
 
-So by around 2021, audio had strong label-free encoders. What it didn't have was any way to *talk* to them: you can't type a query at a HuBERT. Vision solved exactly this with CLIP. Audio's version arrived late (remember §4: no alt-text goldmine), and it arrived split in two, because text about audio comes in two very different kinds. A **transcript** tells you what was said. A **description** tells you what it sounded like. Different text, different model, different listener.
+By around 2021, audio had strong label-free encoders. What it did not have was a connection to language: a HuBERT embedding cannot be searched with a text query, and its dimensions have no names. Vision solved this with CLIP. The audio equivalent arrived late, because, as §4 noted, the internet has no large supply of text paired with audio. And it arrived split in two, because text about audio comes in two kinds. A **transcript** records what was said. A **description** records what it sounded like. Training on one or the other produces different models with different residues.
 
-### 6.1 Whisper: supervise on transcripts, get the stenographer
+### 6.1 Whisper: supervise on transcripts, keep the words
 
-For speech specifically, the internet does have text at staggering scale: subtitles, captioned videos, audiobooks read from known books. **[Whisper](https://arxiv.org/abs/2212.04356)** (OpenAI, 2022) is what brute force looks like here: 680,000 hours of web audio paired with transcripts, an encoder-decoder transformer trained to *generate* the transcript token by token (plus language tags, timestamps, translations, all signaled by special tokens).
+For speech specifically, the internet does have text at scale: subtitles, captioned videos, audiobooks read from known books. **[Whisper](https://arxiv.org/abs/2212.04356)** (OpenAI, 2022) supervises on it at full force: 680,000 hours of web audio paired with transcripts, an encoder-decoder transformer trained to *generate* the transcript token by token (plus language tags, timestamps, translations, all signaled by special tokens).
 
-Whisper is a speech recognizer; nobody trained it to make embeddings. But apply the residue rule. The decoder can only emit a word if the evidence for that word exists in the encoder's frame features, and it must emit *every* word. So the encoder's features are forced to carry essentially everything linguistic, and that residue turned out to be the strongest word-layer representation in the field. Today Whisper's encoder is the default set of ears grafted onto multimodal LLMs ([Qwen2-Audio](https://arxiv.org/abs/2407.10759) among many).
+Whisper is a speech recognizer; it was never trained to produce embeddings. But §3's argument applies here too: the embedding is the residue of the training task. The decoder can only emit a word if the evidence for that word exists in the encoder's frame features, and it must emit *every* word. So the encoder's features are forced to carry essentially **everything linguistic**, and that residue turned out to be the strongest word-layer representation in the field. Today Whisper's encoder is the default speech encoder attached to multimodal LLMs ([Qwen2-Audio](https://arxiv.org/abs/2407.10759) among many).
 
-The bill is the one §4 trained you to expect. What transcription doesn't need, the features don't keep: speaker identity, the room, the emotional color, all preserved only as far as they help guess the next token, which is not far. Ask Whisper's embedding *who* is speaking and it shrugs. It's the stenographer, grown enormous, and still the stenographer.
+The cost is the same trade §4 described. **What transcription does not need, the features do not keep**: speaker identity, the recording conditions, the emotion. These are preserved only to the extent that they help predict the next transcript token, and they rarely do. Whisper's embedding carries little information about who is speaking.
 
-### 6.2 CLAP: supervise on descriptions, get the sound editor
+### 6.2 CLAP: supervise on descriptions, keep the events
 
-For everything that isn't speech there are no transcripts, only descriptions: "a dog barks while wind blows into the microphone." **[CLAP](https://arxiv.org/abs/2206.04769)** (Contrastive Language-Audio Pretraining, Microsoft 2022; the widely used open build is [LAION-CLAP](https://arxiv.org/abs/2211.06687)) collects (clip, caption) pairs and trains two encoders, an audio tower (spectrogram door, pooled to one clip vector) and a text tower, to land matching pairs close together in one shared space.
+For everything that isn't speech there are no transcripts, only descriptions: "a dog barks while wind blows into the microphone." **[CLAP](https://arxiv.org/abs/2206.04769)** (Contrastive Language-Audio Pretraining, Microsoft 2022; the widely used open build is [LAION-CLAP](https://arxiv.org/abs/2211.06687)) collects (clip, caption) pairs and trains two encoders, an audio tower (a spectrogram encoder, pooled to one clip vector) and a text tower, to land matching pairs close together in one shared space.
 
-The loss? You already own it. It's the lineup from §5.2, with the cast changed: for each clip in a batch of $N$ pairs, the lineup is the $N$ captions, the true caption is the suspect, cross-entropy does the rest, and the whole thing runs symmetrically (captions pick their clips too). What deserves a pause is what the lineup is made of now. In §5.2 the classes were frames. Here **the classes are sentences**, improvised fresh every batch. The label vocabulary is no longer a fixed list of 527 tags; it's language.
+The loss is the InfoNCE lineup from §5.2, with different candidates. For each clip in a batch of $N$ pairs, the lineup is the $N$ captions in the batch; the clip's own caption is the correct answer, and cross-entropy scores the choice. The same loss runs symmetrically in the other direction: each caption must pick its clip out of the $N$ clips. The important change is what the candidates are. In §5.2 they were frames. Here **the candidates are sentences**, drawn fresh every batch. The label vocabulary is no longer a fixed list of 527 tags; it is language.
 
-![CLAP: an audio tower and a text tower feed a shared space; the batch similarity matrix has true pairs on the diagonal](/blog/audio-embeddings/clap_two_towers.png)
+![CLAP: an audio tower and a text tower project into a shared space; the batch similarity matrix has true pairs on the diagonal](/blog/audio-embeddings/clap_two_towers.png)
 
-**Fig. 8:** *CLAP's training signal. Two towers, one shared space, and an $N \times N$ similarity matrix per batch: diagonal (true pairs) pushed up, everything else pushed down. Each row is a lineup whose suspects are sentences.*
+**Fig. 9:** *CLAP's training signal. Two towers, one shared space, and an $N \times N$ similarity matrix per batch: diagonal (true pairs) pushed up, everything else pushed down. Each row is a lineup whose candidates are sentences.*
 
-That buys the party trick CLIP made famous, **zero-shot classification**: embed the sentences "a dog barking" and "a cat meowing," embed your clip, pick the closer sentence. You just built a classifier out of prose, for any label set, with zero training examples. LAION-CLAP clears 90% zero-shot accuracy on [ESC-50](https://github.com/karolpiczak/ESC-50), a standard environmental-sound benchmark, and text-to-audio search ("glass breaking", enter) becomes a dot product. Sound-effect libraries run on this today.
+A shared audio-text space enables **zero-shot classification**, the capability CLIP made famous: embed the sentences "a dog barking" and "a cat meowing," embed the clip, and assign the label whose sentence is closer. This is a classifier built from prose, for any label set, with zero training examples. LAION-CLAP reaches 90% zero-shot accuracy on [ESC-50](https://github.com/karolpiczak/ESC-50), a standard environmental-sound benchmark. Text-to-audio search works the same way: embed the query sentence, and ranking clips is a dot product. Sound-effect libraries use this today.
 
-So why isn't CLAP audio's CLIP-sized revolution? Two reasons. First, **the data just isn't there.** Alt-text was vision's free lunch; audio's caption datasets are hand-assembled and three to four orders of magnitude smaller (LAION-Audio-630K is 630 *thousand* pairs). Audio is the modality the internet forgot to label. Second, **captions describe events.** People write "a dog barks." They do not write down the sentence being spoken, and they never describe the voice. So CLAP's residue is the sound editor's ear with a text door: our beach clip embeds as speech-plus-dog-plus-wind, and the words and the woman evaporate.
+So why did CLAP not have the impact CLIP had? Two reasons. First, **the data is small.** CLIP trained on 400 million image-text pairs collected from alt-text. Audio caption datasets are hand-assembled and three to four orders of magnitude smaller: LAION-Audio-630K is 630 *thousand* pairs. Second, **captions describe events.** People write "a dog barks." They do not write down the sentence being spoken, and they never describe the voice. So CLAP's residue is an event-layer embedding that can be queried with text: our beach clip embeds as speech-plus-dog-plus-wind, and the words and the voice are lost.
 
-Put §6.1 and §6.2 side by side and enjoy the symmetry: Whisper keeps only the words, CLAP keeps everything *except* the words, and both are deaf to whatever text never records at all: the exact texture of the wind, the reverb that says "small tiled bathroom," whatever it is that makes a voice recognizably one person. The §5 models were already hearing all of that. They just can't be talked to. Nobody has all five ears and a mouth; hold that thought for §8.
+Put §6.1 and §6.2 side by side: Whisper keeps only the words, and CLAP keeps everything *except* the words. Both also lose whatever text never records at all: the specific sound of the wind, the reverb of the room, the qualities that make a voice recognizable. The §5 models capture all of that, but they cannot be queried with text. So no single model both keeps every layer and connects to language; §8 returns to this gap.
 
-## 7. Loose end: turning many frames into one vector
+## 7. Turning many frames into one clip vector
 
-Time to redeem the technicality pocketed in §3. The masked-prediction family grades *frames*. Its native output is a sequence of local vectors, which is perfect for recognition and diarization (they consume sequences), but nothing in those objectives ever graded a single whole-clip vector. Three ways to get one, in increasing order of intent:
+The masked-prediction objectives of §5 score predictions at individual **frames**, so their native output is a sequence of frame vectors. That suits tasks that consume sequences, like recognition and diarization. But nothing in those objectives ever produced or evaluated a single whole-clip vector, and search, deduplication, and clustering all need one vector per clip. There are three ways to get one:
 
-**1. Pool.** Average the frames, or let a small attention head weight them first ([attentive statistics pooling](https://arxiv.org/abs/1803.10963)). Cruder than it sounds; works. But there's a practical fact here that everyone eventually learns the hard way: **the layers of a speech transformer specialize.** Probing studies ([Pasad et al.](https://arxiv.org/abs/2107.04734), and SUPERB's per-task learned layer weights) consistently find speaker identity concentrated in the early layers, phonetics in the middle, word-level information late. A frozen HuBERT contains the casting director *and* the stenographer, stacked at different depths, and "which layer do you pool" is the same question as "which listener do you want." The superposition from §3 never went away. It just moved inside the network.
+**1. Pool.** Average the frame vectors, or let a small attention head weight them before averaging ([attentive statistics pooling](https://arxiv.org/abs/1803.10963)). Simple, and it works. One practical fact matters here: **the layers of a speech transformer specialize.** Probing studies ([Pasad et al.](https://arxiv.org/abs/2107.04734), and SUPERB's per-task learned layer weights) consistently find speaker identity concentrated in the early layers, phonetic content peaking near the middle, and word-level information peaking about two-thirds of the way up, with both content measures falling again in the topmost layers of a pretrained model. A frozen HuBERT contains both the voice information and the word information, stacked at different depths, so choosing which depth to pool from is choosing which layer of the signal the clip vector keeps. The superposition from §3 did not go away; it moved inside the network.
 
 ![Schematic curves showing speaker identity peaking in early layers, phonetic content in the middle, and word-level information late](/blog/audio-embeddings/layer_specialization.png)
 
-**Fig. 9:** *Where the layers live inside a self-supervised speech model, schematically (after [Pasad et al., 2021](https://arxiv.org/abs/2107.04734) and SUPERB's learned layer weights). Probe a different depth, extract a different listener.*
+**Fig. 10:** *Where the layers live inside a self-supervised speech model, schematically (after [Pasad et al., 2021](https://arxiv.org/abs/2107.04734)). Speaker identity is strongest early; phonetic content peaks near the middle; word-level information peaks about two-thirds of the way up. In a pretrained model both content curves then fall in the final layers, whose representations drift back toward the input (fine-tuning removes this drop). Probe a different depth, extract a different layer of the signal.*
 
-**2. Train the clip vector on purpose.** CLAP and the §5.7 family do this natively; their objectives grade the summary directly, so the summary is the product.
+**2. Train the clip vector directly.** Some objectives already produce one vector per clip. CLAP pools its audio tower's frame vectors into a single clip vector *before* the loss, so the caption-matching loss trains that vector itself. The §5.7 methods work the same way: each declared-similar pair is compared as two pooled vectors. In these models the clip vector is what training optimizes, not something derived afterwards.
 
-**3. When you can state the similarity, state it.** Suppose the layer you want is *identity*: same voice or not, for verification or diarization. That's not a vague "similar"; it has a definition, and when you have a definition, supervision comes roaring back, sharpened into metric learning. Train on thousands of labeled speakers with an angular-margin softmax that forces every utterance of a speaker into a tight cone, cones separated by a mandatory margin. That's [ECAPA-TDNN](https://arxiv.org/abs/2005.07143) with AAM-softmax, the same [ArcFace](https://arxiv.org/abs/1801.07698) loss that runs face recognition, because same-voice and same-face are the same problem shape: open-set identity, known definition of "same." These are the embeddings inside production speaker-verification systems. Self-supervised features probe close (WavLM especially), but when you know exactly what you mean by similar, saying so beats hoping it emerges.
+**3. When the similarity has a definition, train on the definition.** Suppose the layer you want is the *voice*: the question is "are these two clips the same speaker?", as in verification and diarization. Unlike §3's question, where "similar" had many defensible answers, this one has a ground truth: two clips either are or are not from the same speaker. So train on it directly: pull same-speaker clips together, push different-speaker clips apart. This is called **metric learning**. The standard model is **[ECAPA-TDNN](https://arxiv.org/abs/2005.07143)**, trained on thousands of labeled speakers with an **additive angular margin softmax** (AAM-softmax): each speaker's utterances are forced into a tight cone of directions, and the cones of different speakers must be separated by a margin. This is the same loss ([ArcFace](https://arxiv.org/abs/1801.07698)) used in face recognition, for the same reason: at test time the speakers are people the model has never seen, so it cannot rely on its training classes; it needs an embedding where distance alone decides "same or different," and the margin between cones is what makes distance reliable on new speakers. These embeddings run production speaker-verification systems. Self-supervised features come close in probes (WavLM especially), but **when you know exactly what you mean by "similar," training on that definition beats hoping it emerges from another task**.
 
 ## 8. Putting it all together
 
 Let's assemble everything on one page, in the order history ran it:
 
 ```
-2010s   supervised classifiers          one listener per label list
-        ├─ AudioSet -> VGGish/PANNs/AST      the sound editor
-        ├─ speaker IDs -> x-vectors          the casting director
-        └─ transcribed ASR                   the stenographer
+2010s   supervised classifiers          one layer per label list
+        ├─ AudioSet -> VGGish/PANNs/AST      the events
+        ├─ speaker IDs -> x-vectors          the voice
+        └─ transcribed ASR                   the words
                  │
                  │   labels too expensive; each list erases the other layers
                  ▼
@@ -251,9 +300,9 @@ Let's assemble everything on one page, in the order history ran it:
         ├─ HuBERT -> WavLM       target = offline cluster tag         (consistency > correctness;
         │                                                              WavLM re-learns the voice)
         ├─ data2vec              target = EMA teacher's features      (asymmetry)
-        ├─ BEST-RQ               target = frozen random tag           (intelligence in the student)
+        ├─ BEST-RQ               target = frozen random tag           (intelligence in the model)
         ├─ AudioMAE / BEATs      same game on spectrogram patches
-        └─ TRILL / COLA / BYOL-A "similar" declared by decree
+        └─ TRILL / COLA / BYOL-A "similar" is declared directly
                  │
                  ▼
 2022+   language arrives late
@@ -265,47 +314,51 @@ Two questions place every model. One: **who defines "similar"**, the signal itse
 
 ![A grid placing every model by who defines similar (the signal, human labels, or language) and which layer is graded](/blog/audio-embeddings/map_plane.png)
 
-**Fig. 10:** *Every encoder in one grid. Columns: who defines "similar". Rows: which layer gets graded. Each model in this post is one cell.*
+**Fig. 11:** *Every encoder in one grid. Columns: who defines "similar". Rows: which layer of the signal the embedding keeps. Each model in this post is one cell.*
 
 Answer both questions and the practical guide writes itself:
 
-| You want | Reach for | Why |
+| Task | Encoder | Why |
 |---|---|---|
-| Zero-shot sound tagging, text→audio search | CLAP (LAION-CLAP) | The description door into the space |
-| Speech content: ASR, spoken-content search | Whisper encoder; wav2vec 2.0 / HuBERT / WavLM + light head | Word-layer features, cheap to decode |
-| Speaker verification, diarization, voice similarity | ECAPA-TDNN; or WavLM + probe | Identity is statable; state it, or probe the early layers |
-| Sound-event tagging, frozen backbone | BEATs, AudioMAE | Event features learned from the signal, no caption ceiling |
-| Emotion, paralinguistics, health | WavLM / data2vec + probe across layers; TRILL lineage | The "how it's said" layer lives mid-to-early in SSL stacks |
-| Ears for an LLM | Whisper encoder, often + BEATs | Words half-translated for the LLM; BEATs for the rest |
-| Music similarity and tagging | MERT; MuLan-style text towers | Music is its own layer with its own models |
+| Zero-shot sound tagging; text-to-audio search | CLAP (the LAION-CLAP build) | Its text and audio embeddings share one space, so a text query ranks clips directly |
+| Speech recognition; searching what was said | Whisper's encoder; or wav2vec 2.0 / HuBERT / WavLM with a small decoder on top | Their features carry the word layer |
+| Speaker verification, diarization, voice similarity | ECAPA-TDNN; or WavLM with a probe on its early layers | Trained (or probed) specifically for the voice layer |
+| Sound-event tagging with a frozen encoder | BEATs or AudioMAE | Event features learned without labels, so not limited to a caption vocabulary |
+| Emotion, speaking style, health signals | WavLM or data2vec with probes across layers; the TRILL lineage | This information sits in the early-to-middle layers of self-supervised models |
+| Audio input for an LLM | Whisper's encoder, often paired with BEATs | Whisper supplies the words, BEATs the events |
+| Music similarity and tagging | MERT; MuLan for text queries | Music encoders are trained on music's own structure |
 
-And the thought I asked you to hold in §6 resolves the obvious way: since no single encoder hears everything, the frontier wires several listeners into one system. [SALMONN](https://arxiv.org/abs/2310.13289) feeds an LLM Whisper features and BEATs features side by side, stenographer and sound editor in parallel, each supplying exactly the layer the other's training erased.
+This is also where the gap from §6 gets addressed: since **no single encoder keeps everything**, current systems wire several encoders together. [SALMONN](https://arxiv.org/abs/2310.13289) gives an LLM both Whisper features and BEATs features side by side, the word layer and the event layer in parallel, each supplying exactly what the other's training erased.
 
-**Other names you'll run into**, each one placed by the same two questions in a few seconds:
+**Other names worth knowing**, each placed by the same two questions (who defines "similar", and which layer is kept):
 
-- **[AudioCLIP](https://arxiv.org/abs/2106.13043)** / **[Wav2CLIP](https://arxiv.org/abs/2110.11499)**: align audio into an existing image-CLIP space using video, where soundtrack and frames pair themselves for free.
-- **[MuLan](https://arxiv.org/abs/2208.12415)**: CLAP's move for music at tens-of-millions scale; the text tower behind [MusicLM](https://arxiv.org/abs/2301.11325).
-- **[MERT](https://arxiv.org/abs/2306.00107)**: HuBERT's recipe for music, with codec tokens and pitch-aware targets, since music's "phonemes" are notes and timbres.
-- **[XLS-R](https://arxiv.org/abs/2111.09296)** / **[MMS](https://arxiv.org/abs/2305.13516)**: wav2vec 2.0 across 128 to 1,000+ languages; label-free scaling crossing language borders that labels never could.
-- **[w2v-BERT](https://arxiv.org/abs/2108.06209)**: lineup loss and cluster-tag loss trained jointly; supplied AudioLM's semantic tokens.
-- **[USM](https://arxiv.org/abs/2303.01037)**: BEST-RQ at Google scale, 300+ languages.
-- **[PaSST](https://arxiv.org/abs/2110.05069)**: an efficient supervised spectrogram transformer; with AST and PANNs, the enduring supervised baseline.
-- **[GE2E](https://arxiv.org/abs/1710.10467)**: the classic speaker-verification loss (pull utterances toward their speaker's centroid); ancestor of voice cloning's speaker encoders.
+- **[AudioCLIP](https://arxiv.org/abs/2106.13043)** / **[Wav2CLIP](https://arxiv.org/abs/2110.11499)**: align audio into an existing image-CLIP embedding space by training on video, where the soundtrack and the frames arrive already paired, so no captions are needed.
+- **[MuLan](https://arxiv.org/abs/2208.12415)**: CLAP's approach applied to music, trained on tens of millions of (music, text) pairs; the text tower behind [MusicLM](https://arxiv.org/abs/2301.11325).
+- **[MERT](https://arxiv.org/abs/2306.00107)**: HuBERT's recipe applied to music, with codec tokens and pitch-aware targets, because music's basic units are notes and instrument sounds rather than phonemes.
+- **[XLS-R](https://arxiv.org/abs/2111.09296)** / **[MMS](https://arxiv.org/abs/2305.13516)** (Massively Multilingual Speech): wav2vec 2.0 scaled across 128 and then 1,000+ languages. This scaling is possible because the pretraining needs no transcripts, which most of those languages do not have.
+- **[w2v-BERT](https://arxiv.org/abs/2108.06209)**: trains the contrastive lineup loss (§5.2) and the cluster-tag loss (§5.3) jointly in one model; supplied the semantic tokens for [AudioLM](https://arxiv.org/abs/2209.03143).
+- **[USM](https://arxiv.org/abs/2303.01037)**: BEST-RQ pretraining scaled to 300+ languages.
+- **[PaSST](https://arxiv.org/abs/2110.05069)**: an efficient supervised spectrogram transformer; together with AST and PANNs, still the standard supervised baseline for event tagging.
+- **[GE2E](https://arxiv.org/abs/1710.10467)**: a classic speaker-verification loss (pull each utterance toward its speaker's centroid, away from other speakers' centroids); the basis for the speaker encoders used in voice cloning.
 - **[SUPERB](https://arxiv.org/abs/2105.01051)** / **[HEAR](https://arxiv.org/abs/2203.03022)**: the benchmarks that standardized "one frozen encoder, many probes," and in doing so documented which models keep which layers.
 
-When the next checkpoint drops, interrogate it with three questions. What task produced it? (The embedding is that task's residue.) If it trained on itself, what stopped the collapse? And which layer of the signal did the objective grade? Those three answers tell you exactly what it is and how it relates to everything above.
-
-> **What I deliberately left out.** **Neural audio codecs** ([SoundStream](https://arxiv.org/abs/2107.03312), [EnCodec](https://arxiv.org/abs/2210.13438), [DAC](https://arxiv.org/abs/2306.06546)) compress audio into discrete tokens for *reconstruction*: they must keep everything needed to replay the waveform, while an embedding exists to throw the right things away. Different objective, different geometry. The generative world even names the two sides, running models like [AudioLM](https://arxiv.org/abs/2209.03143) on **semantic tokens** (a HuBERT-style encoder, discretized: the what) plus **acoustic tokens** (a codec: the how it sounds). **Voice cloning's speaker encoders**: identity embeddings tuned so a synthesizer can reproduce a voice, reconstruction-flavored cousins of §7's verification cones. **Audio-native LLMs** ([Qwen2-Audio](https://arxiv.org/abs/2407.10759), [SALMONN](https://arxiv.org/abs/2310.13289), [Moshi](https://arxiv.org/abs/2410.00037)): this post's encoders are organs inside them, but full speech-to-speech systems deserve their own writeup.
+When the next checkpoint drops, interrogate it with three questions. **What task produced it?** (The embedding is that task's residue.) If it trained on itself, **what stopped the collapse?** And **which layer of the signal did the objective grade?** Those three answers tell you exactly what it is and how it relates to everything above.
 
 ## 9. Wrap-up
 
-Let's compress the whole thing. Sound is air pressure, sampled into a long list of floats. Chop the list into frames (learned convs) or render it as a spectrogram image; either way a transformer can now read it. What we want out is a vector where distance means similarity, but one clip superimposes words, voice, scene, and mood, so "similar" is a choice, and the choice is always made indirectly: you train a task, and the embedding is the task's residue. Labels made one narrow listener per label list and cost too much to scale, so speech dropped labels years before it was cool and learned to predict its own hidden frames, defeating collapse four different ways: lineups of negatives (wav2vec 2.0), consistent-but-meaningless cluster tags (HuBERT, with WavLM re-learning the voice through simulated cocktail parties), EMA teachers (data2vec), and frozen random tags (BEST-RQ), with the running discovery that the targets can be dumb as long as the student isn't. Language showed up late and split down the middle: Whisper transcribes and keeps only the words; CLAP matches descriptions and keeps everything but. Frames pool into clip vectors if you mind the layers (they specialize), and when the similarity you want has a definition, like "same voice," you state it with a margin loss and get the strongest identity embeddings there are. No single model hears it all, so the newest systems bolt several listeners onto one LLM. And underneath every bit of it: 160,000 floats, and a choice about what to keep.
+A ten-second clip is 160,000 floats. Every model in this post is a different answer to the same question: **which properties of those floats should survive into the vector, and which should be discarded?**
+
+The question is hard because a clip carries several layers of information at once: the words, the voice, the scene, the events. An embedding that kept everything at full detail would just be the clip again, so every useful embedding discards something. And there is no direct way to specify what to keep. You choose a training task, and the embedding is whatever internal arrangement that task forces: **its residue**.
+
+The three families in this post are three versions of that choice. Supervised classifiers keep exactly the layer their labels name and discard the rest, and labels are too expensive to scale. Self-supervised models (wav2vec 2.0, HuBERT, data2vec, BEST-RQ) predict masked pieces of the audio itself, which requires keeping every layer at once; their differences come down to how each one stops the model from collapsing onto a constant answer. Language-supervised models trade coverage for a text interface: Whisper keeps the words because it must transcribe them, and CLAP keeps the events because that is what captions describe. And when the similarity you need has a ground truth, same speaker or not, metric learning trains on it directly (ECAPA-TDNN) and beats all of the above at that one task.
+
+No single encoder keeps every layer, which is why current systems attach several to one LLM. But each encoder is still doing the same thing: **taking 160,000 floats and making a choice about what to keep.**
 
 ```
-supervised          ->  hears what the label list names     (one layer, by decree)
-Whisper             ->  hears the words                     (and nothing else)
-CLAP                ->  hears what a caption would say      (events, not words or voices)
-wav2vec/HuBERT/...  ->  hears the signal itself             (every layer, entangled;
-                                                             extracting one is your job)
-ECAPA & kin         ->  hears who is speaking               (identity, stated and trained)
+supervised          ->  keeps what the label list names     (one layer per label list)
+Whisper             ->  keeps the words                     (and nothing else)
+CLAP                ->  keeps what a caption would say      (events, not words or voices)
+wav2vec/HuBERT/...  ->  keeps the signal itself             (every layer, entangled;
+                                                             pick a depth to extract one)
+ECAPA & kin         ->  keeps the voice                     (identity, stated and trained)
 ```
