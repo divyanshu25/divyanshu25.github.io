@@ -13,6 +13,17 @@ export interface Post {
 
 export const posts: Post[] = [
   {
+    id: "audio-embeddings-from-first-principles",
+    title: "Audio Embeddings, from First Principles",
+    summary: "A ten-second clip is 160,000 floats, and everything else is a choice about what to keep. Starting from air pressure and sampling, this post builds up to every major audio encoder: why speech dropped labels years before it was cool (wav2vec 2.0, HuBERT, WavLM, BEATs), why language supervision arrived late and split in two (Whisper, CLAP), and which encoder to reach for when. Everything derived from scratch, nothing assumed but transformers.",
+    content: "",
+    contentFile: "docs/audio_embeddings.md",
+    heroImage: "/blog/audio-embeddings/hero.png",
+    date: "2026-08-01",
+    tags: ["Audio", "Speech", "Embeddings", "CLAP", "Whisper", "HuBERT", "Self-Supervised Learning", "Deep Learning"],
+    authors: ["Divyanshu Goyal"]
+  },
+  {
     id: "image-embeddings-from-first-principles",
     title: "Image Embeddings, from First Principles",
     summary: "Every image embedding model is an answer to one question: who gets to define what \"similar\" means? Labels, language, or the image itself. A from-scratch walk through CLIP, SigLIP, DINO and their descendants that organizes them all into one family tree, and ends with a practical map of which encoder to reach for and when.",
