@@ -23,8 +23,8 @@ export const profile = {
   ],
   
   skills: {
-    languages: ["Python", "C++", "JavaScript"],
-    tools: ["PyTorch", "Hugging Face", "DeepSpeed", "CUDA", "Weights & Biases", "LangChain", "Docker"]
+    languages: ["Python"],
+    tools: ["PyTorch", "Hugging Face", "CUDA", "Weights & Biases", "LangChain"]
   },
   
   expertise: [
