@@ -58,6 +58,12 @@ export default function Navigation() {
             >
               Writing
             </Link>
+            <Link
+              href="/side-projects"
+              className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
+            >
+              Side Projects
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -118,6 +124,13 @@ export default function Navigation() {
               onClick={() => setIsOpen(false)}
             >
               Writing
+            </Link>
+            <Link
+              href="/side-projects"
+              className="block px-4 py-2.5 text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors font-medium text-sm"
+              onClick={() => setIsOpen(false)}
+            >
+              Side Projects
             </Link>
           </div>
         </div>
