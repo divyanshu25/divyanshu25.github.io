@@ -21,7 +21,7 @@ export default function ResearchPage() {
 
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] mb-4">Research & Patents</h1>
           <p className="text-[var(--text-secondary)] text-base sm:text-lg mb-10 sm:mb-16 max-w-2xl">
-            2 peer-reviewed workshop papers and 4 US patents (1 granted, 3 pending), spanning creative AI, VLMs, cultural adaptation, and machine translation.
+            3 peer-reviewed workshop papers and 4 US patents (1 granted, 3 pending), spanning creative AI, VLMs, cultural adaptation, and machine translation.
           </p>
 
           {/* Papers */}
