@@ -37,7 +37,7 @@
 \def \name#1{\def\@name{#1}}
 \def \@name {}
 
-\def \addressSep {$\diamond$}
+\def \addressSep {\textbar}
 
 \let \@addressone \relax
 \let \@addresstwo \relax

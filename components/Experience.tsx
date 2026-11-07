@@ -11,16 +11,16 @@ const experience = [
         bullets: [
           "Led ATune (under review): a 54M-parameter model that learns photo retouching from 10M unedited stock photographs and drives off-the-shelf editors through their sliders. In a study with 157 raters, its edits were preferred over GPT-6 Astra's in 54.3% of votes and tied with Claude Opus 5's (50.5%).",
           "Fine-tuned Gemma-3-12B with LoRA on 8× H100 (DDP, BF16, FlashAttention-2, Liger kernels) to assess the quality of marketing images.",
-          "Grounded VLM quality reasoning in 14+ computed pixel-level metrics (sharpness, exposure, color balance); the resulting interpretable scorer reaches Pearson r ≈ 0.88 (MAE 0.77) vs. zero-shot GPT-5.4 (MAE 1.34) and Claude Opus 4.7 (MAE 1.95).",
+          "Grounded VLM quality reasoning in 14+ computed pixel-level metrics (sharpness, exposure, color balance); the resulting interpretable scorer reaches MAE 0.77 (Pearson r ≈ 0.88) vs. 1.34 for zero-shot GPT-5.4 and 1.95 for Claude Opus 4.7.",
           "Built the MQCore evaluation benchmark and a fault-tolerant async annotation pipeline (100+ images/min) for the 700K-image KADIS image-quality dataset.",
         ],
       },
       {
         area: "Evaluation Research & Benchmarking",
         bullets: [
-          "First author of DistortBench (CVPR 2026 Workshop): a 13.5K-question benchmark over 27 distortion types and 5 severity levels. Of 18 VLMs evaluated, the best (Qwen3.5-27B) scores 61.9% (chance 25%), above the average individual annotator (60.2%) but below a 3-annotator majority vote (65.7%).",
+          "First author of DistortBench (CVPR 2026 and ICML 2026 Workshops): a 13.5K-question benchmark over 27 distortion types and 5 severity levels. Of 18 VLMs evaluated, the best (Qwen3.5-27B) scores 61.9% (chance 25%), above the average individual annotator (60.2%) but below a 3-annotator majority vote (65.7%).",
           "Co-authored JudgeBreak (ICML 2026 Workshop): across 95 subjective evaluation settings, linear probes on Qwen3-32B hidden states reach 78.1% mean pairwise accuracy vs. 70.1% for the strongest baseline (the best reward model or a zero-shot GPT-5.4 judge).",
-          "Co-authored a curiosity-driven LLM-as-a-judge that personalizes creative-writing evaluation using an intrinsic curiosity model (AAAI 2026 Workshop, Oral), improving F1 by 23% and correlation by 38% over an SFT baseline.",
+          "Co-authored a curiosity-driven LLM-as-a-judge that personalizes creative-writing evaluation using an intrinsic curiosity model (AAAI 2026 Workshop, Oral), raising mean F1 from 0.37 to 0.62 and Pearson r from 0.15 to 0.56 over an SFT baseline.",
         ],
       },
       {
