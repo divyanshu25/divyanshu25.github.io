@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Divyanshu Goyal - Applied Scientist & ML Researcher",
-  description: "Applied Scientist at Adobe specializing in Large Language Models, Vision-Language Models, and multimodal reasoning systems. Author of 5 patents and peer-reviewed research.",
+  description: "Applied Scientist at Adobe specializing in Large Language Models, Vision-Language Models, and multimodal reasoning systems. Inventor on 4 US patents and peer-reviewed research.",
   keywords: ["Machine Learning", "Large Language Models", "Vision-Language Models", "RLHF", "AI Research", "Adobe"],
   authors: [{ name: "Divyanshu Goyal" }],
   openGraph: {

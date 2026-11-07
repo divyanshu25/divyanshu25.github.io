@@ -56,6 +56,15 @@ export const profile = {
       tags: ["Vision-Language Models", "Computer Vision", "Benchmarking", "Image Quality"]
     },
     {
+      title: "JudgeBreak: Is Taste Hidden in the Layers? Stress-Testing Reward Models and LLM Judges with Representation-Based Subjective Evaluation",
+      authors: "Vanya Bannihatti Kumar, Anish Narang, Mayank Anand, Akhil Eppa, Divyanshu Goyal",
+      venue: "ICML Human-AI Co-Creativity Workshop",
+      year: "2026",
+      abstract: "JudgeBreak is a benchmark of 95 evaluation settings spanning creative writing, summarization, safety, 10 languages, and 33 writing genres. It compares reward models and LLM judges against linear probes trained on LLM hidden states. On Qwen3-32B, probes with cross-validated layer selection reach 78.1% mean pairwise accuracy, compared with 70.1% for the best reward model or zero-shot GPT-5.4 judge. On expert-annotated creative writing, reward models score below chance while probes are far more accurate. When annotators disagree, all methods plateau near chance.",
+      link: "https://openreview.net/forum?id=5mnXwdpIRH",
+      tags: ["LLMs", "Reward Models", "Evaluation", "Interpretability"]
+    },
+    {
       title: "Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment",
       authors: "Vanya Bannihatti Kumar, Divyanshu Goyal, Akhil Eppa, Neel Bhandari",
       venue: "arXiv preprint",
@@ -94,7 +103,7 @@ export const profile = {
     {
       title: "Guiding Language Translation with Translation Documents Using Machine Learning",
       authors: "Divyanshu Goyal, Akhil Eppa, Mayank Anand",
-      venue: "US Patent Application",
+      venue: "US Patent (Granted)",
       year: "2026",
       abstract: "Proposes a structured approach to constrained machine translation by grounding model outputs in entity-specific translation documents. Guidelines are extracted and categorized into language-agnostic translation facets, and facet-specific adherence scores are computed to quantify how well translations align with prescribed linguistic and stylistic constraints.",
       link: "https://patents.google.com/patent/US20260050753A1/en",

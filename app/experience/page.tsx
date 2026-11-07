@@ -33,8 +33,8 @@ const roles = [
         area: "Production AI & Patents",
         items: [
           "Led Adobe GenStudio for Performance Marketing:now serving Microsoft, AT&T, and other Fortune 500 clients.",
-          "Cross-cultural image adaptation via VLM grounding + diffusion models (US Patent 2026).",
-          "Constrained machine translation with facet-level adherence scoring (US Patent 2026).",
+          "Cross-cultural image adaptation via VLM grounding + diffusion models (US Patent Application 2026).",
+          "Constrained machine translation with facet-level adherence scoring (US Patent, granted 2026).",
         ],
       },
     ],

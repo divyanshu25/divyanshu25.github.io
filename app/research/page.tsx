@@ -21,7 +21,7 @@ export default function ResearchPage() {
 
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] mb-4">Research & Patents</h1>
           <p className="text-[var(--text-secondary)] text-base sm:text-lg mb-10 sm:mb-16 max-w-2xl">
-            1 peer-reviewed publication and 4 US patent applications,spanning creative AI, VLMs, cultural adaptation, and machine translation.
+            2 peer-reviewed workshop papers and 4 US patents (1 granted, 3 pending), spanning creative AI, VLMs, cultural adaptation, and machine translation.
           </p>
 
           {/* Papers */}
@@ -72,7 +72,7 @@ export default function ResearchPage() {
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <span className="w-2 h-2 rounded-full bg-[var(--accent)]" />
-                      <span className="font-mono text-[11px] text-[var(--text-tertiary)]">US Patent &middot; {pub.year}</span>
+                      <span className="font-mono text-[11px] text-[var(--text-tertiary)]">{pub.venue} &middot; {pub.year}</span>
                     </div>
                     <h3 className="text-base font-medium text-[var(--text)] group-hover:text-[var(--accent)] transition-colors leading-snug mb-2">
                       {pub.title}
