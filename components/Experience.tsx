@@ -4,30 +4,30 @@ const experience = [
     company: "Adobe",
     team: "Unified Platform",
     location: "San Jose, CA",
-    period: "June 2021:Present",
+    period: "June 2021 – Present",
     highlights: [
       {
         area: "Vision-Language Model Training & Evaluation",
         bullets: [
-          "Fine-tuned a Gemma-3-12B vision-language model with LoRA across 8× H100 GPUs (DDP, bfloat16, Flash Attention 2 + Liger kernels) for large-scale marketing-quality assessment.",
-          "Pioneered an \"observable injection\" technique that grounds VLM quality reasoning in 14+ computed pixel-level metrics (sharpness, exposure, color balance), yielding an interpretable scorer at Pearson r ≈ 0.88 and MAE 0.77 that outperforms GPT-5.4 (MAE 1.34) and Claude Opus 4.7 (MAE 1.95).",
-          "Built the MQCore evaluation benchmark (inspired by DCLM CORE) and a fault-tolerant async annotation pipeline processing 100+ images/min over the 700K-image KADIS corpus.",
+          "Led ATune (under review): a 54M-parameter model that learns photo retouching from 10M unedited stock photographs and drives off-the-shelf editors through their sliders. In a study with 157 raters, its edits were preferred over GPT-6 Astra's in 54.3% of votes and tied with Claude Opus 5's (50.5%).",
+          "Fine-tuned Gemma-3-12B with LoRA on 8× H100 (DDP, BF16, FlashAttention-2, Liger kernels) to assess the quality of marketing images.",
+          "Grounded VLM quality reasoning in 14+ computed pixel-level metrics (sharpness, exposure, color balance); the resulting interpretable scorer reaches Pearson r ≈ 0.88 (MAE 0.77) vs. zero-shot GPT-5.4 (MAE 1.34) and Claude Opus 4.7 (MAE 1.95).",
+          "Built the MQCore evaluation benchmark and a fault-tolerant async annotation pipeline (100+ images/min) for the 700K-image KADIS image-quality dataset.",
         ],
       },
       {
-        area: "Multimodal Research & Benchmarking",
+        area: "Evaluation Research & Benchmarking",
         bullets: [
-          "Authored DistortBench (CVPR FGVC13 Workshop 2026):a 13.5K-question diagnostic benchmark spanning 27 distortion types, 6 perceptual categories, and 5 severity levels.",
-          "Evaluated 18+ frontier VLMs (GPT-5.4, Claude Sonnet 4.6, Qwen, InternVL, Gemma) with bootstrap CIs and balanced-accuracy metrics, exposing low-level perception as a major weakness:top model 61.9% vs. 65.7% human baseline.",
-          "Created a curiosity-driven LLM-as-a-judge framework for personalized creative evaluation using Bayesian surprise (arXiv 2025):+23% F1 and +38% correlation over baselines.",
+          "First author of DistortBench (CVPR 2026 Workshop): a 13.5K-question benchmark over 27 distortion types and 5 severity levels. Of 18 VLMs evaluated, the best (Qwen3.5-27B) scores 61.9% (chance 25%), above the average individual annotator (60.2%) but below a 3-annotator majority vote (65.7%).",
+          "Co-authored JudgeBreak (ICML 2026 Workshop): across 95 subjective evaluation settings, linear probes on Qwen3-32B hidden states reach 78.1% mean pairwise accuracy vs. 70.1% for the strongest baseline (the best reward model or a zero-shot GPT-5.4 judge).",
+          "Co-authored a curiosity-driven LLM-as-a-judge that personalizes creative-writing evaluation using an intrinsic curiosity model (AAAI 2026 Workshop, Oral), improving F1 by 23% and correlation by 38% over an SFT baseline.",
         ],
       },
       {
         area: "Production Multimodal Systems & Agents",
         bullets: [
-          "Architected the Unified Brand Service (90K+ LOC across 3 global regions) powering Adobe GenStudio:multimodal brand-DNA extraction, RAG-based retrieval, and GPT-4-Vision content validation.",
-          "Built a multimodal agent that drives Adobe Photoshop from natural language via a 49-tool observe-think-act loop with vision grounding and an iterative quality-critic refinement layer.",
-          "Led the foundational prototype of Adobe GenStudio for Performance Marketing (Oct 2024, now serving Fortune 500 clients including Microsoft and AT&T) and invented patented VLM pipelines for cross-cultural image adaptation and constrained translation (US Patents 2026).",
+          "Built the founding prototype of Adobe GenStudio for Performance Marketing (launched October 2024, now serving Fortune 500 clients including Microsoft and AT&T) and architected its multimodal brand service (brand-DNA extraction, retrieval, VLM content validation) across 3 regions.",
+          "Built a multimodal Photoshop agent that edits images from natural language through a 49-tool observe, think, and act loop with vision grounding and a quality-critic refinement step.",
         ],
       },
     ],
@@ -37,14 +37,14 @@ const experience = [
     company: "Adobe",
     team: "Adobe Inc.",
     location: "Bangalore, India",
-    period: "July 2016:August 2019",
+    period: "July 2016 – August 2019",
     highlights: [
       {
         area: "ML Infrastructure & Serving",
         bullets: [
-          "Co-engineered Adobe's ML inference platform:3,500 QPS/node at 0.3–0.6ms latency (p99).",
+          "Co-engineered Adobe's ML inference platform: 3,500 QPS/node at 0.3–0.6 ms app-side p99 latency.",
           "Designed GC-free async event pipeline using LMAX Disruptor, eliminating back-pressure under peak load.",
-          "Built custom model lifecycle management platform:versioned deployment, monitoring, and staged rollout across environments.",
+          "Built custom model lifecycle management platform: versioned deployment, monitoring, and staged rollout across environments.",
         ],
       },
     ],

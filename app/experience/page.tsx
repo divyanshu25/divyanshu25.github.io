@@ -11,30 +11,31 @@ const roles = [
     title: "Applied Scientist",
     company: "Adobe",
     location: "San Jose, CA",
-    period: "2021:Present",
+    period: "2021 – Present",
     blocks: [
       {
-        area: "Vision-Language Model Training",
+        area: "Vision-Language Model Training & Evaluation",
         items: [
-          "Trained a 13B-parameter VLM on 2M image-text pairs across 8x H100 GPUs with novel observable injection.",
-          "Fine-tuned CLIP and LLaVA-style models:+20% F1 in multi-label classification.",
-          "Built MQCore evaluation benchmark inspired by DCLM CORE.",
+          "Led ATune (under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs; human raters preferred its edits over GPT-6 Astra's and rated them on par with Claude Opus 5's.",
+          "Fine-tuned Gemma-3-12B with LoRA on 8× H100 to assess the quality of marketing images.",
+          "Grounded VLM quality reasoning in 14+ pixel-level metrics: Pearson r ≈ 0.88, MAE 0.77, vs. zero-shot GPT-5.4 (MAE 1.34).",
+          "Built the MQCore evaluation benchmark and an async annotation pipeline (100+ images/min).",
         ],
       },
       {
-        area: "LLM Alignment & Reasoning",
+        area: "Evaluation Research & Benchmarking",
         items: [
-          "Created curiosity-driven LLM-as-a-judge for personalized creative evaluation (arXiv 2025).",
-          "Bayesian surprise for creativity modeling:+23% F1, +38% correlation.",
-          "Leading multimodal agentic systems for Photoshop editing workflows.",
+          "First author of DistortBench (CVPR 2026 Workshop): the best of 18 VLMs scores 61.9%, below a 3-annotator majority vote (65.7%).",
+          "Co-authored JudgeBreak (ICML 2026 Workshop): linear probes on LLM hidden states reach 78.1% vs. 70.1% for the best reward model or LLM judge.",
+          "Co-authored a curiosity-driven LLM-as-a-judge for personalized creative evaluation (AAAI 2026 Workshop, Oral).",
         ],
       },
       {
         area: "Production AI & Patents",
         items: [
-          "Led Adobe GenStudio for Performance Marketing:now serving Microsoft, AT&T, and other Fortune 500 clients.",
-          "Cross-cultural image adaptation via VLM grounding + diffusion models (US Patent Application 2026).",
-          "Constrained machine translation with facet-level adherence scoring (US Patent, granted 2026).",
+          "Built the founding prototype of Adobe GenStudio for Performance Marketing, now serving Fortune 500 clients including Microsoft and AT&T.",
+          "Built a multimodal agent that edits images in Photoshop from natural language through a 49-tool loop.",
+          "4 US patents: 1 granted (constrained machine translation), 3 pending.",
         ],
       },
     ],
@@ -43,14 +44,14 @@ const roles = [
     title: "Machine Learning Engineer",
     company: "Adobe",
     location: "Bangalore, India",
-    period: "2016:2019",
+    period: "2016 – 2019",
     blocks: [
       {
         area: "ML Infrastructure & Serving",
         items: [
-          "Co-engineered inference platform:3,500 QPS/node at 0.3–0.6ms latency (p99).",
-          "GC-free async event pipeline using LMAX Disruptor:zero back-pressure under peak load.",
-          "Model lifecycle management:versioned deployment, monitoring, staged rollout.",
+          "Co-engineered Adobe's ML inference platform: 3,500 QPS/node at 0.3–0.6 ms app-side p99 latency.",
+          "GC-free async event pipeline using LMAX Disruptor: no back-pressure under peak load.",
+          "Model lifecycle management: versioned deployment, monitoring, staged rollout.",
         ],
       },
     ],
@@ -75,7 +76,7 @@ export default function ExperiencePage() {
 
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] mb-4">Experience</h1>
           <p className="text-[var(--text-secondary)] text-lg mb-16 max-w-2xl">
-            8+ years building ML systems at Adobe:from sub-millisecond inference engines to 13B-parameter vision-language models.
+            8+ years building ML systems at Adobe, from sub-millisecond inference engines to multimodal language models for creative work.
           </p>
 
           {/* Skills bar */}
