@@ -10,6 +10,12 @@
 \usepackage[parfill]{parskip}
 \usepackage{array}
 \usepackage{ifthen}
+\usepackage{needspace}
+\usepackage{charter}
+\usepackage{microtype}
+\AtBeginDocument{\frenchspacing}
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
 
 % Page numbers for multi-page resume
 \usepackage{fancyhdr}
@@ -17,11 +23,11 @@
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
-\fancyfoot[R]{\small Page \thepage\ / \pageref{LastPage}}
+\fancyfoot[R]{\small Page \thepage\ / \pageref*{LastPage}}
 \fancypagestyle{plain}{%
   \fancyhf{}%
   \renewcommand{\headrulewidth}{0pt}%
-  \fancyfoot[R]{\small Page \thepage\ / \pageref{LastPage}}%
+  \fancyfoot[R]{\small Page \thepage\ / \pageref*{LastPage}}%
 }
 
 %----------------------------------------------------------------------------------------
@@ -85,6 +91,7 @@
 %----------------------------------------------------------------------------------------
 
 \newenvironment{rSection}[1]{
+  \needspace{6\baselineskip}
   \sectionskip
   \MakeUppercase{\bf #1}
   \sectionlineskip
@@ -102,13 +109,13 @@
 %----------------------------------------------------------------------------------------
 
 \newenvironment{rSubsection}[4]{
- {\bf #1} \hfill {#2}
+ {\bf #1} \hfill {#2}%
  \ifthenelse{\equal{#3}{}}{}{
   \\
   {\em #3} \hfill {\em #4}
   }\smallskip
-  \begin{list}{$\cdot$}{\leftmargin=0em}
-   \itemsep -0.5em \vspace{-0.5em}
+  \begin{list}{\textbullet}{\leftmargin=1em \labelwidth=0.6em \labelsep=0.4em}
+   \itemsep -0.35em \vspace{-0.5em} \raggedright
   }{
   \end{list}
   \vspace{0.5em}
@@ -119,4 +126,4 @@
 \def\addressskip{\smallskip}
 \def\sectionlineskip{\medskip}
 \def\nameskip{\smallskip}
-\def\sectionskip{\smallskip}
+\def\sectionskip{\medskip}
