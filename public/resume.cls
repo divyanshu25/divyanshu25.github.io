@@ -109,13 +109,14 @@
 %----------------------------------------------------------------------------------------
 
 \newenvironment{rSubsection}[4]{
+ \needspace{5\baselineskip}
  {\bf #1} \hfill {#2}%
  \ifthenelse{\equal{#3}{}}{}{
   \\
   {\em #3} \hfill {\em #4}
   }\smallskip
   \begin{list}{\textbullet}{\leftmargin=1em \labelwidth=0.6em \labelsep=0.4em}
-   \itemsep -0.35em \vspace{-0.5em} \raggedright
+   \itemsep -0.3em \vspace{-0.5em} \raggedright
   }{
   \end{list}
   \vspace{0.5em}

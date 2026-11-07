@@ -16,7 +16,7 @@
 
 \name{Divyanshu Goyal}
 \address{Sunnyvale, CA \\ +1 404-414-3762 \\ divyanshu.g25@gmail.com}
-\address{\href{https://www.linkedin.com/in/divyanshu2594/}{linkedin.com/in/divyanshu2594} \\ \href{https://github.com/Divyanshu25}{github.com/divyanshu25} \\ \href{https://scholar.google.com/citations?user=5MJm4JsAAAAJ}{Google Scholar}}
+\address{\href{https://www.linkedin.com/in/divyanshu2594/}{linkedin.com/in/divyanshu2594} \\ \href{https://github.com/Divyanshu25}{github.com/divyanshu25} \\ \href{https://scholar.google.com/citations?user=5MJm4JsAAAAJ}{scholar.google.com/citations?user=5MJm4JsAAAAJ}}
 
 \begin{document}
 
@@ -26,7 +26,7 @@
 
 \begin{rSection}{Summary}
 \raggedright
-I am an Applied Scientist at Adobe, where I train and evaluate multimodal language models for creative work. Much of it deals with problems where quality is subjective, such as whether a photo edit looks better or a story feels original, so I spend as much time building evaluations I can trust as training the models themselves. I have shipped this work in Adobe GenStudio and published it at CVPR, ICML, and AAAI workshops.
+I am an Applied Scientist at Adobe, where I train and evaluate multimodal language models for creative work. The work often hinges on subjective quality, like whether a photo edit looks better or a story feels original, so I spend as much time building evaluations I trust as training the models. I have shipped this work in Adobe GenStudio and published it at CVPR, ICML, and AAAI workshops.
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
@@ -38,23 +38,23 @@ I am an Applied Scientist at Adobe, where I train and evaluate multimodal langua
 \begin{rSubsection}{Applied Scientist -- Adobe Inc. (Unified Platform), San Jose, CA}{June 2021 -- Present}{}{}
 
 \item[] \vspace{0.1em}{\hspace{-1em}\textit{Vision-Language Model Training \& Evaluation}}
-\item Led {\bf ATune} (under review): a 54M-parameter model that learns photo retouching from 10M unedited stock photographs and drives \mbox{off-the-shelf} editors through their sliders. In a study with 157 raters, its edits were preferred over GPT-6 Astra's in {\bf 54.3\%} of votes (95\% CI 50.3--58.3) and tied with Claude Opus 5's (50.5\%, CI 46.8--54.2).
-\item Fine-tuned {\bf Gemma-3-12B} with LoRA on 8$\times$ H100 (DDP, BF16, FlashAttention-2, Liger kernels) to assess the quality of marketing images.
+\item Led {\bf ATune} (under review): a 54M-parameter model that learns photo retouching from 10M unedited stock photographs and drives \mbox{off-the-shelf} editors through their sliders. In a study with 157 raters, its edits beat GPT-6 Astra on the same editor ({\bf 54.3\%} of 3,524 votes, 95\% CI 50.3--58.3) and tied with Claude Opus 5.
+\item Fine-tuned {\bf Gemma-3-12B} with LoRA to score \mbox{marketing-image} quality, training on 8$\times$ H100 (DDP, BF16, FlashAttention-2, Liger kernels).
 \item Grounded VLM quality reasoning in 14+ computed \mbox{pixel-level} metrics (sharpness, exposure, color balance); the resulting interpretable scorer reaches {\bf Pearson r $\approx$ 0.88} (MAE 0.77) vs.\ \mbox{zero-shot} GPT-5.4 (MAE 1.34) and Claude Opus 4.7 (MAE 1.95).
 \item Built the {\bf MQCore} evaluation benchmark and a \mbox{fault-tolerant} async annotation pipeline (100+ images/min) for the 700K-image KADIS \mbox{image-quality} dataset.
 
 \item[] \vspace{0.3em}{\hspace{-1em}\textit{Evaluation Research \& Benchmarking}}
-\item First author of {\bf DistortBench} (CVPR 2026 Workshop): a 13.5K-question benchmark over 27 distortion types and 5 severity levels. Evaluated 18 VLMs with bootstrap confidence intervals; the best model (Qwen3.5-27B) scores {\bf 61.9\%} (chance 25\%), above the average individual annotator (60.2\%) but below a \mbox{3-annotator} majority vote (65.7\%).
+\item First author of {\bf DistortBench} (CVPR 2026 Workshop): a 13.5K-question benchmark over 27 distortion types and 5 severity levels. Evaluated 18 VLMs with bootstrap confidence intervals; the best model (Qwen3.5-27B) scores {\bf 61.9\%} (chance 25\%), above the average annotator (60.2\%) and within the 95\% CI of a \mbox{3-annotator} majority vote (65.7\%, CI 59.4--71.5).
 \item Co-authored {\bf JudgeBreak} (ICML 2026 Workshop): across 95 subjective evaluation settings, linear probes on Qwen3-32B hidden states with \mbox{cross-validated} layer selection reach {\bf 78.1\%} mean pairwise accuracy vs.\ 70.1\% for the strongest baseline (the best reward model or a \mbox{zero-shot} GPT-5.4 judge).
-\item Co-authored a curiosity-driven {\bf LLM-as-a-judge} that personalizes \mbox{creative-writing} evaluation using an intrinsic curiosity model of the judge's surprise at each expert's explanation (AAAI 2026 Workshop, Oral), improving F1 by 23\% and correlation by 38\% over an SFT baseline.
+\item Co-authored a curiosity-driven {\bf LLM-as-a-judge} (AAAI 2026 Workshop, Oral) that personalizes \mbox{creative-writing} evaluation by modeling the judge's surprise at each expert's explanation, improving F1 by 23\% and correlation by 38\% over an SFT baseline.
 
 \item[] \vspace{0.3em}{\hspace{-1em}\textit{Production Multimodal Systems \& Agents}}
-\item Built the founding prototype of {\bf Adobe GenStudio for Performance Marketing} (launched October 2024, now serving Fortune 500 clients including Microsoft and AT\&T) and architected its multimodal brand service (\mbox{brand-DNA} extraction, retrieval, VLM content validation) across 3 regions.
-\item Built a {\bf multimodal Photoshop agent} that edits images from natural language through a 49-tool observe, think, and act loop with vision grounding and a quality-critic refinement step.
+\item Built the first prototype of {\bf Adobe GenStudio for Performance Marketing} (launched October 2024, now serving Fortune 500 clients including Microsoft and AT\&T), then designed its multimodal brand service (VLM content validation, \mbox{brand-DNA} extraction, retrieval), deployed in 3 regions.
+\item Built a {\bf multimodal Photoshop agent} that edits images from \mbox{natural-language} instructions, running an \mbox{observe-think-act} loop over 49 tools with vision grounding and a \mbox{quality-critic} refinement step.
 \end{rSubsection}
 
 \begin{rSubsection}{Machine Learning Engineer -- Adobe Inc., Bangalore, India}{July 2016 -- August 2019}{}{}
-\item Co-engineered Adobe's production {\bf ML inference platform}, sustaining 3,500 QPS/node at 0.3--0.6 ms \mbox{app-side} p99 latency (\href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog}).
+\item Co-developed Adobe's production {\bf ML prediction service}, sustaining 3,500 QPS/node at 0.3--0.6 ms \mbox{app-side} p99 latency (\href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog}).
 \item Built an end-to-end model lifecycle platform: versioned deployment, live monitoring, and staged rollout across dev, staging, and production.
 \end{rSubsection}
 
@@ -66,9 +66,9 @@ I am an Applied Scientist at Adobe, where I train and evaluate multimodal langua
 
 \begin{rSection}{Selected Projects}
 
-\textbf{VibeNanoChat: GPT-2 Scale LLM Pretraining from Scratch} \hfill 2026 \textbar\ \href{https://github.com/divyanshu25/VibeNanoChat}{[code]} \\
-{\raggedright Decoder-only transformer (RoPE, RMSNorm, sliding-window attention) with one-knob depth scaling, a custom distributed {\bf Muon} optimizer with ZeRO-2 state sharding, and FlashAttention-3 and BF16 training on 8$\times$ H100 at over 1M tokens/sec. Fit isoFLOP curves across 40+ runs (44M to 522M parameters) to find \mbox{compute-optimal} model sizes.\\
-Write-ups: \href{https://medium.com/@divyanshugoyal/going-fast-every-optimization-that-made-llm-training-fly-f465f3cf3588}{Going Fast: Every Optimization That Made LLM Training Fly} and \href{https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91}{A Lazy Engineer's Guide to Scaling Transformers}.}
+\textbf{VibeNanoChat: GPT-2 Scale LLM Pretraining from Scratch} \hfill 2026 \textbar\ \href{https://github.com/divyanshu25/VibeNanoChat}{github.com/divyanshu25/VibeNanoChat} \\
+{\raggedright Decoder-only transformer (RoPE, RMSNorm, sliding-window attention) with one-knob depth scaling and a custom distributed {\bf Muon} optimizer (ZeRO-2 state sharding), trained in BF16 with FlashAttention-3 on 8$\times$ H100 at over 1M tokens/sec. Fit isoFLOP curves across 40+ runs (44M to 522M parameters) to find \mbox{compute-optimal} model sizes.\\
+Write-ups: \href{https://medium.com/@divyanshugoyal/going-fast-every-optimization-that-made-llm-training-fly-f465f3cf3588}{Going Fast} and \href{https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91}{A Lazy Engineer's Guide to Scaling Transformers}.}
 
 \end{rSection}
 
@@ -77,17 +77,18 @@ Write-ups: \href{https://medium.com/@divyanshugoyal/going-fast-every-optimizatio
 %----------------------------------------------------------------------------------------
 
 \begin{rSection}{Publications}
+\raggedright
 
 \textbf{DistortBench: Benchmarking Vision Language Models on Image Distortion Identification} \\
-{\bf D.\ Goyal}, A.\ Eppa, V.\ Bannihatti Kumar \hfill CVPR 2026 Workshop \textbar\ \href{https://arxiv.org/abs/2604.19966}{[paper]}
+{\bf D.\ Goyal}, A.\ Eppa, V.\ Bannihatti Kumar \hfill CVPR 2026 Workshop \textbar\ \href{https://arxiv.org/abs/2604.19966}{arXiv:2604.19966}
 
 \vspace{0.7em}
-\textbf{JudgeBreak: Is Taste Hidden in the Layers? Stress-Testing Reward Models and LLM Judges} \\
-V.\ Bannihatti Kumar, A.\ Narang, M.\ Anand, A.\ Eppa, {\bf D.\ Goyal} \hfill ICML 2026 Workshop \textbar\ \href{https://openreview.net/forum?id=5mnXwdpIRH}{[paper]}
+\textbf{JudgeBreak: Is Taste Hidden in the Layers? Stress-Testing Reward Models and LLM Judges with Representation-Based Subjective Evaluation} \\
+V.\ Bannihatti Kumar, A.\ Narang, M.\ Anand, A.\ Eppa, {\bf D.\ Goyal} \hfill ICML 2026 Workshop \textbar\ \href{https://openreview.net/forum?id=5mnXwdpIRH}{OpenReview}
 
 \vspace{0.7em}
 \textbf{Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment} \\
-V.\ Bannihatti Kumar, {\bf D.\ Goyal}, A.\ Eppa, N.\ Bhandari \hfill AAAI 2026 Workshop (Oral) \textbar\ \href{https://arxiv.org/abs/2510.05135}{[paper]}
+V.\ Bannihatti Kumar, {\bf D.\ Goyal}, A.\ Eppa, N.\ Bhandari \hfill AAAI 2026 Workshop, Oral \textbar\ \href{https://arxiv.org/abs/2510.05135}{arXiv:2510.05135}
 
 \end{rSection}
 
@@ -97,8 +98,8 @@ V.\ Bannihatti Kumar, {\bf D.\ Goyal}, A.\ Eppa, N.\ Bhandari \hfill AAAI 2026 W
 
 \begin{rSection}{Patents}
 \raggedright
-{\bf Granted:} Guiding Language Translation with Translation Documents Using ML (first inventor, 2026) \href{https://patents.google.com/patent/US20260050753A1/en}{[patent]}\par
-{\bf Pending:} Cultural Adaptation of Images Using Generative AI (2026) \href{https://patents.google.com/patent/US20260051084A1/en}{[patent]}; Parameter-Efficient Model Serving (2025) \href{https://patents.google.com/patent/US20250217193A1/en}{[patent]}; Brand-Aligned Content Generation (first inventor, 2025) \href{https://patents.google.com/patent/US20250117829A1/en}{[patent]}\par
+{\bf Granted:} Guiding Language Translation with Translation Documents Using ML (first inventor, 2026) \href{https://patents.google.com/patent/US20260050753A1/en}{US20260050753}\par
+{\bf Pending:} Cultural Adaptation of Images Using Generative AI (2026) \href{https://patents.google.com/patent/US20260051084A1/en}{US20260051084}; Parameter-Efficient Fine-Tuned Model Serving (2025) \href{https://patents.google.com/patent/US20250217193A1/en}{US20250217193}; Brand-Aligned Marketing Content Generation (first inventor, 2025) \href{https://patents.google.com/patent/US20250117829A1/en}{US20250117829}\par
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
