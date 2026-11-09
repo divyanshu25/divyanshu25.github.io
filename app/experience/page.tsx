@@ -18,7 +18,7 @@ const roles = [
         items: [
           "Led ATune (under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs; human raters preferred its edits over GPT-6 Astra's and rated them on par with Claude Opus 5's.",
           "Fine-tuned Gemma-3-12B with LoRA on 8× H100 to assess the quality of marketing images.",
-          "Grounded VLM quality reasoning in 14+ pixel-level metrics: MAE 0.77 (Pearson r ≈ 0.88) vs. 1.34 for zero-shot GPT-5.4.",
+          "Grounded VLM quality reasoning in pixel-level metrics: MAE 0.77 (Pearson r ≈ 0.88) vs. 1.34 for zero-shot GPT-5.4.",
           "Built the MQCore evaluation benchmark and an async annotation pipeline (100+ images/min).",
         ],
       },

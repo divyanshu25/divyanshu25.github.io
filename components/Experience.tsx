@@ -11,7 +11,7 @@ const experience = [
         bullets: [
           "Led ATune (under review): a 54M-parameter model that learns photo retouching from 10M unedited stock photographs and drives off-the-shelf editors through their sliders. In a study with 157 raters, its edits were preferred over GPT-6 Astra's in 54.3% of votes and tied with Claude Opus 5's (50.5%).",
           "Fine-tuned Gemma-3-12B with LoRA on 8× H100 (DDP, BF16, FlashAttention-2, Liger kernels) to assess the quality of marketing images.",
-          "Grounded VLM quality reasoning in 14+ computed pixel-level metrics (sharpness, exposure, color balance); the resulting interpretable scorer reaches MAE 0.77 (Pearson r ≈ 0.88) vs. 1.34 for zero-shot GPT-5.4 and 1.95 for Claude Opus 4.7.",
+          "Grounded VLM quality reasoning in computed pixel-level metrics (sharpness, exposure, color balance); the resulting interpretable scorer reaches MAE 0.77 (Pearson r ≈ 0.88) vs. 1.34 for zero-shot GPT-5.4 and 1.95 for Claude Opus 4.7.",
           "Built the MQCore evaluation benchmark and a fault-tolerant async annotation pipeline (100+ images/min) for the 700K-image KADIS image-quality dataset.",
         ],
       },
