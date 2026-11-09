@@ -9,35 +9,32 @@ const experience = [
       {
         area: "VLM Fine-Tuning with SFT and Reinforcement Learning (Gemma-3-12B)",
         bullets: [
-          "Built distributed SFT and multi-round GRPO pipelines to train Gemma-3-12B (12.2B parameters; LoRA rank 256, 1.19B trainable) to assess marketing-image quality on 8× H100: each RL round samples a group of completions per prompt, scores them with programmatic rewards against ground truth, and trains with a clipped policy-gradient loss.",
-          "Audited GRPO runs for reward hacking and found the policy learning safe guesses: over 20 rounds, one magnitude word grew from 55% to a peak of 89% of its answers, and in another run it gave the middle quality rating to 84% of images when reviewers gave it to 56%. Traced the causes to the reward's shape, an unlearnable label, and lost exploration, and redesigned the scorers.",
+          "Trained Gemma-3-12B (LoRA rank 256, 1.19B trainable parameters) to assess marketing-image quality with distributed SFT, then multi-round GRPO, on 8× H100. Each round samples a group of completions per prompt, scores them with programmatic rewards against ground truth, and updates the policy with a clipped policy-gradient loss. Diagnosed reward hacking (collapse onto hedged, low-information answers) and redesigned the reward scorers.",
         ],
       },
       {
         area: "Multimodal Judge Models",
         bullets: [
-          "Built a 1.1M-row training set from 14 human-rated sources with rater disagreement as soft labels, and trained Qwen3.5-4B LoRA judges on mixes sampled from it. With a score readout refit on crowd labels, the served model raised validation SRCC over the reference model from 0.421 to 0.663 on KonIQ and from 0.395 to 0.595 on KADID (paired 95% CIs above 0).",
-          "Built a held-out benchmark suite: 8 sets, 67,168 items, leak-checked with SSCD against all 537,282 training images, with a pre-registered bootstrap non-inferiority release gate.",
+          "Built a 1.1M-row training set from 14 human-rated sources with rater disagreement as soft labels, and trained Qwen3.5-4B LoRA judges on mixes sampled from it. After calibrating its score output on crowd ratings, the served judge raised validation SRCC on KonIQ from 0.421 (reference model) to 0.663 (paired 95% CI above 0), measured on a leak-checked 67K-item held-out benchmark suite I built.",
         ],
       },
       {
         area: "Unsupervised Photo Retouching (ATune)",
         bullets: [
-          "Led ATune (co-first author, under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs with no expert edits and operates off-the-shelf editors by setting their sliders. With 157 raters, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3; 3,524 answers) and tied with Claude Opus 5 (50.5%, CI 46.8–54.2).",
-          "Evaluated ATune on FiveK, PPR10K, and SPAQ with 9 published judges and Holm-corrected paired tests: on every set, at least 8 of 9 prefer it to GPT-6 Astra and at least 7 of 9 to seven learned retouchers.",
+          "Led ATune (co-first author, under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs with no expert edits and operates off-the-shelf editors by setting their sliders. With 157 raters, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3; 3,524 answers) and tied with Claude Opus 5 (50.5%, CI 46.8–54.2). On FiveK, PPR10K, and SPAQ, at least 8 of 9 published quality judges prefer it to GPT-6 Astra.",
         ],
       },
       {
         area: "Evaluation Research",
         bullets: [
           "Created DistortBench (first author; CVPR 2026 and ICML 2026 Workshops): 13.5K questions over 27 distortion types and 5 severity levels. Of 18 VLMs, the best (Qwen3.5-27B) scores 61.9% (chance 25%), above the average annotator (60.2%) and below a 3-annotator majority vote (65.7%).",
-          "Co-authored JudgeBreak (ICML 2026 Workshop): across 95 subjective settings, linear probes on Qwen3-32B hidden states with cross-validated layer selection reach 78.1% mean pairwise accuracy vs. 70.1% for the best reward model or zero-shot GPT-5.4 judge.",
+          "Co-authored JudgeBreak (ICML 2026 Workshop): linear probes on Qwen3-32B hidden states reach 78.1% pairwise accuracy across 95 subjective settings, vs. 70.1% for the best reward model or LLM judge.",
         ],
       },
       {
         area: "Product",
         bullets: [
-          "Prototyped Adobe GenStudio for Performance Marketing (launched October 2024, serving Fortune 500 clients) and built a multimodal Photoshop agent that edits images using 49 tools with vision grounding.",
+          "Prototyped Adobe GenStudio for Performance Marketing (launched October 2024, serving Fortune 500 clients) and built a multimodal Photoshop agent that edits images with vision grounding.",
         ],
       },
     ],
