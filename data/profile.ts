@@ -4,7 +4,7 @@ export const profile = {
   institution: "Georgia Tech",
   degree: "M.S. in Computer Science",
   specialization: "Machine Learning",
-  bio: "Applied Scientist at Adobe and multimodal researcher focused on training and evaluating vision-language models. I hold an M.S. in Computer Science (Machine Learning) from Georgia Tech. My work spans VLM training, multimodal reasoning, and LLM pretraining,turning frontier research into systems that ship to production.",
+  bio: "Applied scientist at Adobe, passionate about multimodal large language models. Over the past 5 years I have trained, aligned, and evaluated these models in highly subjective domains such as brand marketing and photo editing/retouching. I have contributed my work at CVPR, ICML, and AAAI workshops, hold patents in generative AI space, and write about AI through blogs. I am strong believer in first principle thinking and try to bring that to everything I do. I hold an M.S. in Computer Science (Machine Learning) from Georgia Tech.",
   
   education: [
     {
@@ -14,26 +14,27 @@ export const profile = {
     },
     {
       degree: "B.E. in Computer Science",
-      institution: "Birla Institute of Technology and Sciences, Pilani"
+      institution: "Birla Institute of Technology and Science, Pilani"
     },
     {
       degree: "M.Sc. in Mathematics",
-      institution: "Birla Institute of Technology and Sciences, Pilani"
+      institution: "Birla Institute of Technology and Science, Pilani"
     }
   ],
   
   skills: {
     languages: ["Python"],
-    tools: ["PyTorch", "Hugging Face", "CUDA", "Weights & Biases", "LangChain"]
+    tools: ["PyTorch", "Hugging Face Transformers/PEFT", "LoRA", "Weights & Biases"]
   },
   
   expertise: [
-    "Large Language Models (LLMs)",
     "Vision-Language Models (VLMs)",
-    "Model Fine-tuning & RLHF",
-    "Distributed Training",
-    "Multimodal Reasoning",
-    "Cultural AI & Localization"
+    "SFT & RL Fine-Tuning (GRPO)",
+    "Reward Design",
+    "Evaluation & Benchmark Design",
+    "Human Preference Studies",
+    "LLM Pretraining & Scaling Laws",
+    "Distributed Training"
   ],
   
   social: {

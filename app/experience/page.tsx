@@ -14,28 +14,37 @@ const roles = [
     period: "2021 – Present",
     blocks: [
       {
-        area: "Vision-Language Model Training & Evaluation",
+        area: "VLM Fine-Tuning with SFT and Reinforcement Learning (Gemma-3-12B)",
         items: [
-          "Led ATune (under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs; human raters preferred its edits over GPT-6 Astra's and rated them on par with Claude Opus 5's.",
-          "Fine-tuned Gemma-3-12B with LoRA on 8× H100 to assess the quality of marketing images.",
-          "Grounded VLM quality reasoning in pixel-level metrics: MAE 0.77 (Pearson r ≈ 0.88) vs. 1.34 for zero-shot GPT-5.4.",
-          "Built the MQCore evaluation benchmark and an async annotation pipeline (100+ images/min).",
+          "Built distributed SFT and multi-round GRPO pipelines to train Gemma-3-12B (12.2B parameters) to assess marketing-image quality on 8× H100, with programmatic rewards and a clipped policy-gradient loss.",
+          "Audited GRPO runs for reward hacking: over 20 rounds the policy collapsed onto one magnitude word (usage 0.55 to a peak of 0.89). Traced the causes and redesigned the scorers.",
         ],
       },
       {
-        area: "Evaluation Research & Benchmarking",
+        area: "Multimodal Judge Models",
         items: [
-          "First author of DistortBench (CVPR 2026 and ICML 2026 Workshops): the best of 18 VLMs scores 61.9%, below a 3-annotator majority vote (65.7%).",
+          "Built a 1.1M-row training set from 14 human-rated sources and trained Qwen3.5-4B LoRA judges on mixes sampled from it; with a readout refit on crowd labels, validation SRCC on KonIQ rose from 0.421 to 0.663.",
+          "Built a held-out benchmark suite: 8 sets, 67,168 items, leak-checked against all 537,282 training images, with a pre-registered release gate.",
+        ],
+      },
+      {
+        area: "Unsupervised Photo Retouching (ATune)",
+        items: [
+          "Led ATune (co-first author, under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs. With 157 raters, its edits beat GPT-6 Astra's (54.3% of votes) and tied with Claude Opus 5's (50.5%).",
+          "On FiveK, PPR10K, and SPAQ, at least 8 of 9 published judges prefer it to GPT-6 Astra and at least 7 of 9 to seven learned retouchers.",
+        ],
+      },
+      {
+        area: "Evaluation Research",
+        items: [
+          "Created DistortBench (first author; CVPR 2026 and ICML 2026 Workshops): the best of 18 VLMs scores 61.9%, below a 3-annotator majority vote (65.7%).",
           "Co-authored JudgeBreak (ICML 2026 Workshop): linear probes on LLM hidden states reach 78.1% vs. 70.1% for the best reward model or LLM judge.",
-          "Co-authored a curiosity-driven LLM-as-a-judge for personalized creative evaluation (AAAI 2026 Workshop, Oral).",
         ],
       },
       {
-        area: "Production AI & Patents",
+        area: "Product",
         items: [
-          "Built the founding prototype of Adobe GenStudio for Performance Marketing, now serving Fortune 500 clients including Microsoft and AT&T.",
-          "Built a multimodal agent that edits images in Photoshop from natural language through a 49-tool loop.",
-          "4 US patents: 1 granted (constrained machine translation), 3 pending.",
+          "Prototyped Adobe GenStudio for Performance Marketing (launched October 2024, serving Fortune 500 clients) and built a multimodal Photoshop agent that edits images using 49 tools.",
         ],
       },
     ],
@@ -76,7 +85,7 @@ export default function ExperiencePage() {
 
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] mb-4">Experience</h1>
           <p className="text-[var(--text-secondary)] text-lg mb-16 max-w-2xl">
-            8+ years building ML systems at Adobe, from sub-millisecond inference engines to multimodal language models for creative work.
+            8+ years at Adobe, now training and evaluating multimodal models: SFT and RL fine-tuning of vision-language models, unsupervised photo retouching, and the benchmarks that measure them.
           </p>
 
           {/* Skills bar */}

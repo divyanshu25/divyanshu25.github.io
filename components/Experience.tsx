@@ -7,27 +7,37 @@ const experience = [
     period: "June 2021 – Present",
     highlights: [
       {
-        area: "Vision-Language Model Training & Evaluation",
+        area: "VLM Fine-Tuning with SFT and Reinforcement Learning (Gemma-3-12B)",
         bullets: [
-          "Led ATune (under review): a 54M-parameter model that learns photo retouching from 10M unedited stock photographs and drives off-the-shelf editors through their sliders. In a study with 157 raters, its edits were preferred over GPT-6 Astra's in 54.3% of votes and tied with Claude Opus 5's (50.5%).",
-          "Fine-tuned Gemma-3-12B with LoRA on 8× H100 (DDP, BF16, FlashAttention-2, Liger kernels) to assess the quality of marketing images.",
-          "Grounded VLM quality reasoning in computed pixel-level metrics (sharpness, exposure, color balance); the resulting interpretable scorer reaches MAE 0.77 (Pearson r ≈ 0.88) vs. 1.34 for zero-shot GPT-5.4 and 1.95 for Claude Opus 4.7.",
-          "Built the MQCore evaluation benchmark and a fault-tolerant async annotation pipeline (100+ images/min) for the 700K-image KADIS image-quality dataset.",
+          "Built distributed SFT and multi-round GRPO pipelines to train Gemma-3-12B (12.2B parameters; LoRA rank 256, 1.19B trainable) to assess marketing-image quality on 8× H100: each RL round samples a group of completions per prompt, scores them with programmatic rewards against ground truth, and trains with a clipped policy-gradient loss.",
+          "Audited GRPO runs for reward hacking and found the policy learning safe guesses: over 20 rounds, one magnitude word grew from 55% to a peak of 89% of its answers, and in another run it gave the middle quality rating to 84% of images when reviewers gave it to 56%. Traced the causes to the reward's shape, an unlearnable label, and lost exploration, and redesigned the scorers.",
         ],
       },
       {
-        area: "Evaluation Research & Benchmarking",
+        area: "Multimodal Judge Models",
         bullets: [
-          "First author of DistortBench (CVPR 2026 and ICML 2026 Workshops): a 13.5K-question benchmark over 27 distortion types and 5 severity levels. Of 18 VLMs evaluated, the best (Qwen3.5-27B) scores 61.9% (chance 25%), above the average individual annotator (60.2%) but below a 3-annotator majority vote (65.7%).",
-          "Co-authored JudgeBreak (ICML 2026 Workshop): across 95 subjective evaluation settings, linear probes on Qwen3-32B hidden states reach 78.1% mean pairwise accuracy vs. 70.1% for the strongest baseline (the best reward model or a zero-shot GPT-5.4 judge).",
-          "Co-authored a curiosity-driven LLM-as-a-judge that personalizes creative-writing evaluation using an intrinsic curiosity model (AAAI 2026 Workshop, Oral), raising mean F1 from 0.37 to 0.62 and Pearson r from 0.15 to 0.56 over an SFT baseline.",
+          "Built a 1.1M-row training set from 14 human-rated sources with rater disagreement as soft labels, and trained Qwen3.5-4B LoRA judges on mixes sampled from it. With a score readout refit on crowd labels, the served model raised validation SRCC over the reference model from 0.421 to 0.663 on KonIQ and from 0.395 to 0.595 on KADID (paired 95% CIs above 0).",
+          "Built a held-out benchmark suite: 8 sets, 67,168 items, leak-checked with SSCD against all 537,282 training images, with a pre-registered bootstrap non-inferiority release gate.",
         ],
       },
       {
-        area: "Production Multimodal Systems & Agents",
+        area: "Unsupervised Photo Retouching (ATune)",
         bullets: [
-          "Built the founding prototype of Adobe GenStudio for Performance Marketing (launched October 2024, now serving Fortune 500 clients including Microsoft and AT&T) and architected its multimodal brand service (brand-DNA extraction, retrieval, VLM content validation) across 3 regions.",
-          "Built a multimodal Photoshop agent that edits images from natural language through a 49-tool observe, think, and act loop with vision grounding and a quality-critic refinement step.",
+          "Led ATune (co-first author, under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs with no expert edits and operates off-the-shelf editors by setting their sliders. With 157 raters, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3; 3,524 answers) and tied with Claude Opus 5 (50.5%, CI 46.8–54.2).",
+          "Evaluated ATune on FiveK, PPR10K, and SPAQ with 9 published judges and Holm-corrected paired tests: on every set, at least 8 of 9 prefer it to GPT-6 Astra and at least 7 of 9 to seven learned retouchers.",
+        ],
+      },
+      {
+        area: "Evaluation Research",
+        bullets: [
+          "Created DistortBench (first author; CVPR 2026 and ICML 2026 Workshops): 13.5K questions over 27 distortion types and 5 severity levels. Of 18 VLMs, the best (Qwen3.5-27B) scores 61.9% (chance 25%), above the average annotator (60.2%) and below a 3-annotator majority vote (65.7%).",
+          "Co-authored JudgeBreak (ICML 2026 Workshop): across 95 subjective settings, linear probes on Qwen3-32B hidden states with cross-validated layer selection reach 78.1% mean pairwise accuracy vs. 70.1% for the best reward model or zero-shot GPT-5.4 judge.",
+        ],
+      },
+      {
+        area: "Product",
+        bullets: [
+          "Prototyped Adobe GenStudio for Performance Marketing (launched October 2024, serving Fortune 500 clients) and built a multimodal Photoshop agent that edits images using 49 tools with vision grounding.",
         ],
       },
     ],

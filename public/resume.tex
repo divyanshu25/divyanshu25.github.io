@@ -21,7 +21,7 @@
 \address{Sunnyvale, CA \\ +1 404-414-3762 \\ divyanshu.g25@gmail.com}
 \address{\href{https://www.linkedin.com/in/divyanshu2594/}{linkedin.com/in/divyanshu2594} \\ \href{https://github.com/Divyanshu25}{github.com/divyanshu25} \\ \href{https://scholar.google.com/citations?user=5MJm4JsAAAAJ}{Google Scholar}}
 
-\address{\normalsize Applied Scientist \textbar\ Multimodal LLM Training and Evaluation}
+\address{\normalsize Multimodal Model Training \textbar\ RL Fine-Tuning \textbar\ Evaluation}
 
 \begin{document}
 
@@ -31,7 +31,7 @@
 
 \begin{rSection}{Summary}
 \raggedright
-I am an Applied Scientist at Adobe, and my interests lie in multimodal language models. At Adobe, I train and evaluate them for creative work. The work often hinges on subjective quality, like whether a photo edit looks better or marketing copy feels original, so I spend a lot of my time building evaluations and training models that can reliably evaluate and align models in these subjective settings. I have shipped this work in Adobe GenStudio and published it at CVPR, ICML, and AAAI workshops.
+Applied scientist at Adobe, passionate about multimodal large language models. Over the past 5 years I have trained, aligned, and evaluated these models in highly subjective domains such as brand marketing and photo editing/retouching. I have contributed my work at CVPR, ICML, and AAAI workshops, hold patents in generative AI space, and write about AI through blogs. I am strong believer in first principle thinking and try to bring that to everything I do.
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
@@ -42,24 +42,29 @@ I am an Applied Scientist at Adobe, and my interests lie in multimodal language 
 
 \begin{rSubsection}{Applied Scientist {\mdseries -- Adobe Inc., San Jose, CA}}{June 2021 -- Present}{}{}
 
-\item[] \vspace{0.3em}{\subhead{Vision-Language Model Training \& Evaluation}}
-\item Led {\bf ATune} (under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs and operates \mbox{off-the-shelf} editors by setting their sliders. With 157 raters, its edits beat GPT-6 Astra using the same editor ({\bf 54.3\%} of 3,524 votes, 95\% CI 50.3--58.3) and tied with Claude Opus 5.
-\item Fine-tuned {\bf Gemma-3-12B} with LoRA to score \mbox{marketing-image} quality, training on 8$\times$ H100 (DDP, BF16, FlashAttention-2, Liger kernels).
-\item Grounded VLM quality reasoning in \mbox{pixel-level} metrics (sharpness, exposure, color balance); the resulting interpretable scorer reaches {\bf MAE 0.77} (Pearson r $\approx$ 0.88) vs.\ 1.34 for \mbox{zero-shot} GPT-5.4 and 1.95 for Claude Opus 4.7. Also built {\bf MQCore}, an evaluation score for \mbox{marketing-image} quality.
+\item[] \vspace{0.3em}{\subhead{VLM Fine-Tuning with SFT and Reinforcement Learning (Gemma-3-12B)}}
+\item Built distributed {\bf SFT} and \mbox{multi-round} {\bf GRPO} pipelines to train Gemma-3-12B (12.2B parameters; LoRA rank 256, 1.19B trainable) to assess \mbox{marketing-image} quality on 8$\times$~H100: each RL round samples a group of completions per prompt, scores them with programmatic rewards against ground truth, and trains with a clipped \mbox{policy-gradient} loss.
+\item Audited GRPO runs for {\bf reward hacking} and found the policy learning safe guesses: over 20 rounds, one magnitude word grew from 55\% to a peak of 89\% of its answers, and in another run it gave the middle quality rating to 84\% of images when reviewers gave it to 56\%. Traced the causes to the reward's shape, an unlearnable label, and lost exploration, and redesigned the scorers.
 
-\item[] \vspace{0.3em}{\subhead{Evaluation Research \& Benchmarking}}
-\item Created {\bf DistortBench} (first author; CVPR 2026 and ICML 2026 Workshops): a 13.5K-question benchmark over 27 distortion types and 5 severity levels. Evaluated 18 VLMs with bootstrap confidence intervals; the best model (Qwen3.5-27B) scores {\bf 61.9\%} (chance 25\%), above the average annotator (60.2\%) and just below a \mbox{3-annotator} majority vote (65.7\%).
+\item[] \vspace{0.3em}{\subhead{Multimodal Judge Models}}
+\item Built a 1.1M-row training set from 14 \mbox{human-rated} sources with rater disagreement as soft labels, and trained {\bf Qwen3.5-4B} LoRA judges on mixes sampled from it. With a score readout refit on crowd labels, the served model raised validation SRCC over the reference model from {\bf 0.421 to 0.663} on KonIQ and from 0.395 to 0.595 on KADID (paired 95\% CIs above 0).
+\item Built a held-out {\bf benchmark suite}: 8 sets, 67,168 items, \mbox{leak-checked} with SSCD against all 537,282 training images, with a \mbox{pre-registered} bootstrap \mbox{non-inferiority} release gate.
+
+\item[] \vspace{0.3em}{\subhead{Unsupervised Photo Retouching (ATune)}}
+\item Led {\bf ATune} (co-first author, under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs with no expert edits and operates \mbox{off-the-shelf} editors by setting their sliders. With 157 raters, its edits beat GPT-6 Astra using the same editor ({\bf 54.3\%} of decisive votes, 95\% CI 50.3--58.3; 3,524 answers) and tied with Claude Opus 5 (50.5\%, CI 46.8--54.2).
+\item Evaluated ATune on FiveK, PPR10K, and SPAQ with 9 published judges and \mbox{Holm-corrected} paired tests: on every set, at least {\bf 8 of 9} prefer it to GPT-6 Astra and at least 7 of 9 to seven learned retouchers.
+
+\item[] \vspace{0.3em}{\subhead{Evaluation Research}}
+\item Created {\bf DistortBench} (first author; CVPR 2026 and ICML 2026 Workshops): 13.5K questions over 27 distortion types and 5 severity levels. Of 18 VLMs, the best (Qwen3.5-27B) scores {\bf 61.9\%} (chance 25\%), above the average annotator (60.2\%) and below a \mbox{3-annotator} majority vote (65.7\%).
 \item Co-authored {\bf JudgeBreak} (ICML 2026 Workshop): across 95 subjective settings, linear probes on Qwen3-32B hidden states with \mbox{cross-validated} layer selection reach {\bf 78.1\%} mean pairwise accuracy vs.\ 70.1\% for the best reward model or \mbox{zero-shot} GPT-5.4 judge.
-\item Co-authored a curiosity-driven {\bf LLM-as-a-judge} (AAAI 2026 Workshop, Oral) that personalizes \mbox{creative-writing} evaluation by modeling the judge's surprise at each expert's explanation, raising mean F1 from 0.37 to 0.62 and Pearson r from 0.15 to 0.56 over an SFT baseline. Trained its baseline models.
 
-\item[] \vspace{0.3em}{\subhead{Production Multimodal Systems \& Agents}}
-\item Prototyped {\bf Adobe GenStudio for Performance Marketing} (launched October 2024, now serving Fortune 500 clients including Microsoft and AT\&T), then designed its multimodal brand service, now deployed in 3 regions, for VLM content validation, \mbox{brand-DNA} extraction, and retrieval.
-\item Built a {\bf multimodal Photoshop agent} that edits images from \mbox{natural-language} instructions, running an \mbox{observe-think-act} loop over 49 tools with vision grounding and a \mbox{quality-critic} refinement step.
+\needspace{3\baselineskip}
+\item[] \vspace{0.3em}{\subhead{Product}}
+\item Prototyped {\bf Adobe GenStudio for Performance Marketing} (launched October 2024, serving Fortune 500 clients) and built a multimodal {\bf Photoshop agent} that edits images using 49 tools with vision grounding.
 \end{rSubsection}
 
 \begin{rSubsection}{Machine Learning Engineer {\mdseries -- Adobe Inc., Bangalore, India}}{July 2016 -- August 2019}{}{}
-\item Co-developed Adobe's production {\bf ML prediction service}, which sustains 3,500 QPS/node at 0.3--0.6 ms \mbox{app-side} p99 latency (\href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog}).
-\item Built an end-to-end model lifecycle platform: versioned deployment, live monitoring, and phased rollout across dev, staging, and production.
+\item Co-developed Adobe's production {\bf ML prediction service} (3,500 QPS/node at 0.3--0.6 ms p99; \href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog}) and its model lifecycle platform.
 \end{rSubsection}
 
 \end{rSection}
@@ -96,35 +101,16 @@ Write-ups: \href{https://medium.com/@divyanshugoyal/going-fast-every-optimizatio
 
 \vspace{0.45em}
 \textbf{BrownBearAI: On-Device Photo Understanding for iOS} \hfill 2026 \textbar\ \href{https://apps.apple.com/app/id6796580170}{App Store} \\
-{\raggedright An iPhone photo app that groups faces and finds duplicate and blurry shots fully \mbox{on-device}. Benchmarked the shipped engine on public datasets with a \mbox{per-build} regression gate: {\bf 99.4\%} BCubed F1 grouping LFW identities among 1,000 distractors, 98.0\% \mbox{face-detection} precision on WIDER.\par}
+{\raggedright iPhone app that groups faces and finds duplicates \mbox{on-device}, with a \mbox{per-build} regression gate: {\bf 99.4\%} BCubed F1 grouping LFW identities among 1,000 distractors, 98.0\% \mbox{face-detection} precision on WIDER FACE.\par}
 
 \end{rSection}
 
-%----------------------------------------------------------------------------------------
-%	PATENTS
-%----------------------------------------------------------------------------------------
-
 \begin{rSection}{Patents}
 \raggedright
-\textbf{Guiding Language Translation with Translation Documents Using ML} \\
-{\bf D.\ Goyal}, A.\ Eppa, M.\ Anand \textbar\ 2026 \textbar\ \href{https://patents.google.com/patent/US20260050753A1/en}{US20260050753} \\
-{\small\itshape Splits translation guidelines into language-agnostic facets and scores how well translations follow each one.}
-
-\vspace{0.45em}
-\textbf{Brand-Aligned Marketing Content Generation} \\
-{\bf D.\ Goyal}, M.\ Anand, J.\ Mathew \textbar\ 2025 \textbar\ \href{https://patents.google.com/patent/US20250117829A1/en}{US20250117829} \\
-{\small\itshape Turns unstructured brand material into structured brand data for on-brand content generation.}
-
-\vspace{0.45em}
-\textbf{Cultural Adaptation of Images Using Generative AI} \\
-A.\ Eppa, M.\ Anand, {\bf D.\ Goyal} \textbar\ 2026 \textbar\ \href{https://patents.google.com/patent/US20260051084A1/en}{US20260051084} \\
-{\small\itshape A VLM describes an image, the text is adapted to a target culture, and a text-to-image model renders it.}
-
-\vspace{0.45em}
-\textbf{Parameter-Efficient Fine-Tuned Models} \\
-Y.\ Wang, N.\ Vangala, M.\ Anand, K.\ K.\ Jain, J.\ Mathew, E.\ Jose, {\bf D.\ Goyal}, et al. \textbar\ 2025 \textbar\ \href{https://patents.google.com/patent/US20250217193A1/en}{US20250217193} \\
-{\small\itshape Serves many fine-tuned models by loading small adapter layers into preloaded base models on demand.}
-
+\textbf{Guiding Language Translation with Translation Documents Using ML} (granted) \hfill 2026 \textbar\ \href{https://patents.google.com/patent/US20260050753A1/en}{US20260050753}\par
+\textbf{Brand-Aligned Marketing Content Generation} \hfill 2025 \textbar\ \href{https://patents.google.com/patent/US20250117829A1/en}{US20250117829}\par
+\textbf{Cultural Adaptation of Images Using Generative AI} \hfill 2026 \textbar\ \href{https://patents.google.com/patent/US20260051084A1/en}{US20260051084}\par
+\textbf{Parameter-Efficient Fine-Tuned Models} \hfill 2025 \textbar\ \href{https://patents.google.com/patent/US20250217193A1/en}{US20250217193}\par
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
@@ -133,8 +119,8 @@ Y.\ Wang, N.\ Vangala, M.\ Anand, K.\ K.\ Jain, J.\ Mathew, E.\ Jose, {\bf D.\ G
 
 \begin{rSection}{Technical Skills}
 \raggedright
-\skillrow{Research:}{VLM Training \& Evaluation, LLM Pretraining \& Scaling Laws, Benchmark Design, Human Preference Studies, LLM-as-a-Judge~\&~Reward Models, Linear Probing, Bootstrap Statistics}
-\skillrow{Tools:}{Python, PyTorch, Distributed Training (DDP, ZeRO-2), torch.compile, FlashAttention-2/3, Liger Kernels, Muon, Mixed Precision (BF16, TF32), LoRA, Hugging Face Transformers/PEFT, Weights~\&~Biases}
+\skillrow{Research:}{VLM Training \& Evaluation, LLM Pretraining \& Scaling Laws, Benchmark Design, Human Preference Studies, LLM-as-a-Judge~\&~Reward Models, Reinforcement Learning (GRPO), Reward Design, Linear Probing, Bootstrap Statistics}
+\skillrow{Tools:}{Python, PyTorch, Distributed Training (DDP, ZeRO-2), torch.compile, FlashAttention-3, Liger Kernels, Muon, Mixed Precision (BF16), LoRA, Hugging Face Transformers/PEFT, Weights~\&~Biases}
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
@@ -145,5 +131,6 @@ Y.\ Wang, N.\ Vangala, M.\ Anand, K.\ K.\ Jain, J.\ Mathew, E.\ Jose, {\bf D.\ G
 {\bf Georgia Institute of Technology} -- M.S. Computer Science (Machine Learning), GPA 4.0 (2019 -- 2021)\par
 {\bf BITS Pilani} -- B.E. Computer Science, M.Sc. Mathematics, GPA 8.75/10 (2011 -- 2016)\par
 \end{rSection}
+
 
 \end{document}
