@@ -4,7 +4,7 @@ export const profile = {
   institution: "Georgia Tech",
   degree: "M.S. in Computer Science",
   specialization: "Machine Learning",
-  bio: "Applied scientist at Adobe with 8+ years of experience, passionate about multimodal large language models. I was tech lead for Adobe GenStudio for Performance Marketing, taking it from prototype to a multi-million-dollar product. Today I am tech lead for a team training and evaluating multimodal models for marketing and photo quality. My work appears at CVPR, ICML, and AAAI workshops, and I am an inventor on 6 patents.",
+  bio: "AI researcher and engineering leader with 8+ years at Adobe, specializing in agentic AI and multimodal LLMs. I led the technical strategy that took Adobe GenStudio for Performance Marketing from 0 to 1, driving multi-million-dollar adoption across the Fortune 500. Today I am tech lead for a 7-person team building VLMs, judge models, and retouchers. My work includes 6 patents and publications at CVPR, ICML, and AAAI workshops.",
   
   education: [
     {
