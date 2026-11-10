@@ -10,18 +10,26 @@
 #   - Docker (for containerized LaTeX compilation)
 #
 # Usage:
-#   make resume        - Generate resume PDF from LaTeX source (requires pdflatex)
+#   make environment   - Set up Node 22, npm packages, and tectonic
+#   make pdf           - Generate resume PDF with tectonic
+#   make resume       - Generate resume PDF from LaTeX source (requires pdflatex)
 #   make resume-docker - Generate resume PDF using Docker (no local LaTeX needed)
 #   make clean         - Remove auxiliary LaTeX files
 #   make help          - Show available targets
 #########################################################################################
 
-.PHONY: resume resume-docker clean help check-latex dev
+.PHONY: environment pdf resume resume-docker clean help check-latex dev
+
+# Node 22 (installed by make environment) and tectonic come first on PATH
+NODE_DIR := $(HOME)/.local/node22
+export PATH := $(NODE_DIR)/node_modules/.bin:$(HOME)/.local/bin:$(PATH)
 
 # Default target
 help:
 	@echo "Available targets:"
+	@echo "  make environment   - Set up Node 22, npm packages, and tectonic"
 	@echo "  make dev           - Start local development server at http://localhost:3000"
+	@echo "  make pdf           - Build public/resume.pdf with tectonic (prints page count)"
 	@echo "  make resume        - Generate resume PDF using local pdflatex"
 	@echo "  make resume-docker - Generate resume PDF using Docker (no LaTeX install needed)"
 	@echo "  make clean         - Remove auxiliary LaTeX files"
@@ -32,10 +40,34 @@ help:
 	@echo "  Ubuntu:  sudo apt-get install texlive-latex-extra texlive-fonts-recommended"
 	@echo "  Or use:  make resume-docker (requires Docker)"
 
+# Set up everything the site and the resume build need (safe to rerun)
+environment:
+	@if node -e 'process.exit(+process.versions.node.split(".")[0] < 18 ? 1 : 0)' 2>/dev/null; then \
+		echo "✓ Node $$(node -v)"; \
+	else \
+		echo "Installing Node 22 into $(NODE_DIR)..."; \
+		mkdir -p $(NODE_DIR) && cd $(NODE_DIR) && npm init -y >/dev/null && npm install node@22 >/dev/null && \
+		echo "✓ Node $$($(NODE_DIR)/node_modules/.bin/node -v)"; \
+	fi
+	@npm install && echo "✓ npm packages"
+	@if command -v tectonic >/dev/null 2>&1; then \
+		echo "✓ $$(tectonic --version | head -1)"; \
+	else \
+		echo "Installing tectonic into $(HOME)/.local/bin..."; \
+		mkdir -p $(HOME)/.local/bin && cd $(HOME)/.local/bin && \
+		curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh; \
+	fi
+
 # Start local development server
 dev:
 	@echo "Starting development server at http://localhost:3000..."
 	@npm run dev
+
+# Build the resume PDF with tectonic (fetches LaTeX packages on demand, no TeX install needed)
+pdf:
+	@command -v tectonic >/dev/null 2>&1 || { echo "tectonic not found: https://tectonic-typesetting.github.io"; exit 1; }
+	@cd public && tectonic --keep-logs resume.tex 2>&1 | grep -iE "error|overfull" || true
+	@grep -aoE "[0-9]+ pages?" public/resume.log | tail -1 | sed 's/^/✓ public\/resume.pdf: /'
 
 # Check if pdflatex is installed
 check-latex:

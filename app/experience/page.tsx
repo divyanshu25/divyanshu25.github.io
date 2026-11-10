@@ -11,37 +11,57 @@ const roles = [
     title: "Applied Scientist",
     company: "Adobe",
     location: "San Jose, CA",
-    period: "2021 – Present",
+    period: "June 2021 – Present",
     blocks: [
       {
-        area: "VLM Fine-Tuning with SFT and Reinforcement Learning (Gemma-3-12B)",
+        area: "FixIt: Multimodal Models for Marketing and Photo Quality (Tech Lead, team of 7)",
         items: [
-          "Trained Gemma-3-12B (LoRA rank 256, 1.19B trainable parameters) to assess marketing-image quality with distributed SFT, then multi-round GRPO, on 8× H100. Each round samples a group of completions per prompt, scores them with programmatic rewards against ground truth, and updates the policy with a clipped policy-gradient loss. Diagnosed reward hacking (collapse onto hedged, low-information answers) and redesigned the reward scorers.",
+          "Tech lead for three multimodal models: a marketing VLM, judge models, and the ATune retoucher. Defined the data annotation strategy, the training pipeline, and the evaluation protocol, keeping training stable and fast and verifying that each model learned its intended reward.",
+          "Demonstrated sub-second decisions on marketing content. The demos secured org-wide investment in these models and led to customer engagements that opened new revenue streams.",
         ],
       },
       {
-        area: "Multimodal Judge Models",
+        area: "Adobe Marketing VLM (Gemma-3-12B, SFT and GRPO)",
         items: [
-          "Built a 1.1M-row training set from 14 human-rated sources with rater disagreement as soft labels, and trained Qwen3.5-4B LoRA judges on mixes sampled from it. After calibrating its score output on crowd ratings, the served judge raised validation SRCC on KonIQ from 0.421 (reference model) to 0.663 (paired 95% CI above 0), measured on a leak-checked 67K-item held-out benchmark suite I built.",
+          "Fine-tuned Gemma-3-12B with distributed SFT followed by multi-round GRPO on 8× H100, using LoRA at rank 256 (1.19B trainable parameters). Each GRPO round samples a group of answers per prompt, scores them against ground truth, and updates the policy with a clipped policy-gradient loss.",
+          "Designed programmatic rewards for 7 tasks: marketing quality, distortion type and severity, emotion, audience, attention, creative attributes, and photo observables.",
+          "Diagnosed reward hacking. Rollout audits showed the policy collapsing onto hedged answers: it gave the middle quality rating to 84% of images, against 56% for human reviewers. Traced the cause to the reward's shape and redesigned the scorers.",
+          "Built the data and serving stack: an asynchronous VLM annotation pipeline with chunked checkpoints and crash recovery, and a router-and-worker inference API across 4 GPUs.",
         ],
       },
       {
-        area: "Unsupervised Photo Retouching (ATune)",
+        area: "JEV-Style Marketing Judge Models",
         items: [
-          "Led ATune (co-first author, under review): a 54M-parameter model that learns photo retouching from 10M unedited photographs with no expert edits and operates off-the-shelf editors by setting their sliders. With 157 raters, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3; 3,524 answers) and tied with Claude Opus 5 (50.5%, CI 46.8–54.2). On FiveK, PPR10K, and SPAQ, at least 8 of 9 published quality judges prefer it to GPT-6 Astra.",
+          "Trained Qwen3.5-4B LoRA judges on a 1.1M-example dataset curated from 14 human-rated sources, using the spread of rater opinions as soft labels.",
+          "Raised correlation with human ratings on KonIQ to 0.663 SRCC, up from 0.421 for the reference model, after calibrating the score output on crowd ratings (paired 95% CI above zero).",
+          "Built a 67K-item held-out benchmark, leak-checked with SSCD copy detection against all 537K training images. It gated every release from v9 to v19 through a pre-registered non-inferiority test. Served the judge at 21 replicas across 8 H100s.",
+          "Applied the judge to pairwise crop selection, reaching 0.82 accuracy on GAIC vs. 0.71 for the score-based baseline.",
+          "Detected a run whose vision encoder collapsed within 200 steps, leaving every checkpoint blind to the image, and added a vision-health check to the training pipeline.",
+        ],
+      },
+      {
+        area: "ATune: Unsupervised Photo Retouching (Co-Lead with Adobe Research)",
+        items: [
+          "Co-led the project with Adobe Research as co-first author (under review). Mentored an intern and owned the synthetic data pipeline, the training recipe, and the evaluation.",
+          "Trained a 54M-parameter model that retouches photos by setting the sliders of off-the-shelf editors (RawTherapee and darktable). It learns from 10M unedited photographs, with no expert edits.",
+          "In a human study with 157 raters and 3,524 judgments, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3) and matched Claude Opus 5 (50.5%). On FiveK, PPR10K, and SPAQ, at least 8 of 9 published image-quality judges also prefer it to GPT-6 Astra.",
+          "Ran a data-scaling study from 1M to 10M photographs: each larger corpus wins or ties, and no judge on any test set prefers a smaller one.",
+        ],
+      },
+      {
+        area: "Adobe GenStudio for Performance Marketing (Tech Lead, team of 20+)",
+        items: [
+          "Took GenStudio from prototype to a multi-million-dollar product used by Fortune 500 companies (launched October 2024). Tech lead for the production API server that connects the product to cloud LLM providers at scale.",
+          "Co-invented a system that uses generative models to turn a company's source material into structured brand guidelines, generate marketing content from them, and score that content against each guideline (US20250117829). Designed the brand-compliance evaluation; the work became the product Adobe Brand Intelligence.",
+          "Fine-tuned custom models on a Fortune 500 customer's own data, which led to a custom-models deal.",
+          "Built a multimodal agent that edits images in Photoshop, selecting from 49 tools with vision grounding.",
         ],
       },
       {
         area: "Evaluation Research",
         items: [
-          "Created DistortBench (first author; CVPR 2026 and ICML 2026 Workshops): 13.5K questions over 27 distortion types and 5 severity levels. Of 18 VLMs, the best (Qwen3.5-27B) scores 61.9% (chance 25%), above the average annotator (60.2%) and below a 3-annotator majority vote (65.7%).",
-          "Co-authored JudgeBreak (ICML 2026 Workshop): linear probes on Qwen3-32B hidden states reach 78.1% pairwise accuracy across 95 subjective settings, vs. 70.1% for the best reward model or LLM judge.",
-        ],
-      },
-      {
-        area: "Product",
-        items: [
-          "Prototyped Adobe GenStudio for Performance Marketing (launched October 2024, serving Fortune 500 clients) and built a multimodal Photoshop agent that edits images with vision grounding.",
+          "DistortBench (first author; CVPR and ICML 2026 workshops): a benchmark of 13.5K questions over 27 distortion types and 5 severity levels. The best of 18 VLMs (Qwen3.5-27B, 61.9%) beats the average annotator (60.2%) but trails a 3-annotator majority vote (65.7%).",
+          "JudgeBreak (ICML 2026 workshop): showed that linear probes on Qwen3-32B hidden states beat the best reward model or LLM judge across 95 subjective settings (78.1% vs. 70.1% pairwise accuracy).",
         ],
       },
     ],
@@ -50,14 +70,14 @@ const roles = [
     title: "Machine Learning Engineer",
     company: "Adobe",
     location: "Bangalore, India",
-    period: "2016 – 2019",
+    period: "July 2016 – August 2019",
     blocks: [
       {
         area: "ML Infrastructure & Serving",
         items: [
-          "Co-engineered Adobe's ML inference platform: 3,500 QPS/node at 0.3–0.6 ms app-side p99 latency.",
-          "GC-free async event pipeline using LMAX Disruptor: no back-pressure under peak load.",
-          "Model lifecycle management: versioned deployment, monitoring, staged rollout.",
+          "Joined Adobe's ML serving platform at inception and helped plan the end-to-end product, which hosts internal models such as field-aware factorization machines.",
+          "Owned serving throughput: scaled the production ML prediction service to 3,500 QPS per node at 0.3–0.6 ms p99 latency (Adobe Tech Blog), with a garbage-collection-free asynchronous event pipeline on LMAX Disruptor that removed back-pressure under peak load.",
+          "Built the model lifecycle platform for versioned deployment, monitoring, and staged rollout across environments.",
         ],
       },
     ],
@@ -82,7 +102,7 @@ export default function ExperiencePage() {
 
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text)] mb-4">Experience</h1>
           <p className="text-[var(--text-secondary)] text-lg mb-16 max-w-2xl">
-            8+ years at Adobe, now training and evaluating multimodal models: SFT and RL fine-tuning of vision-language models, unsupervised photo retouching, and the benchmarks that measure them.
+            8+ years at Adobe: tech lead for Adobe GenStudio for Performance Marketing from prototype to a multi-million-dollar product, and now for multimodal models in marketing and photo quality.
           </p>
 
           {/* Skills bar */}
@@ -137,7 +157,7 @@ export default function ExperiencePage() {
                   {openRole === i ? "Collapse" : "Show details"}
                 </button>
 
-                <div className={`overflow-hidden transition-all duration-500 ${openRole === i ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
+                <div className={`overflow-hidden transition-all duration-500 ${openRole === i ? "max-h-[6000px] opacity-100" : "max-h-0 opacity-0"}`}>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
                     {role.blocks.map((block, j) => (
                       <div key={j} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5">

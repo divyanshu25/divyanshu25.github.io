@@ -4,7 +4,7 @@ export const profile = {
   institution: "Georgia Tech",
   degree: "M.S. in Computer Science",
   specialization: "Machine Learning",
-  bio: "Applied scientist at Adobe, passionate about multimodal large language models. Over the past 5 years I have trained, aligned, and evaluated these models in highly subjective domains such as brand marketing and photo editing/retouching. I have contributed my work at CVPR, ICML, and AAAI workshops, hold patents in generative AI space, and write about AI through blogs. I am strong believer in first principle thinking and try to bring that to everything I do. I hold an M.S. in Computer Science (Machine Learning) from Georgia Tech.",
+  bio: "Applied scientist with 8+ years at Adobe, passionate about multimodal large language models. My work spans two areas: building agentic AI products, and training, aligning, and evaluating multimodal and large language models in subjective domains such as marketing and photo quality. As tech lead on a team of 20+, I worked on taking Adobe GenStudio for Performance Marketing from prototype to a multi-million-dollar product used by Fortune 500 companies. Today I am working as a tech lead for a 7-person team building marketing VLMs, judge models, and photo-retouching models for domains where quality depends on human taste. With Adobe Research, I co-led ATune, a 54M-parameter retoucher that human raters prefer to GPT-6 Astra. My work has been published at CVPR, ICML, and AAAI workshops and I am an inventor on 6 patents. I am a strong believer in first-principles thinking.",
   
   education: [
     {
@@ -45,6 +45,14 @@ export const profile = {
   },
 
   publications: [
+    {
+      title: "ATune: Unsupervised Photo Retouching Through Image-Editor Controls",
+      authors: "Divyanshu Goyal*, Gabriel Ruiz*, Amir Meisami (*equal contribution)",
+      venue: "Under review",
+      year: "2026",
+      abstract: "ATune is a 54M-parameter model that learns photo retouching from 10M unedited photographs, with no expert edits, and retouches by setting the sliders of off-the-shelf editors (RawTherapee and darktable). In a human study with 157 raters and 3,524 judgments, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3) and matched Claude Opus 5. On FiveK, PPR10K, and SPAQ, at least 8 of 9 published image-quality judges prefer it to GPT-6 Astra.",
+      tags: ["Computer Vision", "Photo Retouching", "Unsupervised Learning", "Human Evaluation"]
+    },
     {
       title: "DistortBench: Benchmarking Vision Language Models on Image Distortion Identification",
       authors: "Divyanshu Goyal, Akhil Eppa, Vanya Bannihatti Kumar",
@@ -109,6 +117,22 @@ export const profile = {
       abstract: "Proposes a structured approach to constrained machine translation by grounding model outputs in entity-specific translation documents. Guidelines are extracted and categorized into language-agnostic translation facets, and facet-specific adherence scores are computed to quantify how well translations align with prescribed linguistic and stylistic constraints.",
       link: "https://patents.google.com/patent/US20260050753A1/en",
       tags: ["Machine Learning", "NLP", "Language Translation", "Localization"]
+    },
+    {
+      title: "Video-to-Video Culturalization Using Generative AI",
+      authors: "Akhil Eppa, Divyanshu Goyal",
+      venue: "US Patent Application (Approved for Filing)",
+      year: "2026",
+      abstract: "Approved for filing by Adobe; details will follow publication.",
+      tags: ["Generative AI", "Video", "Cultural Adaptation"]
+    },
+    {
+      title: "Learning to Be Surprised: A Curiosity-Driven Framework for Creative Judgment",
+      authors: "Divyanshu Goyal, Vanya Bannihatti Kumar, Akhil Eppa, Neel Bhandari",
+      venue: "US Patent Application (Approved for Filing)",
+      year: "2026",
+      abstract: "Approved for filing by Adobe. Covers the method of the AAAI 2026 workshop paper Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment.",
+      tags: ["LLMs", "Creative AI", "Evaluation"]
     }
   ],
 
