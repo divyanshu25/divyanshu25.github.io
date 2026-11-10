@@ -5,7 +5,7 @@
 
 \ProvidesClass{resume}[2024/01/01 v1.0 Resume class]
 
-\LoadClass[11pt,letterpaper]{article}
+\LoadClass[9pt,letterpaper]{extarticle}
 
 \usepackage[parfill]{parskip}
 \usepackage{array}
