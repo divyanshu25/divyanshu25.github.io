@@ -18,7 +18,7 @@ const roles = [
         items: [
           "Spearheaded technical vision and execution across the full ML stack for a 7-person team, encompassing distributed data pipelines, RL alignment, and low-latency inference.",
           "Architected a sub-second JEV-style judge model integrated directly into the Firefly AI Agent evaluation harness, gating agent outputs to reduce user revision iterations by 40%.",
-          "Directed the deployment of three specialized model streams: domain-adapted VLMs, dense reward judges, and an unsupervised photo retoucher trained entirely without human-edited pairs.",
+          "Directed the development of three specialized model streams: domain-adapted VLMs, marketing-quality judges, and an unsupervised photo retoucher trained entirely without human-edited pairs.",
         ],
       },
       {
