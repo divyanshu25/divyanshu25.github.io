@@ -16,7 +16,7 @@ const roles = [
       {
         area: "FixIt: Multimodal Models for Marketing & Visual Quality (Tech Lead, Team of 7)",
         items: [
-          "Spearheaded technical vision and execution across the full ML stack for a 7-person team, encompassing distributed data pipelines, RL alignment, and low-latency inference.",
+          "Spearheaded technical vision and execution across the full ML stack, encompassing distributed data pipelines, RL alignment, and low-latency inference.",
           "Architected a sub-second JEV-style judge model integrated directly into the Firefly AI Agent evaluation harness, gating agent outputs to reduce user revision iterations by 40%.",
           "Directed the development of three specialized model streams: domain-adapted VLMs, marketing-quality judges, and an unsupervised photo retoucher trained entirely without human-edited pairs.",
         ],
@@ -33,7 +33,7 @@ const roles = [
       {
         area: "JEV-Style Marketing Judge Models",
         items: [
-          "Trained Qwen3.5-4B LoRA reward models on a 1.1M soft-labeled dataset curated from 14 human-rated sources, raising KonIQ correlation to 0.663 SRCC (vs. 0.421 for the reference model).",
+          "Trained Qwen3.5-4B LoRA judges on a 1.1M soft-labeled dataset curated from 14 human-rated sources, raising KonIQ correlation to 0.663 SRCC (vs. 0.421 for the reference model).",
           "Curated a 67K-item held-out benchmark, leak-checked against all training images via SSCD copy detection, and gated 10 model releases on a pre-registered non-inferiority test.",
           "Conceived and built a live demo suite that turns the judge from a scorer into a creative engine: it auto-crops images (0.82 pairwise accuracy on GAIC vs. 0.71 for the score-based baseline), retouches photos, scores marketing and custom attributes, re-ranks Adobe Stock for marketing use, and flags low-quality assets. Presented it to leadership and external partners, opening new customer engagements.",
           "Caught a run whose vision encoder collapsed within 200 steps, leaving every checkpoint blind to the image, and added an automated vision-health check to the training pipeline.",

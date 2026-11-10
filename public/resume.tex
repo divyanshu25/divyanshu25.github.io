@@ -42,19 +42,19 @@ AI researcher and engineering leader with {\bf 8+ years of experience} specializ
 \begin{rSection}{Experience}
 
 \begin{rSubsection}{Applied Scientist {\mdseries -- Adobe Inc., San Jose, CA}}{June 2021 -- Present}{}{}
-\item[] \vspace{0.15em}{\subhead{FixIt: Multimodal Models for Marketing \& Visual Quality (Tech Lead, Team of 7)}}
-\item Spearheaded technical vision and execution across the {\bf full ML stack} for a {\bf \mbox{7-person} team}, encompassing distributed data pipelines, RL alignment, and \mbox{low-latency} inference.
+\item[] \vspace{0.3em}{\subhead{FixIt: Multimodal Models for Marketing \& Visual Quality (Tech Lead, Team of 7)}}
+\item Spearheaded technical vision and execution across the {\bf full ML stack}, encompassing distributed data pipelines, RL alignment, and \mbox{low-latency} inference.
 \item Architected a {\bf \mbox{sub-second}} \mbox{JEV-style} judge model integrated directly into the {\bf Firefly AI Agent evaluation harness}, gating agent outputs to reduce user revision iterations by {\bf 40\%}.
 \item Directed the development of {\bf three specialized model streams}: \mbox{domain-adapted} VLMs, marketing-quality judges, and an {\bf unsupervised photo retoucher} trained entirely without \mbox{human-edited} pairs.
 
-\item[] \vspace{0.15em}{\subhead{Adobe Marketing VLM (Gemma-3-12B, SFT \& GRPO Alignment)}}
+\item[] \vspace{0.3em}{\subhead{Adobe Marketing VLM (Gemma-3-12B, SFT \& GRPO Alignment)}}
 \item Fine-tuned {\bf Gemma-3-12B} via distributed SFT followed by multi-round GRPO on $8\times$ H100s, leveraging LoRA at rank 256 (1.19B trainable parameters) across 7 custom reward functions.
 \item Diagnosed {\bf policy collapse} in marketing quality: the policy predicted the middle rating for 84\% of images vs.\ 56\% for humans, because a central guess is never more than 2 points from any label. Mitigated it with a {\bf cubed distance penalty} and {\bf \mbox{class-weighted} advantages} for rare ratings, cutting \mbox{middle-rating} predictions to {\bf 64\%}.
 \item Built a {\bf \mbox{fault-tolerant}} annotation pipeline that labeled {\bf $\sim$10M images} with a teacher VLM to create the SFT dataset.
 \item Built a {\bf Photoshop agent} powered by the marketing VLM that edits photos toward {\bf marketing taste}, turning the model's judgment of what makes an image effective into concrete Photoshop edits.
 
 \item[] \vspace{0.3em}{\subhead{JEV-Style Marketing Judge Models}}
-\item Trained {\bf \mbox{Qwen3.5-4B}} LoRA reward models on a {\bf 1.1M soft-labeled dataset} curated from 14 \mbox{human-rated} sources, raising KonIQ correlation to {\bf 0.663 SRCC} (vs.\ 0.421 for the reference model).
+\item Trained {\bf \mbox{Qwen3.5-4B}} LoRA judges on a {\bf 1.1M soft-labeled dataset} curated from 14 \mbox{human-rated} sources, raising KonIQ correlation to {\bf 0.663 SRCC} (vs.\ 0.421 for the reference model).
 \item Curated a {\bf \mbox{67K-item} held-out benchmark}, \mbox{leak-checked} against all training images via SSCD copy detection, and gated {\bf 10 model releases} on a \mbox{pre-registered} \mbox{non-inferiority} test.
 \item Conceived and built a {\bf live demo suite} that turns the judge from a scorer into a {\bf creative engine}: it \mbox{auto-crops} images ({\bf 0.82 pairwise accuracy on GAIC} vs.\ 0.71 for the \mbox{score-based} baseline), retouches photos, scores marketing and custom attributes, \mbox{re-ranks} Adobe Stock for marketing use, and flags \mbox{low-quality} assets. Presented it to {\bf leadership and external partners}, opening new customer engagements.
 \item Caught a run whose vision encoder collapsed within 200 steps, leaving every checkpoint blind to the image, and added an automated {\bf \mbox{vision-health} check} to the training pipeline.
