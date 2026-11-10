@@ -4,7 +4,7 @@ export const profile = {
   institution: "Georgia Tech",
   degree: "M.S. in Computer Science",
   specialization: "Machine Learning",
-  bio: "Applied scientist with 8+ years at Adobe, passionate about multimodal large language models. My work spans two areas: building agentic AI products, and training, aligning, and evaluating multimodal and large language models in subjective domains such as marketing and photo quality. As tech lead on a team of 20+, I worked on taking Adobe GenStudio for Performance Marketing from prototype to a multi-million-dollar product used by Fortune 500 companies. Today I am working as a tech lead for a 7-person team building marketing VLMs, judge models, and photo-retouching models for domains where quality depends on human taste. With Adobe Research, I co-led ATune, a 54M-parameter retoucher that human raters prefer to GPT-6 Astra. My work has been published at CVPR, ICML, and AAAI workshops and I am an inventor on 6 patents. I am a strong believer in first-principles thinking.",
+  bio: "Applied scientist at Adobe with 8+ years of experience, passionate about multimodal large language models. I was tech lead for Adobe GenStudio for Performance Marketing, taking it from prototype to a multi-million-dollar product. Today I am tech lead for a team training and evaluating multimodal models for marketing and photo quality. My work appears at CVPR, ICML, and AAAI workshops, and I am an inventor on 6 patents.",
   
   education: [
     {
@@ -121,17 +121,17 @@ export const profile = {
     {
       title: "Video-to-Video Culturalization Using Generative AI",
       authors: "Akhil Eppa, Divyanshu Goyal",
-      venue: "US Patent Application (Approved for Filing)",
+      venue: "US Patent Application (Filed)",
       year: "2026",
-      abstract: "Approved for filing by Adobe; details will follow publication.",
+      abstract: "Filed with the USPTO; details will follow publication.",
       tags: ["Generative AI", "Video", "Cultural Adaptation"]
     },
     {
       title: "Learning to Be Surprised: A Curiosity-Driven Framework for Creative Judgment",
       authors: "Divyanshu Goyal, Vanya Bannihatti Kumar, Akhil Eppa, Neel Bhandari",
-      venue: "US Patent Application (Approved for Filing)",
+      venue: "US Patent Application (Filed)",
       year: "2026",
-      abstract: "Approved for filing by Adobe. Covers the method of the AAAI 2026 workshop paper Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment.",
+      abstract: "Filed with the USPTO. Covers the method of the AAAI 2026 workshop paper Curiosity-Driven LLM-as-a-judge for Personalized Creative Judgment.",
       tags: ["LLMs", "Creative AI", "Evaluation"]
     }
   ],
