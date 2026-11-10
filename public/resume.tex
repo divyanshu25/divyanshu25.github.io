@@ -32,9 +32,7 @@
 
 \begin{rSection}{Summary}
 \raggedright
-{\bf Applied Scientist \& AI Tech Lead \textbar\ 8+ Years of Experience}\par
-\vspace{0.2em}
-AI researcher and engineering leader with 8+ years of experience specializing in agentic AI and Multimodal LLMs. I bridge the gap between cutting-edge research and enterprise-scale products, specifically in domains where quality is dictated by nuanced human aesthetics and marketing effectiveness. During my tenure at Adobe, I led the technical strategy to scale GenStudio for Performance Marketing from 0 to 1, driving multi-million-dollar adoption across the Fortune 500. Currently, I am tech lead for a 7-person team building specialized VLMs, judge models, and retouchers. Combining product execution with rigorous research, my work includes co-leading the ATune photo retoucher (outperforming GPT-6 Astra in human preference), 6 patents, and publications at CVPR, ICML, and AAAI workshops.
+AI researcher and engineering leader with {\bf 8+ years of experience} specializing in {\bf agentic AI and Multimodal LLMs}. I bridge the gap between \mbox{cutting-edge} research and \mbox{enterprise-scale} products, specifically in domains where quality is dictated by nuanced human aesthetics and marketing effectiveness. During my tenure at Adobe, I led the technical strategy to scale {\bf GenStudio for Performance Marketing from 0 to 1}, driving {\bf \mbox{multi-million-dollar} adoption} across the Fortune 500. Currently, I am {\bf tech lead for a \mbox{7-person} team} building specialized VLMs, judge models, and retouchers. Combining product execution with rigorous research, my work includes \mbox{co-leading} the ATune photo retoucher ({\bf outperforming GPT-6 Astra} in human preference), {\bf 6 patents}, and publications at CVPR, ICML, and AAAI workshops.
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
@@ -45,38 +43,42 @@ AI researcher and engineering leader with 8+ years of experience specializing in
 
 \begin{rSubsection}{Applied Scientist {\mdseries -- Adobe Inc., San Jose, CA}}{June 2021 -- Present}{}{}
 \item[] \vspace{0.15em}{\subhead{FixIt: Multimodal Models for Marketing \& Visual Quality (Tech Lead, Team of 7)}}
-\item {\bf Architectural Ownership:} Spearheaded technical vision and team execution across the {\bf full ML lifecycle}: data curation, distributed model training, RL alignment, and \mbox{low-latency} inference.
-\item {\bf Agentic Integration:} Developed a {\bf \mbox{sub-second}} \mbox{JEV-style} judge integrated as the primary marketing evaluator inside the {\bf Firefly AI Agent} harness, reducing user revision iterations by {\bf 40\%}.
-\item {\bf Model Portfolio:} Directed the development of {\bf three specialized model streams}: \mbox{domain-adapted} VLMs, \mbox{marketing-quality} judges, and an unsupervised photo retoucher trained entirely without \mbox{human-edited} pairs.
+\item Spearheaded technical vision and execution across the {\bf full ML stack} for a {\bf \mbox{7-person} team}, encompassing distributed data pipelines, RL alignment, and \mbox{low-latency} inference.
+\item Architected a {\bf \mbox{sub-second}} \mbox{JEV-style} judge model integrated directly into the {\bf Firefly AI Agent evaluation harness}, gating agent outputs to reduce user revision iterations by {\bf 40\%}.
+\item Directed the deployment of {\bf three specialized model streams}: \mbox{domain-adapted} VLMs, dense reward judges, and an {\bf unsupervised photo retoucher} trained entirely without \mbox{human-edited} pairs.
 
 \item[] \vspace{0.15em}{\subhead{Adobe Marketing VLM (Gemma-3-12B, SFT \& GRPO Alignment)}}
-\item {\bf Scaled RL Alignment:} Pioneered \mbox{multi-round} {\bf GRPO alignment} on 8$\times$~H100s using \mbox{rank-256} LoRA (1.19B trainable params), scaling policy optimization across {\bf 7 simultaneous custom reward functions} for visual quality, aesthetics, and semantic attributes.
-\item {\bf Overcoming Reward Collapse:} Uncovered and resolved critical {\bf policy collapse} where the model exploited reward ambiguity to hedge on neutral scores (84\% rate vs.\ 56\% human baseline); reshaped the reward curvature to eliminate the reward hole, restoring full discriminative range.
-\item {\bf Distributed Production Stack:} Architected a \mbox{fault-tolerant} asynchronous annotation engine with auto-recovery and a \mbox{sub-100ms} \mbox{router-worker} inference service orchestrating real-time multimodal evaluation across 4 GPUs.
+\item Fine-tuned {\bf Gemma-3-12B} via distributed SFT followed by multi-round GRPO on $8\times$ H100s, leveraging LoRA at rank 256 (1.19B trainable parameters) across 7 custom reward functions.
+\item Diagnosed {\bf policy collapse} in marketing quality: the policy predicted the middle rating for 84\% of images vs.\ 56\% for humans, because a central guess is never more than 2 points from any label. Mitigated it with a {\bf cubed distance penalty} and {\bf \mbox{class-weighted} advantages} for rare ratings, cutting \mbox{middle-rating} predictions to {\bf 64\%}.
+\item Built a {\bf \mbox{fault-tolerant}} annotation pipeline that labeled {\bf $\sim$10M images} with a teacher VLM to create the SFT dataset.
+\item Built a {\bf Photoshop agent} powered by the marketing VLM that edits photos toward {\bf marketing taste}, turning the model's judgment of what makes an image effective into concrete Photoshop edits.
 
-\item[] \vspace{0.15em}{\subhead{Marketing Judge Models \& Benchmark Integrity}}
-\item {\bf Calibrated Soft-Label Alignment:} Trained \mbox{Qwen3.5-4B} judges over a {\bf \mbox{1.1M-example} dataset} using human rater disagreement distributions as soft targets, elevating KonIQ rating correlation from 0.421 to {\bf 0.663 SRCC} (paired 95\% CI strictly positive).
-\item {\bf Decontaminated Gating \& Scale:} Built a {\bf \mbox{67K-example} benchmark} verified against 537K training images via SSCD copy detection; instituted \mbox{pre-registered} \mbox{non-inferiority} gating across 10 releases and served the judge at 21 replicas on 8$\times$~H100s.
-\item {\bf Vision Collapse \& Selection:} Diagnosed a 200-step {\bf vision-encoder collapse} that left checkpoints image-blind, embedding automated vision-health probes into training; reached {\bf 82\% GAIC crop-selection accuracy} (+11 pts over baseline).
+\item[] \vspace{0.3em}{\subhead{JEV-Style Marketing Judge Models}}
+\item Trained {\bf \mbox{Qwen3.5-4B}} LoRA reward models on a {\bf 1.1M soft-labeled dataset} curated from 14 \mbox{human-rated} sources, raising KonIQ correlation to {\bf 0.663 SRCC} (vs.\ 0.421 for the reference model).
+\item Curated a {\bf \mbox{67K-item} held-out benchmark}, \mbox{leak-checked} against all training images via SSCD copy detection, and gated {\bf 10 model releases} on a \mbox{pre-registered} \mbox{non-inferiority} test.
+\item Conceived and built a {\bf live demo suite} that turns the judge from a scorer into a {\bf creative engine}: it \mbox{auto-crops} images ({\bf 0.82 pairwise accuracy on GAIC} vs.\ 0.71 for the \mbox{score-based} baseline), retouches photos, scores marketing and custom attributes, \mbox{re-ranks} Adobe Stock for marketing use, and flags \mbox{low-quality} assets. Presented it to {\bf leadership and external partners}, opening new customer engagements.
+\item Caught a run whose vision encoder collapsed within 200 steps, leaving every checkpoint blind to the image, and added an automated {\bf \mbox{vision-health} check} to the training pipeline.
 
-\item[] \vspace{0.15em}{\subhead{ATune: Unsupervised Photo Retouching (Co-Lead \& Co-First Author with Adobe Research)}}
-\item {\bf Unsupervised Control Paradigm:} Architected and co-led a {\bf \mbox{54M-parameter} model} that learns parametric digital darkroom controls (RawTherapee/darktable) directly from {\bf 10M unedited photos}, completely eliminating the need for paired expert edits.
-\item {\bf Outperforming Frontier LLMs:} Demonstrated state-of-the-art aesthetic edits in double-blind human evaluations (157 raters, 3,500+ trials), {\bf beating GPT-6 Astra} (54.3\% decisive win rate) and {\bf matching Claude Opus 5} (50.5\%); preferred by 8 of 9 standard aesthetic judges across FiveK, PPR10K, and SPAQ.
-\item {\bf Empirical Data Scaling Laws:} Proved aesthetic control fidelity scales monotonically with uncurated data from 1M to 10M images, establishing that each larger corpus strictly dominates or ties smaller datasets across all benchmark tests.
+\item[] \vspace{0.3em}{\subhead{ATune: Unsupervised Photo Retouching (Co-Lead with Adobe Research)}}
+\item Co-led project design with Adobe Research as \mbox{co-first} author, owning the synthetic data pipeline, training recipe, and human evaluation framework, and {\bf mentored an intern} on the project.
+\item Trained a {\bf \mbox{54M-parameter} model} that performs \mbox{non-destructive} photo adjustments via \mbox{off-the-shelf} editors (RawTherapee/darktable), learned from {\bf 10M unedited photographs with zero expert targets}.
+\item In a \mbox{157-rater} human study (3,524 judgments), {\bf beat GPT-6 Astra} (54.3\% of decisive votes) and {\bf matched Claude Opus 5} (50.5\%); preferred over GPT-6 Astra by at least 8 of 9 published quality judges across FiveK, PPR10K, and SPAQ.
+\item Ran \mbox{data-scaling} studies from 1M to 10M images: each larger corpus wins or ties, and no judge on any test set prefers a smaller one.
 
-\item[] \vspace{0.15em}{\subhead{Adobe GenStudio for Performance Marketing (Tech Lead, Team of 20+)}}
-\item {\bf Zero-to-One Platform Architecture:} Founding tech lead for a 20+ engineer team, architecting the high-throughput core API platform for Adobe GenStudio (launched Oct 2024), scaling enterprise LLM access to generate {\bf \mbox{multi-million-dollar} ARR} across {\bf Fortune 500} brands.
-\item {\bf Patented Core Intelligence:} Co-invented multimodal algorithms for structured \mbox{brand-guideline} extraction and real-time compliance evaluation (\href{https://patents.google.com/patent/US20250117829A1/en}{US20250117829}), establishing the engine behind {\bf \href{https://business.adobe.com/products/brand-intelligence.html}{Adobe Brand Intelligence}}.
-\item {\bf High-Stakes Enterprise Adaptation:} Directed custom \mbox{fine-tuning} pipelines on proprietary customer data for marquee Fortune 500 accounts, directly converting technical pilots into closed {\bf enterprise custom-model contracts}.
+\item[] \vspace{0.3em}{\subhead{Adobe GenStudio for Performance Marketing (Tech Lead, Team of 20+)}}
+\item Took GenStudio from {\bf prototype to a \mbox{multi-million-dollar} enterprise product} (launched Oct 2024), leading the production API layer that serves its LLM-powered features to {\bf Fortune 500} customers.
+\item \mbox{Co-invented} automated \mbox{brand-guideline} extraction and compliance scoring (\href{https://patents.google.com/patent/US20250117829A1/en}{US20250117829}), the foundational engine for {\bf \href{https://business.adobe.com/products/brand-intelligence.html}{Adobe Brand Intelligence}}.
+\item Developed \mbox{parameter-efficient} \mbox{fine-tuning} pipelines on a Fortune 500 customer's brand data, directly closing a {\bf \mbox{custom-model} enterprise deal}.
 
-\item[] \vspace{0.15em}{\subhead{Evaluation \& Safety Research}}
-\item {\bf DistortBench (First Author; CVPR \& ICML 2026 Workshops):} Created a \mbox{13.5K-sample} visual distortion benchmark across 27 categories and 5 severities, exposing critical perceptual blind spots where 18 frontier VLMs trail human majority vote.
-\item {\bf JudgeBreak (ICML 2026 Workshop):} Proved that linear probing on frozen \mbox{Qwen3-32B} representations beats prompted LLM judges and reward models by {\bf 8.0 percentage points} (78.1\% vs.\ 70.1\%), showing evaluative taste is linearly encoded in model hidden geometry.
+\item[] \vspace{0.3em}{\subhead{Evaluation Research}}
+\item {\bf DistortBench} (First Author; CVPR/ICML 2026 Workshops): Established a \mbox{13.5K-question} visual distortion benchmark across 27 types and 5 severity levels; the best of 18 VLMs (61.9\%) {\bf trails a human majority vote} (65.7\%).
+\item {\bf JudgeBreak} (ICML 2026 Workshop): Showed that linear probing on hidden representations of \mbox{Qwen3-32B} outperforms LLM reward models and judges by {\bf 8 points} (78.1\% vs.\ 70.1\%) on subjective evaluations.
 \end{rSubsection}
 
 \begin{rSubsection}{Machine Learning Engineer {\mdseries -- Adobe Inc., Bangalore, India}}{July 2016 -- August 2019}{}{}
-\item {\bf Ultra-Low-Latency Inference Engine:} Engineered Adobe's foundational ML serving tier, achieving {\bf 3,500 QPS/node at 0.3--0.6 ms p99 latency} via a \mbox{zero-GC} asynchronous LMAX Disruptor architecture (\href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog}).
-\item {\bf Enterprise Lifecycle Platform:} Architected the automated model deployment platform powering versioned rollouts, real-time drift monitoring, and zero-downtime canary migrations.
+\item Joined Adobe's core ML serving platform team at inception and helped plan the \mbox{end-to-end} serving infrastructure for internal workloads, including \mbox{field-aware} factorization machines.
+\item Scaled production inference throughput to {\bf 3,500 QPS per node at 0.3--0.6 ms p99 latency} (\href{https://medium.com/adobetech/engineering-high-throughput-low-latency-machine-learning-services-7d45edac0271}{Adobe Tech Blog}), implementing a \mbox{garbage-collection-free} asynchronous event pipeline on LMAX Disruptor.
+\item Built the model lifecycle platform for versioned deployment, monitoring, and staged rollout.
 \end{rSubsection}
 
 \end{rSection}
