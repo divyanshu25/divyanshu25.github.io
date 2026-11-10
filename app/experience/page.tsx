@@ -16,7 +16,6 @@ const roles = [
       {
         area: "FixIt: Multimodal Models for Marketing & Visual Quality (Tech Lead, Team of 7)",
         items: [
-          "Spearheaded technical vision and execution across the full ML stack, encompassing distributed data pipelines, RL alignment, and low-latency inference.",
           "Architected a sub-second JEV-style judge model integrated directly into the Firefly AI Agent evaluation harness, gating agent outputs to reduce user revision iterations by 40%.",
           "Directed the development of three specialized model streams: domain-adapted VLMs, marketing-quality judges, and an unsupervised photo retoucher trained entirely without human-edited pairs.",
         ],
@@ -51,7 +50,7 @@ const roles = [
       {
         area: "Adobe GenStudio for Performance Marketing (Tech Lead, Team of 20+)",
         items: [
-          "Took GenStudio from prototype to a multi-million-dollar enterprise product (launched Oct 2024), leading the production API layer that serves its LLM-powered features to Fortune 500 customers.",
+          "Took GenStudio from prototype to a multi-million-dollar enterprise product (launched Oct 2024), leading its technical strategy and the production API layer that serves its LLM-powered features to Fortune 500 customers.",
           "Co-invented automated brand-guideline extraction and compliance scoring (US20250117829), the foundational engine for Adobe Brand Intelligence.",
           "Developed parameter-efficient fine-tuning pipelines on a Fortune 500 customer's brand data, directly closing a custom-model enterprise deal.",
         ],
@@ -60,7 +59,6 @@ const roles = [
         area: "Evaluation Research",
         items: [
           "DistortBench (First Author; CVPR/ICML 2026 Workshops): Established a 13.5K-question visual distortion benchmark across 27 types and 5 severity levels; the best of 18 VLMs (61.9%) trails a human majority vote (65.7%).",
-          "JudgeBreak (ICML 2026 Workshop): Showed that linear probing on hidden representations of Qwen3-32B outperforms LLM reward models and judges by 8 points (78.1% vs. 70.1%) on subjective evaluations.",
         ],
       },
     ],
