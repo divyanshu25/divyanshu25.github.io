@@ -14,51 +14,38 @@ const roles = [
     period: "June 2021 – Present",
     blocks: [
       {
-        area: "FixIt: Multimodal Models for Marketing & Visual Quality (Tech Lead, Team of 7)",
+        area: "GenStudio for Performance Marketing · Tech Lead",
         items: [
-          "Architected a sub-second JEV-style judge model integrated directly into the Firefly AI Agent evaluation harness, improving the agent's outputs through real-time feedback and reducing user revisions by 40%.",
-          "Directed the development of three specialized model streams: domain-adapted VLMs, marketing-quality judges, and an unsupervised photo retoucher trained entirely without human-edited pairs.",
+          "Led technical strategy and the production LLM API layer, taking GenStudio from prototype to multi-million-dollar Fortune 500 adoption.",
+          "Co-invented brand-guideline extraction and compliance scoring, the engine behind Adobe Brand Intelligence.",
         ],
       },
       {
-        area: "ATune: Unsupervised Photo Retouching (Co-Lead with Adobe Research)",
+        area: "Marketing VLM · Gemma-3-12B, SFT + GRPO",
         items: [
-          "Co-led project architecture and evaluation design with Adobe Research as co-first author, owning the synthetic data pipeline, training recipe, and human evaluation framework, and mentored a PhD intern on the project.",
-          "Trained a compact 54M-parameter model that performs non-destructive photo adjustments via off-the-shelf editors (RawTherapee/darktable), learned from 10M unedited photographs with zero expert targets.",
-          "In a 157-rater human study (3,524 judgments), beat GPT-6 Astra (54.3% of decisive votes, 95% CI 50.3–58.3) and matched Claude Opus 5 (50.5%); preferred over GPT-6 Astra by ≥8 of 9 published quality judges across FiveK, PPR10K, and SPAQ.",
-          "Ran data-scaling studies from 1M to 10M images: each larger corpus wins or ties, and no judge on any test set prefers a smaller one.",
+          "Optimized distributed SFT and multi-round GRPO on 8× H100s, cutting training from 6 days to 24 hours.",
+          "Diagnosed reward hacking (84% middle-rating collapse vs. 56% human) and redesigned the reward to bring it to 64%.",
+          "Extended the VLM into a Photoshop agent that plans edits toward marketing appeal, now used by millions.",
         ],
       },
       {
-        area: "Adobe Marketing VLM (Gemma-3-12B, SFT & GRPO Alignment)",
+        area: "ATune · Co-Lead with Adobe Research",
         items: [
-          "Fine-tuned Gemma-3-12B via distributed SFT followed by multi-round GRPO on 8× H100s, leveraging LoRA at rank 256 (1.19B trainable parameters) across 7 custom reward functions.",
-          "Identified reward exploitation in ordinal rating prediction: the policy collapsed toward the middle rating (84% of predictions vs. 56% in human annotations), exploiting the bounded distance-based reward. Introduced a cubic distance penalty and class-weighted advantages for underrepresented ratings, reducing middle-rating predictions to 64%.",
-          "Built a fault-tolerant annotation pipeline that labeled ~10M images with a teacher VLM to create the SFT dataset.",
-          "Built a Photoshop agent powered by the marketing VLM that edits photos toward marketing taste, turning the model's judgment of what makes an image effective into concrete Photoshop edits.",
+          "A 54M-parameter retoucher that drives real image editors, trained on 10M unedited photos with no expert targets.",
+          "Beat GPT-6 Astra (54.3% of decisive votes) and matched Claude Opus 5 in a 157-rater human preference study.",
         ],
       },
       {
-        area: "JEV-Style Marketing Judge Models",
+        area: "JEV-Style Marketing Judge",
         items: [
-          "Trained Qwen3.5-4B LoRA judges that output calibrated scores in a single forward pass instead of generating text, on a 1.1M soft-labeled dataset curated from 14 human-rated sources, raising KonIQ correlation to 0.663 SRCC (vs. 0.421 for the reference model).",
-          "Curated a 67K-item held-out benchmark, leak-checked against all training images via SSCD copy detection, and gated every model release on a pre-registered non-inferiority test, so a new model shipped only if it held its quality on unseen data.",
-          "Conceived and built a live demo suite that turns the judge from a scorer into a creative engine: it picks the best crop of an image (0.82 pairwise accuracy on GAIC vs. 0.71 for the score-based baseline), guides photo retouching, scores marketing and custom attributes, re-ranks Adobe Stock for marketing use, and flags low-quality assets. Presented it to leadership and external partners, opening new customer engagements.",
-          "Diagnosed a vision-encoder collapse that left every checkpoint image-blind within 200 steps while the loss looked normal, and added an automated vision-health check that halts training on collapse, catching silent failures the loss misses.",
+          "Qwen3.5-4B judge trained on 1.1M human ratings; +57% SRCC on KonIQ, now integrated into Lightroom, Adobe Stock, and Firefly AI Assistant.",
+          "Caught a silent vision-encoder collapse that loss curves missed, and built automated vision-health monitoring.",
         ],
       },
       {
-        area: "Adobe GenStudio for Performance Marketing (Tech Lead, Team of 20+)",
+        area: "DistortBench · First Author",
         items: [
-          "Took GenStudio from prototype to a multi-million-dollar enterprise product (launched Oct 2024), leading its technical strategy and the production API layer that serves its LLM-powered features to Fortune 500 customers.",
-          "Co-invented automated brand-guideline extraction and compliance scoring (US20250117829), the foundational engine for Adobe Brand Intelligence.",
-          "Developed parameter-efficient fine-tuning pipelines on a Fortune 500 customer's brand data, directly closing a custom-model enterprise deal.",
-        ],
-      },
-      {
-        area: "Evaluation Research",
-        items: [
-          "DistortBench (First Author; CVPR/ICML 2026 Workshops): Established a 13.5K-question visual distortion benchmark across 27 types and 5 severity levels; the best of 18 VLMs (61.9%) trails a human majority vote (65.7%).",
+          "13.5K-question benchmark for fine-grained visual quality across 27 distortion types, adopted at Adobe to evaluate Photoshop-agent models.",
         ],
       },
     ],
@@ -70,11 +57,9 @@ const roles = [
     period: "July 2016 – August 2019",
     blocks: [
       {
-        area: "ML Infrastructure & Serving",
+        area: "ML Serving Platform",
         items: [
-          "Joined Adobe's core ML serving platform team at inception and helped plan the end-to-end serving infrastructure for internal workloads, including field-aware factorization machines.",
-          "Scaled production inference throughput to 3,500 QPS per node at 0.3–0.6 ms p99 latency (Adobe Tech Blog), implementing a garbage-collection-free asynchronous event pipeline on LMAX Disruptor.",
-          "Built the model lifecycle platform for versioned deployment, monitoring, and staged rollout.",
+          "Joined Adobe's ML serving platform at inception; scaled inference to 3,500 QPS per node at 0.3–0.6 ms p99 with a GC-free LMAX Disruptor pipeline.",
         ],
       },
     ],

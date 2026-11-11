@@ -3,7 +3,6 @@
 import { profile } from "@/data/profile";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import ResumeDownload from "./ResumeDownload";
 
 export default function Hero() {
   const [mounted, setMounted] = useState(false);
@@ -44,11 +43,6 @@ export default function Hero() {
             <p className={`text-base text-[var(--text-secondary)] leading-relaxed mb-6 max-w-xl ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.15s' }}>
               {profile.bio}
             </p>
-
-            {/* Actions */}
-            <div className={`flex items-center justify-center lg:justify-start gap-4 mb-5 ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
-              <ResumeDownload />
-            </div>
 
             {/* Social icons */}
             <div className={`flex items-center justify-center lg:justify-start gap-3 ${mounted ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.25s' }}>
