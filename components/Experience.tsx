@@ -13,10 +13,19 @@ const experience = [
         ],
       },
       {
+        area: "ATune: Unsupervised Photo Retouching (Co-Lead with Adobe Research)",
+        bullets: [
+          "Co-led project architecture and evaluation design with Adobe Research as co-first author, owning the synthetic data pipeline, training recipe, and human evaluation framework, and mentored a PhD intern on the project.",
+          "Trained a compact 54M-parameter model that performs non-destructive photo adjustments via off-the-shelf editors (RawTherapee/darktable), learned from 10M unedited photographs with zero expert targets.",
+          "In a 157-rater human study (3,524 judgments), beat GPT-6 Astra (54.3% of decisive votes, 95% CI 50.3–58.3) and matched Claude Opus 5 (50.5%); preferred over GPT-6 Astra by ≥8 of 9 published quality judges across FiveK, PPR10K, and SPAQ.",
+          "Ran data-scaling studies from 1M to 10M images: each larger corpus wins or ties, and no judge on any test set prefers a smaller one.",
+        ],
+      },
+      {
         area: "Adobe Marketing VLM (Gemma-3-12B, SFT & GRPO Alignment)",
         bullets: [
           "Fine-tuned Gemma-3-12B via distributed SFT followed by multi-round GRPO on 8× H100s, leveraging LoRA at rank 256 (1.19B trainable parameters) across 7 custom reward functions.",
-          "Diagnosed policy collapse in marketing quality: the policy predicted the middle rating for 84% of images vs. 56% for humans, because a central guess is never more than 2 points from any label. Mitigated it with a cubed distance penalty and class-weighted advantages for rare ratings, cutting middle-rating predictions to 64%.",
+          "Identified reward exploitation in ordinal rating prediction: the policy collapsed toward the middle rating (84% of predictions vs. 56% in human annotations), exploiting the bounded distance-based reward. Introduced a cubic distance penalty and class-weighted advantages for underrepresented ratings, reducing middle-rating predictions to 64%.",
           "Built a fault-tolerant annotation pipeline that labeled ~10M images with a teacher VLM to create the SFT dataset.",
           "Built a Photoshop agent powered by the marketing VLM that edits photos toward marketing taste, turning the model's judgment of what makes an image effective into concrete Photoshop edits.",
         ],
@@ -24,19 +33,10 @@ const experience = [
       {
         area: "JEV-Style Marketing Judge Models",
         bullets: [
-          "Trained Qwen3.5-4B LoRA judges on a 1.1M soft-labeled dataset curated from 14 human-rated sources, raising KonIQ correlation to 0.663 SRCC (vs. 0.421 for the reference model).",
+          "Trained Qwen3.5-4B LoRA judges that output calibrated scores in a single forward pass instead of generating text, on a 1.1M soft-labeled dataset curated from 14 human-rated sources, raising KonIQ correlation to 0.663 SRCC (vs. 0.421 for the reference model).",
           "Curated a 67K-item held-out benchmark, leak-checked against all training images via SSCD copy detection, and gated every model release on a pre-registered non-inferiority test, so a new model shipped only if it held its quality on unseen data.",
           "Conceived and built a live demo suite that turns the judge from a scorer into a creative engine: it picks the best crop of an image (0.82 pairwise accuracy on GAIC vs. 0.71 for the score-based baseline), guides photo retouching, scores marketing and custom attributes, re-ranks Adobe Stock for marketing use, and flags low-quality assets. Presented it to leadership and external partners, opening new customer engagements.",
           "Diagnosed a vision-encoder collapse that left every checkpoint image-blind within 200 steps while the loss looked normal, and added an automated vision-health check that halts training on collapse, catching silent failures the loss misses.",
-        ],
-      },
-      {
-        area: "ATune: Unsupervised Photo Retouching (Co-Lead with Adobe Research)",
-        bullets: [
-          "Co-led project architecture and evaluation design with Adobe Research as co-first author, owning the synthetic data pipeline, training recipe, and human evaluation framework, and mentored a PhD intern on the project.",
-          "Trained a compact 54M-parameter model that performs non-destructive photo adjustments via off-the-shelf editors (RawTherapee/darktable), learned from 10M unedited photographs with zero expert targets.",
-          "In a 157-rater human study (3,524 judgments), beat GPT-6 Astra (54.3% of decisive votes) and matched Claude Opus 5 (50.5%); preferred over GPT-6 Astra by ≥8 of 9 published quality judges across FiveK, PPR10K, and SPAQ.",
-          "Ran data-scaling studies from 1M to 10M images: each larger corpus wins or ties, and no judge on any test set prefers a smaller one.",
         ],
       },
       {
