@@ -51,7 +51,7 @@ Applied Scientist with {\bf 8+ years of experience} building and \mbox{post-trai
 \item[] \vspace{0.3em}{\subhead{Multimodal AI \& Foundation Model Post-Training (Adobe Marketing VLM)}}
 \item Provided {\bf technical leadership for a \mbox{seven-person} team} developing specialized VLMs, judge models, and \mbox{AI-powered} retouching capabilities.
 \item Optimized distributed supervised \mbox{fine-tuning} (SFT) and \mbox{multi-round} GRPO \mbox{post-training} for Gemma-3-12B across 8$\times$~H100 GPUs, reducing training time from {\bf six days to 24 hours} and compute costs by {\bf 6$\times$}.
-\item Designed and iterated on seven custom reward functions to improve model alignment and evaluation quality; diagnosed {\bf reward hacking} where the policy selected middle ratings for 84\% of images vs.\ 56\% for human annotators, reducing this behavior to {\bf 64\%} through reward redesign.
+\item Designed and iterated on seven custom reward functions to improve model alignment and evaluation quality; diagnosed {\bf reward hacking} where the policy selected middle ratings for 84\% of images vs.\ 56\% for human annotators, and cut middle ratings to {\bf 64\%} through reward redesign.
 \item Built a scalable, \mbox{fault-tolerant} \mbox{multi-GPU} annotation pipeline processing {\bf 100M+ data points in 24 hours} using a teacher VLM to generate SFT training data.
 \item Extended the VLM from image evaluation to image improvement by developing a {\bf Photoshop agent} that plans and applies edits to enhance marketing appeal; integrated the model into Adobe Photoshop's agent experience, used by {\bf millions of customers globally}.
 
@@ -59,12 +59,12 @@ Applied Scientist with {\bf 8+ years of experience} building and \mbox{post-trai
 \item \mbox{Co-led} research and system architecture as {\bf \mbox{co-first} author}, owning the synthetic data pipeline, model training recipe, and human evaluation framework; mentored a PhD intern.
 \item Developed a compact {\bf \mbox{54M-parameter} model} that performs \mbox{non-destructive} photo adjustments through \mbox{off-the-shelf} photo editors, learning from {\bf 10M unedited photographs} without \mbox{expert-generated} targets.
 \item Evaluated against frontier models in a \mbox{157-rater} human preference study (3,524 judgments), achieving {\bf 54.3\% of decisive votes against GPT-6 Astra} (95\% CI 50.3--58.3) and {\bf matching Claude Opus 5} (50.5\%).
-\item Demonstrated {\bf data scaling}, with model quality improving as the training corpus increased from 1M to 10M unlabeled photographs, reducing dependence on expensive expert annotations.
+\item Demonstrated that quality {\bf scales with unlabeled data} from 1M to 10M photographs, reducing dependence on expensive expert annotations.
 
 \item[] \vspace{0.3em}{\subhead{JEV-Style Marketing Judge Model (Human Preference \& Model Evaluation)}}
-\item \mbox{Fine-tuned} a \mbox{Qwen3.5-4B} model on 1.1M \mbox{human-rated} examples from 14 sources, improving agreement with human \mbox{image-quality} assessments on KonIQ from 0.421 to {\bf 0.663 SRCC (+57\%)}.
+\item \mbox{Fine-tuned} a \mbox{Qwen3.5-4B} model on 1.1M \mbox{human-rated} examples from 14 datasets, improving agreement with human \mbox{image-quality} assessments on KonIQ from 0.421 to {\bf 0.663 SRCC (+57\%)}.
 \item Identified customer pain points and translated \mbox{judge-model} capabilities into product demonstrations, driving {\bf integrations with Adobe Lightroom, Adobe Stock, and Adobe Firefly AI Assistant}.
-\item Diagnosed \mbox{vision-encoder} collapse that made training checkpoints \mbox{image-blind} within 200 steps despite apparently normal loss curves; implemented automated {\bf \mbox{vision-health} monitoring} to detect and halt silent training failures.
+\item Diagnosed \mbox{vision-encoder} collapse that made training checkpoints \mbox{image-blind} within 200 steps despite normal loss curves; implemented automated {\bf \mbox{vision-health} monitoring} to detect and halt silent training failures.
 
 \item[] \vspace{0.3em}{\subhead{Evaluation Research (DistortBench)}}
 \item Developed {\bf DistortBench} ({\bf first author}), a \mbox{13.5K-question} benchmark for \mbox{fine-grained} visual quality evaluation across 27 distortion types and five severity levels.
