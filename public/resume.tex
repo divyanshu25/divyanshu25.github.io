@@ -43,7 +43,7 @@ AI researcher and engineering leader with {\bf 8+ years of experience} specializ
 
 \begin{rSubsection}{Applied Scientist {\mdseries -- Adobe Inc., San Jose, CA}}{June 2021 -- Present}{}{}
 \item[] \vspace{0.3em}{\subhead{FixIt: Multimodal Models for Marketing \& Visual Quality (Tech Lead, Team of 7)}}
-\item Architected a {\bf \mbox{sub-second}} \mbox{JEV-style} judge model integrated directly into the {\bf Firefly AI Agent evaluation harness}, gating agent outputs to reduce user revision iterations by {\bf 40\%}.
+\item Architected a {\bf \mbox{sub-second}} \mbox{JEV-style} judge model integrated directly into the {\bf Firefly AI Agent evaluation harness}, improving the agent's outputs through {\bf \mbox{real-time} feedback} and reducing user revisions by {\bf 40\%}.
 \item Directed the development of {\bf three specialized model streams}: \mbox{domain-adapted} VLMs, marketing-quality judges, and an {\bf unsupervised photo retoucher} trained entirely without \mbox{human-edited} pairs.
 
 \item[] \vspace{0.3em}{\subhead{Adobe Marketing VLM (Gemma-3-12B, SFT \& GRPO Alignment)}}
@@ -54,14 +54,14 @@ AI researcher and engineering leader with {\bf 8+ years of experience} specializ
 
 \item[] \vspace{0.3em}{\subhead{JEV-Style Marketing Judge Models}}
 \item Trained {\bf \mbox{Qwen3.5-4B}} LoRA judges on a {\bf 1.1M soft-labeled dataset} curated from 14 \mbox{human-rated} sources, raising KonIQ correlation to {\bf 0.663 SRCC} (vs.\ 0.421 for the reference model).
-\item Curated a {\bf \mbox{67K-item} held-out benchmark}, \mbox{leak-checked} against all training images via SSCD copy detection, and gated {\bf 10 model releases} on a \mbox{pre-registered} \mbox{non-inferiority} test.
-\item Conceived and built a {\bf live demo suite} that turns the judge from a scorer into a {\bf creative engine}: it \mbox{auto-crops} images ({\bf 0.82 pairwise accuracy on GAIC} vs.\ 0.71 for the \mbox{score-based} baseline), retouches photos, scores marketing and custom attributes, \mbox{re-ranks} Adobe Stock for marketing use, and flags \mbox{low-quality} assets. Presented it to {\bf leadership and external partners}, opening new customer engagements.
-\item Caught a run whose vision encoder collapsed within 200 steps, leaving every checkpoint blind to the image, and added an automated {\bf \mbox{vision-health} check} to the training pipeline.
+\item Curated a {\bf \mbox{67K-item} held-out benchmark}, \mbox{leak-checked} against all training images via SSCD copy detection, and {\bf gated every model release} on a \mbox{pre-registered} \mbox{non-inferiority} test, so a new model shipped only if it held its quality on unseen data.
+\item Conceived and built a {\bf live demo suite} that turns the judge from a scorer into a {\bf creative engine}: it picks the best crop of an image ({\bf 0.82 pairwise accuracy on GAIC} vs.\ 0.71 for the \mbox{score-based} baseline), guides photo retouching, scores marketing and custom attributes, \mbox{re-ranks} Adobe Stock for marketing use, and flags \mbox{low-quality} assets. Presented it to {\bf leadership and external partners}, opening new customer engagements.
+\item Diagnosed a {\bf \mbox{vision-encoder} collapse} that left every checkpoint \mbox{image-blind} within 200 steps while the loss looked normal, and added an automated {\bf \mbox{vision-health} check} that halts training on collapse, catching silent failures the loss misses.
 
 \item[] \vspace{0.3em}{\subhead{ATune: Unsupervised Photo Retouching (Co-Lead with Adobe Research)}}
-\item Co-led project design with Adobe Research as \mbox{co-first} author, owning the synthetic data pipeline, training recipe, and human evaluation framework, and {\bf mentored an intern} on the project.
-\item Trained a {\bf \mbox{54M-parameter} model} that performs \mbox{non-destructive} photo adjustments via \mbox{off-the-shelf} editors (RawTherapee/darktable), learned from {\bf 10M unedited photographs with zero expert targets}.
-\item In a \mbox{157-rater} human study (3,524 judgments), {\bf beat GPT-6 Astra} (54.3\% of decisive votes) and {\bf matched Claude Opus 5} (50.5\%); preferred over GPT-6 Astra by at least 8 of 9 published quality judges across FiveK, PPR10K, and SPAQ.
+\item Co-led project architecture and evaluation design with Adobe Research as \mbox{co-first} author, owning the synthetic data pipeline, training recipe, and human evaluation framework, and {\bf mentored a PhD intern} on the project.
+\item Trained a compact {\bf \mbox{54M-parameter} model} that performs \mbox{non-destructive} photo adjustments via \mbox{off-the-shelf} editors (RawTherapee/darktable), learned from {\bf 10M unedited photographs with zero expert targets}.
+\item In a \mbox{157-rater} human study (3,524 judgments), {\bf beat GPT-6 Astra} (54.3\% of decisive votes) and {\bf matched Claude Opus 5} (50.5\%); preferred over GPT-6 Astra by $\ge$8 of 9 published quality judges across FiveK, PPR10K, and SPAQ.
 \item Ran \mbox{data-scaling} studies from 1M to 10M images: each larger corpus wins or ties, and no judge on any test set prefers a smaller one.
 
 \item[] \vspace{0.3em}{\subhead{Adobe GenStudio for Performance Marketing (Tech Lead, Team of 20+)}}

@@ -8,7 +8,7 @@ const experience = [
       {
         area: "FixIt: Multimodal Models for Marketing & Visual Quality (Tech Lead, Team of 7)",
         bullets: [
-          "Architected a sub-second JEV-style judge model integrated directly into the Firefly AI Agent evaluation harness, gating agent outputs to reduce user revision iterations by 40%.",
+          "Architected a sub-second JEV-style judge model integrated directly into the Firefly AI Agent evaluation harness, improving the agent's outputs through real-time feedback and reducing user revisions by 40%.",
           "Directed the development of three specialized model streams: domain-adapted VLMs, marketing-quality judges, and an unsupervised photo retoucher trained entirely without human-edited pairs.",
         ],
       },
@@ -25,17 +25,17 @@ const experience = [
         area: "JEV-Style Marketing Judge Models",
         bullets: [
           "Trained Qwen3.5-4B LoRA judges on a 1.1M soft-labeled dataset curated from 14 human-rated sources, raising KonIQ correlation to 0.663 SRCC (vs. 0.421 for the reference model).",
-          "Curated a 67K-item held-out benchmark, leak-checked against all training images via SSCD copy detection, and gated 10 model releases on a pre-registered non-inferiority test.",
-          "Conceived and built a live demo suite that turns the judge from a scorer into a creative engine: it auto-crops images (0.82 pairwise accuracy on GAIC vs. 0.71 for the score-based baseline), retouches photos, scores marketing and custom attributes, re-ranks Adobe Stock for marketing use, and flags low-quality assets. Presented it to leadership and external partners, opening new customer engagements.",
-          "Caught a run whose vision encoder collapsed within 200 steps, leaving every checkpoint blind to the image, and added an automated vision-health check to the training pipeline.",
+          "Curated a 67K-item held-out benchmark, leak-checked against all training images via SSCD copy detection, and gated every model release on a pre-registered non-inferiority test, so a new model shipped only if it held its quality on unseen data.",
+          "Conceived and built a live demo suite that turns the judge from a scorer into a creative engine: it picks the best crop of an image (0.82 pairwise accuracy on GAIC vs. 0.71 for the score-based baseline), guides photo retouching, scores marketing and custom attributes, re-ranks Adobe Stock for marketing use, and flags low-quality assets. Presented it to leadership and external partners, opening new customer engagements.",
+          "Diagnosed a vision-encoder collapse that left every checkpoint image-blind within 200 steps while the loss looked normal, and added an automated vision-health check that halts training on collapse, catching silent failures the loss misses.",
         ],
       },
       {
         area: "ATune: Unsupervised Photo Retouching (Co-Lead with Adobe Research)",
         bullets: [
-          "Co-led project design with Adobe Research as co-first author, owning the synthetic data pipeline, training recipe, and human evaluation framework, and mentored an intern on the project.",
-          "Trained a 54M-parameter model that performs non-destructive photo adjustments via off-the-shelf editors (RawTherapee/darktable), learned from 10M unedited photographs with zero expert targets.",
-          "In a 157-rater human study (3,524 judgments), beat GPT-6 Astra (54.3% of decisive votes) and matched Claude Opus 5 (50.5%); preferred over GPT-6 Astra by at least 8 of 9 published quality judges across FiveK, PPR10K, and SPAQ.",
+          "Co-led project architecture and evaluation design with Adobe Research as co-first author, owning the synthetic data pipeline, training recipe, and human evaluation framework, and mentored a PhD intern on the project.",
+          "Trained a compact 54M-parameter model that performs non-destructive photo adjustments via off-the-shelf editors (RawTherapee/darktable), learned from 10M unedited photographs with zero expert targets.",
+          "In a 157-rater human study (3,524 judgments), beat GPT-6 Astra (54.3% of decisive votes) and matched Claude Opus 5 (50.5%); preferred over GPT-6 Astra by ≥8 of 9 published quality judges across FiveK, PPR10K, and SPAQ.",
           "Ran data-scaling studies from 1M to 10M images: each larger corpus wins or ties, and no judge on any test set prefers a smaller one.",
         ],
       },
