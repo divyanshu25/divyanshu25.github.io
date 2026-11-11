@@ -29,7 +29,7 @@ help:
 	@echo "Available targets:"
 	@echo "  make environment   - Set up Node 22, npm packages, and tectonic"
 	@echo "  make dev           - Start local development server at http://localhost:3000"
-	@echo "  make pdf           - Build public/resume.pdf with tectonic (prints page count)"
+	@echo "  make pdf           - Build resume/resume.pdf with tectonic (prints page count)"
 	@echo "  make resume        - Generate resume PDF using local pdflatex"
 	@echo "  make resume-docker - Generate resume PDF using Docker (no LaTeX install needed)"
 	@echo "  make clean         - Remove auxiliary LaTeX files"
@@ -66,8 +66,8 @@ dev:
 # Build the resume PDF with tectonic (fetches LaTeX packages on demand, no TeX install needed)
 pdf:
 	@command -v tectonic >/dev/null 2>&1 || { echo "tectonic not found: https://tectonic-typesetting.github.io"; exit 1; }
-	@cd public && tectonic --keep-logs resume.tex 2>&1 | grep -iE "error|overfull" || true
-	@grep -aoE "[0-9]+ pages?" public/resume.log | tail -1 | sed 's/^/✓ public\/resume.pdf: /'
+	@cd resume && tectonic --keep-logs resume.tex 2>&1 | grep -iE "error|overfull" || true
+	@grep -aoE "[0-9]+ pages?" resume/resume.log | tail -1 | sed 's/^/✓ resume\/resume.pdf: /'
 
 # Check if pdflatex is installed
 check-latex:
@@ -84,9 +84,9 @@ check-latex:
 		echo ""; \
 		echo "Or use Overleaf (online, no install):"; \
 		echo "  1. Go to https://www.overleaf.com/"; \
-		echo "  2. Upload public/resume.tex and public/resume.cls"; \
+		echo "  2. Upload resume/resume.tex and resume/resume.cls"; \
 		echo "  3. Compile and download the PDF"; \
-		echo "  4. Save it as public/resume.pdf"; \
+		echo "  4. Save it as resume/resume.pdf"; \
 		echo ""; \
 		echo "Note: If you just installed MacTeX, you may need to restart your terminal."; \
 		exit 1; \
@@ -96,13 +96,13 @@ check-latex:
 # Note: pdflatex is run twice to ensure proper formatting and cross-references
 resume: check-latex
 	@echo "Generating resume PDF..."
-	@export PATH="/Library/TeX/texbin:$$PATH" && cd public && pdflatex -interaction=nonstopmode resume.tex > /dev/null || true
-	@export PATH="/Library/TeX/texbin:$$PATH" && cd public && pdflatex -interaction=nonstopmode resume.tex > /dev/null || true
-	@if [ -f public/resume.pdf ]; then \
-		echo "✓ Resume PDF generated at public/resume.pdf"; \
+	@export PATH="/Library/TeX/texbin:$$PATH" && cd resume && pdflatex -interaction=nonstopmode resume.tex > /dev/null || true
+	@export PATH="/Library/TeX/texbin:$$PATH" && cd resume && pdflatex -interaction=nonstopmode resume.tex > /dev/null || true
+	@if [ -f resume/resume.pdf ]; then \
+		echo "✓ Resume PDF generated at resume/resume.pdf"; \
 		echo ""; \
 		echo "Remember to commit the updated PDF to the repository:"; \
-		echo "  git add public/resume.pdf && git commit -m 'Update resume'"; \
+		echo "  git add resume/resume.pdf && git commit -m 'Update resume'"; \
 	else \
 		echo "❌ Error: PDF generation failed"; \
 		exit 1; \
@@ -112,16 +112,16 @@ resume: check-latex
 # Generate resume PDF using Docker (no local LaTeX installation needed)
 resume-docker:
 	@echo "Generating resume PDF using Docker..."
-	@docker run --rm -v "$(PWD)/public:/data" texlive/texlive:latest \
+	@docker run --rm -v "$(PWD)/resume:/data" texlive/texlive:latest \
 		sh -c "cd /data && pdflatex -interaction=nonstopmode resume.tex && pdflatex -interaction=nonstopmode resume.tex"
-	@echo "✓ Resume PDF generated at public/resume.pdf"
+	@echo "✓ Resume PDF generated at resume/resume.pdf"
 	@echo ""
 	@echo "Remember to commit the updated PDF to the repository:"
-	@echo "  git add public/resume.pdf && git commit -m 'Update resume'"
+	@echo "  git add resume/resume.pdf && git commit -m 'Update resume'"
 	@$(MAKE) clean
 
 # Clean up auxiliary files
 clean:
 	@echo "Cleaning up auxiliary files..."
-	@rm -f public/resume.aux public/resume.log public/resume.out
+	@rm -f resume/resume.aux resume/resume.log resume/resume.out
 	@echo "✓ Cleanup complete"

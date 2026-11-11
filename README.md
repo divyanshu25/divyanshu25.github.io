@@ -102,7 +102,7 @@ Edit **`data/posts.ts`** to manage blog content:
 
 ## 📄 Resume Generation
 
-The website serves a professionally formatted PDF resume generated from LaTeX source. The PDF is **checked into the repository** at `public/resume.pdf` so users can download it without any build process.
+The resume is built from LaTeX source in `resume/`. It lives outside `public/`, so the website does not serve it.
 
 ### Quick Start
 
@@ -127,22 +127,22 @@ make resume
 #### Option 3: Using Overleaf (Online)
 
 1. Go to [Overleaf](https://www.overleaf.com/)
-2. Upload `public/resume.tex` and `public/resume.cls`
+2. Upload `resume/resume.tex` and `resume/resume.cls`
 3. Click "Recompile"
-4. Download the PDF and save as `public/resume.pdf`
+4. Download the PDF and save as `resume/resume.pdf`
 
 **Important:** After generating the PDF, commit it to the repository:
 
 ```bash
-git add public/resume.pdf
+git add resume/resume.pdf
 git commit -m "Update resume"
 git push
 ```
 
 ### Files
 
-- `public/resume.tex` - LaTeX source file with resume content
-- `public/resume.cls` - Resume class file (professional template)
+- `resume/resume.tex` - LaTeX source file with resume content
+- `resume/resume.cls` - Resume class file (professional template)
 - `Makefile` - Build automation for PDF generation
 - `components/ResumeDownload.tsx` - Download button component
 
@@ -156,14 +156,14 @@ Only needed if you want to use `make resume` instead of `make resume-docker`:
 
 ### Updating the Resume
 
-1. Edit `public/resume.tex` with your changes
+1. Edit `resume/resume.tex` with your changes
 2. Generate the updated PDF:
    ```bash
    make resume-docker  # or make resume if you have LaTeX installed
    ```
 3. Commit the updated `resume.pdf` to the repository:
    ```bash
-   git add public/resume.pdf
+   git add resume/resume.pdf
    git commit -m "Update resume"
    git push
    ```

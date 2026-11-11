@@ -46,3 +46,6 @@ next-env.d.ts
 *.swp
 *.swo
 *~
+resume/resume.log
+resume/resume.aux
+resume/resume.out
