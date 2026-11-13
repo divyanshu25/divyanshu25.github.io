@@ -48,8 +48,9 @@ export const profile = {
     {
       title: "ATune: Unsupervised Photo Retouching Through Image-Editor Controls",
       authors: "Divyanshu Goyal*, Gabriel Ruiz*, Amir Meisami (*equal contribution)",
-      venue: "Under review",
+      venue: "arXiv preprint (under review)",
       year: "2026",
+      link: "https://arxiv.org/abs/2611.16236",
       abstract: "ATune is a 54M-parameter model that learns photo retouching from 10M unedited photographs, with no expert edits, and retouches by setting the sliders of off-the-shelf editors (RawTherapee and darktable). In a human study with 157 raters and 3,524 judgments, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3) and matched Claude Opus 5. On FiveK, PPR10K, and SPAQ, at least 8 of 9 published image-quality judges prefer it to GPT-6 Astra.",
       tags: ["Computer Vision", "Photo Retouching", "Unsupervised Learning", "Human Evaluation"]
     },
