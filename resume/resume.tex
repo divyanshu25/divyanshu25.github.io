@@ -32,7 +32,7 @@
 
 \begin{rSection}{Summary}
 \raggedright
-Applied Scientist with {\bf 8+ years of experience} building and \mbox{post-training} {\bf multimodal foundation models}. Specialize in supervised \mbox{fine-tuning}, {\bf reinforcement learning (GRPO)}, {\bf human preference optimization}, and multimodal evaluation. Lead applied research and technical development at Adobe, translating novel model architectures and training methodologies into {\bf production AI products}. Research contributions include {\bf \mbox{first-author} publications}, benchmark development, {\bf six patent filings/applications}, and a compact \mbox{photo-retouching} model demonstrating {\bf competitive human preference against frontier models}.
+Applied Scientist with {\bf 8+ years of experience} building and \mbox{post-training} {\bf multimodal LLMs and \mbox{vision-language} models}. Specialize in supervised \mbox{fine-tuning}, {\bf reinforcement learning (GRPO)}, {\bf human preference optimization}, and multimodal evaluation. Lead applied research and technical development at Adobe, translating novel model architectures and training methodologies into {\bf production AI products}. Research contributions include {\bf \mbox{first-author} publications}, benchmark development, {\bf six patent filings}, and a compact \mbox{photo-retouching} model demonstrating {\bf competitive human preference against frontier models}.
 \end{rSection}
 
 %----------------------------------------------------------------------------------------
@@ -51,9 +51,9 @@ Applied Scientist with {\bf 8+ years of experience} building and \mbox{post-trai
 \item[] \vspace{0.3em}{\subhead{Multimodal AI \& Foundation Model Post-Training (Adobe Marketing VLM)}}
 \item Provided {\bf technical leadership for a \mbox{seven-person} team} developing specialized VLMs, judge models, and \mbox{AI-powered} retouching capabilities.
 \item Optimized distributed supervised \mbox{fine-tuning} (SFT) and \mbox{multi-round} GRPO \mbox{post-training} for Gemma-3-12B across 8$\times$~H100 GPUs, reducing training time from {\bf six days to 24 hours} and compute costs by {\bf 6$\times$}.
-\item Designed and iterated on seven custom reward functions to improve model alignment and evaluation quality; diagnosed {\bf reward hacking} where the policy selected middle ratings for 84\% of images vs.\ 56\% for human annotators, and cut middle ratings to {\bf 64\%} through reward redesign.
+\item Designed and iterated on seven custom reward functions to improve model alignment and evaluation quality; diagnosed {\bf reward hacking} where the policy selected middle ratings for 84\% of images vs.\ 56\% for human annotators, and mitigated it through reward redesign, bringing middle ratings down to {\bf 64\%}.
 \item Built a scalable, \mbox{fault-tolerant} \mbox{multi-GPU} annotation pipeline processing {\bf 100M+ data points in 24 hours} using a teacher VLM to generate SFT training data.
-\item Extended the VLM from image evaluation to image improvement by developing a {\bf Photoshop agent} that plans and applies edits to enhance marketing appeal; integrated the model into Adobe Photoshop's agent experience, used by {\bf millions of customers globally}.
+\item Built a {\bf Photoshop agent} that leverages the marketing VLM to guide edits that enhance marketing appeal; integrated the model into Adobe Photoshop's agent experience, used by {\bf millions of customers globally}.
 
 \item[] \vspace{0.3em}{\subhead{ATune: Unsupervised Photo Retouching (Co-Lead with Adobe Research)}}
 \item \mbox{Co-led} research and system architecture as {\bf \mbox{co-first} author}, owning the synthetic data pipeline, model training recipe, and human evaluation framework; mentored a PhD intern.
@@ -150,7 +150,7 @@ Learning to Be Surprised: A Curiosity-Driven Framework for Creative Judgment & F
 \begin{rSection}{Technical Skills}
 \raggedright
 \skillrow{Applied AI \& Foundation Models:}{Multimodal LLMs, Vision-Language Models (VLMs), Supervised \mbox{Fine-Tuning} (SFT), GRPO, RL \mbox{Post-Training}, LoRA/PEFT, Reward Design, \mbox{LLM-as-a-Judge}, Reward Models, Model Alignment}
-\skillrow{Model Evaluation \& Research:}{Human Preference Modeling, Image Quality Assessment, Benchmark Design, Subjective Evaluation, Representation Analysis, Synthetic Data Generation, Scaling Laws, Human Evaluation Studies}
+\skillrow{Model Evaluation \& Research:}{Image Quality Assessment, Benchmark Design, Subjective Evaluation, Representation Analysis, Synthetic Data Generation, Scaling Laws, Human Evaluation Studies}
 \skillrow{Distributed ML \& Infrastructure:}{PyTorch, vLLM, Distributed Training (DDP, \mbox{ZeRO-2}), \mbox{Multi-GPU} Training, \mbox{FlashAttention-3}, torch.compile, Liger Kernels, Muon, Mixed Precision (BF16)}
 \skillrow{Development \& Tooling:}{Python, Hugging Face Transformers, Hugging Face PEFT, Weights~\&~Biases}
 \end{rSection}
