@@ -71,7 +71,7 @@ export const profile = {
       venue: "ICML Human-AI Co-Creativity Workshop",
       year: "2026",
       abstract: "JudgeBreak is a benchmark of 95 evaluation settings spanning creative writing, summarization, safety, 10 languages, and 33 writing genres. It compares reward models and LLM judges against linear probes trained on LLM hidden states. On Qwen3-32B, probes with cross-validated layer selection reach 78.1% mean pairwise accuracy, compared with 70.1% for the best reward model or zero-shot GPT-5.4 judge. On expert-annotated creative writing, reward models score below chance while probes are far more accurate. When annotators disagree, all methods plateau near chance.",
-      link: "https://openreview.net/forum?id=5mnXwdpIRH",
+      link: "https://genaicreativity.org/icml2026/files/51/51_paper.pdf",
       tags: ["LLMs", "Reward Models", "Evaluation", "Interpretability"]
     },
     {
