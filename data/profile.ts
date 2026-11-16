@@ -4,7 +4,7 @@ export const profile = {
   institution: "Georgia Tech",
   degree: "M.S. in Computer Science",
   specialization: "Machine Learning",
-  bio: "AI researcher and engineering leader with 8+ years at Adobe, specializing in agentic AI and multimodal LLMs. I led the technical strategy that took Adobe GenStudio for Performance Marketing from 0 to 1, driving multi-million-dollar adoption across the Fortune 500. Today I am tech lead for a 7-person team building VLMs, judge models, and retouchers. My work includes 6 patents and publications at CVPR, ICML, and AAAI workshops.",
+  bio: "Applied Scientist with 8+ years of experience building and post-training multimodal LLMs and vision-language models. Specialize in supervised fine-tuning, reinforcement learning (GRPO), human preference optimization, and multimodal evaluation. Lead applied research and technical development at Adobe, translating novel model architectures and training methodologies into production AI products. Research contributions include first-author publications, benchmark development, six patent filings, and a compact photo-retouching model demonstrating competitive human preference against frontier models.",
   
   education: [
     {
@@ -51,7 +51,7 @@ export const profile = {
       venue: "arXiv preprint (under review)",
       year: "2026",
       link: "https://arxiv.org/abs/2611.16236",
-      abstract: "ATune is a 54M-parameter model that learns photo retouching from 10M unedited photographs, with no expert edits, and retouches by setting the sliders of off-the-shelf editors (RawTherapee and darktable). In a human study with 157 raters and 3,524 judgments, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3) and matched Claude Opus 5. On FiveK, PPR10K, and SPAQ, at least 8 of 9 published image-quality judges prefer it to GPT-6 Astra.",
+      abstract: "ATune is a 54M-parameter model that learns photo retouching from 10M unedited photographs, with no expert edits, and retouches by setting the sliders of off-the-shelf editors (RawTherapee and darktable). In a human study with 157 raters and 9,253 judgments, its edits beat GPT-6 Astra using the same editor (54.3% of decisive votes, 95% CI 50.3–58.3) and matched Claude Opus 5. On FiveK, PPR10K, and SPAQ, at least 8 of 9 published image-quality judges prefer it to GPT-6 Astra.",
       tags: ["Computer Vision", "Photo Retouching", "Unsupervised Learning", "Human Evaluation"]
     },
     {
