@@ -4,7 +4,7 @@ export const profile = {
   institution: "Georgia Tech",
   degree: "M.S. in Computer Science",
   specialization: "Machine Learning",
-  bio: "Applied Scientist with 8+ years of experience building and post-training multimodal LLMs and vision-language models. Specialize in supervised fine-tuning, reinforcement learning (GRPO), human preference optimization, and multimodal evaluation. Lead applied research and technical development at Adobe, translating novel model architectures and training methodologies into production AI products.",
+  bio: "Applied Scientist with 8+ years of experience developing and post-training multimodal LLMs and vision-language models. Specialize in solving open-ended, inherently subjective AI problems where success is defined not by a single correct answer, but by modeling nuanced human preferences, evaluating qualitative outcomes, and optimizing for alignment with human judgment. Experienced in supervised fine-tuning, reinforcement learning (GRPO), human preference optimization, and multimodal evaluation. Lead applied research and technical development at Adobe, translating novel model architectures and training methodologies into production-ready AI products.",
   
   education: [
     {
