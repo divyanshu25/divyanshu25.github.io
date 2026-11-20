@@ -287,7 +287,7 @@ Two details about the real algorithm.
 
 **GRPO also divides by the standard deviation.** The paper computes `(rewards - mean) / std` over the group. This puts advantages on a similar scale for every question, so no single question dominates the update.
 
-**The baseline includes the rollout's own reward.** The proof above needs a baseline that does not depend on the rollout being scored. The group mean depends on it a little, because each rollout's reward is one of the $G$ numbers being averaged. This is harmless. With $G = 16$, subtracting the group mean gives the same result as subtracting the mean of the *other* 15 rollouts, which does satisfy the condition, and then multiplying every advantage by $15/16$. The gradient points the same way and is slightly smaller.
+**The baseline includes the rollout's own reward.** The proof above needs a baseline that does not depend on the rollout being scored. The group mean depends on it a little, because each rollout's reward is one of the $G$ numbers being averaged. This is harmless. Nothing extra is computed: the code is still `rewards - rewards.mean()`. But that number is always exactly $(G-1)/G$ times what you would get by subtracting the mean of the *other* rollouts, which does satisfy the condition. Every advantage is shrunk by the same constant factor, so the gradient points the same way and is slightly smaller. The learning rate absorbs the difference.
 
 Put together, one training step looks like this:
 
