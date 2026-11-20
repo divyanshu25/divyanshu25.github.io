@@ -8,16 +8,16 @@
 
 By the time you reach RL you've already done two things to the model.
 
-First, **pretraining**: predict the next token over a giant pile of internet text. The model learns language, facts, reasoning patterns, a sloppy world model. This takes months of compute and produces a base model that can complete sentences but has no idea it's supposed to be an assistant.
+First, **pretraining**: predict the next token over a very large amount of internet text. The model learns language, facts, reasoning patterns, a rough world model. This takes months of compute and produces a base model that can complete sentences but has no idea it's supposed to be an assistant.
 
 Second, **SFT (supervised fine-tuning)**: take that base model and show it a few thousand curated `(conversation, ideal_response)` pairs. You do next-token prediction again, but now only on the assistant's tokens. The model learns the *format* of being helpful: turn-taking, following instructions, answering questions instead of just continuing the text.
 
-Both of these are the same thing under the hood. **Imitation.** You show the model a target string and say "make this string more likely." Cross-entropy loss, the whole way down.
+Both of these are the same thing under the hood. **Imitation.** You show the model a target string and say "make this string more likely." Both use cross-entropy loss.
 
-That's fine, and it gets you surprisingly far. But imitation has a ceiling, and the ceiling is your data.
+That works well up to a point. But imitation can only be as good as your data.
 
 
-> **Note:** Throughout this post we'll use **GSM8K** as our running example. It's the perfect RL toy problem. GSM8K is a dataset of 8,500 grade-school math word problems. Each one has a plain English question and a single integer answer. A typical problem looks like this:
+> **Note:** Throughout this post we'll use **GSM8K** as our running example. It's a simple problem that suits RL well. GSM8K is a dataset of 8,500 grade-school math word problems. Each one has a plain English question and a single integer answer. A typical problem looks like this:
 
 > **Question:** James has 3 bags of apples. Each bag has 6 apples. He eats 4 apples. How many apples does he have left?
 >
@@ -39,20 +39,20 @@ RL:    try to answer. I'll tell you if you were right.    (trial and error)
 
 That's the whole idea. The rest of this post is deriving exactly how to do the last line.
 
-> **Note**: This is where Andrej Karpathy's observation that **RL is like sucking intelligence through a straw** feels most apt. The model's trajectory can be completely nonsensical, but as long as it lands on the right answer, RL will still reward it. Addressing that issue, though, is beyond the scope of this article.
+> **Note**: This is where Andrej Karpathy's observation that **RL is like sucking supervision through a straw** feels most apt. The model's trajectory can be completely nonsensical, but as long as it lands on the right answer, RL will still reward it. Addressing that issue, though, is beyond the scope of this article.
 
 ---
 
 ## 2. The setup: turning a chat model into an RL agent
 
-We need to recast "answer a math question" as something RL can chew on. The vocabulary of RL is: **policy**, **action**, **trajectory**, **reward**.
+We need to recast "answer a math question" as something RL can work with. The vocabulary of RL is: **policy**, **action**, **trajectory**, **reward**.
 
 - The **policy** is the model itself. Given a context, it outputs a probability distribution over the next token. Call it $\pi_\theta(\text{token} \mid \text{context})$ where $\theta$ are the model's weights. The policy *is* the network.
 - An **action** is sampling one token from that distribution.
 - A **trajectory** is a full rollout: start from the question, sample token after token until the model emits `<|assistant_end|>`. That sequence of tokens is one complete attempt at the problem.
 - The **reward** is a single number we hand back *after* the trajectory finishes, scoring how good the attempt was.
 
-For GSM8K the reward is dead simple:
+For GSM8K the reward is simple:
 
 ```python
 def reward(self, conversation, assistant_response):
@@ -62,7 +62,7 @@ def reward(self, conversation, assistant_response):
 
 That's it. We parse the number after the `####` marker out of the model's completion, compare it to ground truth, and return `1.0` or `0.0`. Notice what we are **not** doing: we are not checking whether the reasoning matches, not scoring partial credit, not looking at style. The model is free to reason however it likes; we only grade the final answer. This is the thing SFT structurally could not do.
 
-> **A note on what makes a good reward.** GSM8K is a gift: the answer is a number, so it's *automatically verifiable*. We can check correctness with a regex, no human and no second model in the loop. This is why math and code are the poster children of LLM RL: the reward is cheap, objective, and un-gameable. The moment your reward needs a human or a learned reward model to judge it, everything gets harder and more expensive. We'll stick to the easy, verifiable case on purpose.
+> **A note on what makes a good reward.** GSM8K makes this easy: the answer is a number, so it's *automatically verifiable*. We can check correctness with a regex, no human and no second model in the loop. This is why math and code are the most common tasks for LLM RL: the reward is cheap, objective, and hard to game. The moment your reward needs a human or a learned reward model to judge it, everything gets harder and more expensive. We'll stick to the easy, verifiable case on purpose.
 
 ---
 
@@ -74,7 +74,7 @@ Now what? We want to "make this work more likely." But the model didn't make one
 
 This is the **credit assignment problem**, and it's the central difficulty of RL. The reward arrives once, at the very end, but it has to be distributed back over every decision that led to it.
 
-The beautiful, almost-too-simple answer that **policy gradients** give: *don't try to be clever about it. Give every token in the trajectory the same credit: the trajectory's total reward.* Scale each token's nudge by how well its rollout did:  upward for good rollouts, and downward for bad ones. Average over enough rollouts and the tokens that systematically lead to good outcomes float up, while the rest wash out as noise.
+The answer that **policy gradients** give is simple: *don't try to be clever about it. Give every token in the trajectory the same credit: the trajectory's total reward.* Scale each token's nudge by how well its rollout did:  upward for good rollouts, and downward for bad ones. Average over enough rollouts and the tokens that systematically lead to good outcomes gain probability, while the rest average out as noise.
 
 Let's make that precise.
 
@@ -84,9 +84,9 @@ Let's make that precise.
 
 ### 4.1 Step 1: What a "gradient" means here
 
-If you've done SFT you already know the training loop: compute a loss, call `.backward()`, the optimizer takes a step. The gradient ($\nabla_\theta$) is just a long vector, one number per weight in the model, that says "increase this weight to decrease the loss." Gradient *descent* follows that direction to reduce loss.
+If you've done SFT you already know the training loop: compute a loss, call `.backward()`, the optimizer takes a step. The gradient ($\nabla_\theta$) is just a long vector, one number per weight in the model, that says how the loss changes if you nudge that weight. Gradient *descent* steps against it to reduce the loss.
 
-Here we want to *maximize* reward instead of minimize loss, so we follow the gradient in the *opposite* sign convention: **gradient ascent**. Mechanically it's identical: compute a gradient, step in it. The math below is about deriving *what that gradient is*.
+Here we want to *maximize* reward instead of minimize loss, so we step *along* the gradient instead of against it: **gradient ascent**. Mechanically it's identical: compute a gradient, take a step. The math below is about deriving *what that gradient is*.
 
 ---
 
@@ -135,7 +135,7 @@ The $\theta$ subscript on both is a reminder that these probabilities change whe
 
 ---
 
-There's a clever identity from calculus. For any function $p(\tau)$:
+There's a useful identity from calculus. For any positive, differentiable function $p(\tau)$:
 
 $$\nabla_\theta \, p(\tau) = p(\tau) \cdot \nabla_\theta \log p(\tau)$$
 
@@ -151,7 +151,7 @@ $$\nabla_\theta J(\theta)
 = \nabla_\theta \int p_\theta(\tau) \, R(\tau) \, d\tau
 = \int \nabla_\theta p_\theta(\tau) \, R(\tau) \, d\tau$$
 
-The second step moves the $\nabla_\theta$ inside the integral, valid because $R(\tau)$ doesn't depend on $\theta$ (the reward is fixed once the rollout is done), so it's just a constant being pulled outside.
+The second step moves the $\nabla_\theta$ inside the integral. The gradient then lands only on $p_\theta(\tau)$, because $R(\tau)$ doesn't depend on $\theta$ (the reward is fixed once the rollout is done).
 
 Now apply the identity to swap $\nabla p$ for $p \cdot \nabla \log p$:
 
@@ -161,13 +161,13 @@ And now flip back to expectation notation: an integral weighted by $p_\theta(\ta
 
 $$\boxed{\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\big[ R(\tau)\, \nabla_\theta \log p_\theta(\tau) \big]}$$
 
-The sampling is now *inside* the expectation and we only need to differentiate the $\log p_\theta(\tau)$ term, which is differentiable. The trick moved the differentiation off the sampling operation and onto the log-probability, which the model computes directly. (And in the next step we'll crack $\log p_\theta(\tau)$ open into the per-token policy terms.)
+The gradient is now an expectation, so we can estimate it by sampling rollouts and averaging. We only need to differentiate the $\log p_\theta(\tau)$ term. The trick moved the differentiation off the sampling operation and onto the log-probability, which the model computes directly. (In the next step we'll expand $\log p_\theta(\tau)$ into the per-token policy terms.)
 
 ---
 
 ### 4.5 Step 5: breaking the trajectory into tokens
 
-The boxed result has a $\log p_\theta(\tau)$: the log-probability of the *whole trajectory*. But the network doesn't output trajectory probabilities; it outputs per-token policy probabilities $\pi_\theta(a_t \mid s_t)$. So we crack the trajectory term open using the relationship from Step 3:
+The boxed result has a $\log p_\theta(\tau)$: the log-probability of the *whole trajectory*. But the network doesn't output trajectory probabilities; it outputs per-token policy probabilities $\pi_\theta(a_t \mid s_t)$. So we expand the trajectory term using the relationship from Step 4:
 
 $$p_\theta(\tau) = \prod_{t} \pi_\theta(a_t \mid s_t)$$
 
@@ -198,11 +198,11 @@ In plain English:
 
 > **For every token in the rollout: compute the direction that makes that token more likely, then scale it by the trajectory's reward. If the rollout was good ($R=1$), push all its tokens up. If the reward was zero, do nothing. Repeat over many rollouts.**
 
-That's it. That's REINFORCE. The gradient is computable because $\log \pi_\theta(a_t \mid s_t)$ is just the log-probability the model assigns to the token it sampled, something the model computes directly and can backpropagate through.
+That's REINFORCE. The gradient is computable because $\log \pi_\theta(a_t \mid s_t)$ is just the log-probability the model assigns to the token it sampled, something the model computes directly and can backpropagate through.
 
 ---
 
-### 4.7 The connection to SFT that should click right now
+### 4.7 The connection to SFT
 For an autoregressive decoder (like the GPT here), the cross-entropy loss over one sequence is:
 
 $$\mathcal{L}(\theta) = -\sum_{t=1}^{T} \log \pi_\theta(a_t \mid a_{<t})$$
@@ -223,32 +223,32 @@ SFT gradient:    gradient of log π  ×  1           (constant, always reinforce
 RL gradient:     gradient of log π  ×  R(τ)        (scale by reward, varies per rollout)
 ```
 
-SFT is the special case where every demonstration gets reward = 1 (it's shown as correct by assumption). RL lets the reward vary: good rollouts get reinforced strongly, bad rollouts get suppressed, and the signal is proportional to outcome quality. **Same engine, smarter throttle**.
+SFT is the special case where every demonstration gets reward = 1 (it's shown as correct by assumption). RL lets the reward vary: good rollouts get reinforced strongly, bad rollouts get little or no push, and the signal is proportional to outcome quality. (Pushing bad rollouts *down* needs the baseline from §5.) **The gradient is the same; only the weight on it changes.**
 
 ---
 
 ## 5. The variance problem, and the one trick that fixes it
 
-REINFORCE works. But if you actually run it, it learns *slowly* and the training curve looks like a seismograph. The culprit is **variance**, and there's a one-line fix that is genuinely one of the prettiest tricks in RL. Let's see the problem first, because once you see it the fix is obvious.
+REINFORCE works. But if you actually run it, it learns *slowly* and the training curve is very noisy. The cause is **variance**, and it has a one-line fix. Let's look at the problem first.
 
-Here's the thing that should bother you about the gradient we just derived. On GSM8K the reward is always 0 or 1, **never negative**. So trace what the gradient actually does to each rollout:
+Here's a problem with the gradient we just derived. On GSM8K the reward is always 0 or 1, **never negative**. So trace what the gradient does to each rollout:
 
 - Correct rollout ($R=1$): push all its tokens **up**.
 - Wrong rollout ($R=0$): multiply by zero → do **nothing**.
 
-Stare at that for a second. **You never push anything down.** Every step is "make these sequences more likely," and the only signal the model gets is how *hard* it gets pushed up. A correct rollout gets a nudge of 1; a wrong rollout contributes nothing. The softmax is normalized, so relentlessly upvoting correct responses does implicitly downvote everything else, but it's a maddeningly indirect signal. It's like coaching chess by only ever saying "nice!" and never once saying "no, not that."
+**You never push anything down.** Every step is "make these sequences more likely," and the only signal the model gets is how *hard* it gets pushed up. A correct rollout gets a nudge of 1; a wrong rollout contributes nothing. The softmax is normalized, so pushing correct responses up does lower everything else, but only indirectly. It's like coaching chess by only saying "nice!" and never "no, not that."
 
-But it gets worse. This binary signal tells the model nothing about *how much* better one correct rollout is compared to another, or how much it still needs to learn on easy questions it already knows well. Take a question the model already nails 90% of the time. Sample 16 rollouts → ~14 correct, ~2 wrong. The gradient cheerfully reinforces all 14 correct ones at full strength, even though the model *already knows how to solve this*. We're blowing almost the entire gradient budget applauding behavior that's already locked in, while the 2 genuinely informative failures contribute exactly nothing. Huge update, near-zero learning. **That's the variance problem: the size of the gradient has almost nothing to do with how much there actually is to learn.**
+There's a second problem. This binary signal tells the model nothing about *how much* better one correct rollout is compared to another, or how much it still needs to learn on easy questions it already knows well. Take a question the model already nails 90% of the time. Sample 16 rollouts → ~14 correct, ~2 wrong. The gradient reinforces all 14 correct ones at full strength, even though the model *already knows how to solve this*. Almost the whole gradient goes to behavior the model has already learned, while the 2 informative failures contribute nothing. The update is large but teaches almost nothing. **That's the variance problem: the size of the gradient has almost nothing to do with how much there is to learn.**
 
 The fix is a **baseline**. Instead of scaling by the raw reward, scale by reward *minus some reference value* $b$:
 
 $$\nabla_\theta J = \mathbb{E}\Big[ (R(\tau) - b) \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \Big]$$
 
-Two things make this beautiful.
+This does two things.
 
-**First, it brings back the "down."** Pick $b$ to be roughly the average reward for a question, and suddenly $R(\tau) - b$ is positive for better-than-average rollouts and *negative* for worse-than-average ones. Now the gradient pushes good rollouts up **and bad rollouts down**, both halves of the signal, finally. The quantity $R(\tau) - b$ gets a name: the **advantage**. It stops asking "was this rollout good?" and starts asking the only question that actually teaches: "was this rollout better or worse than what I'd normally do here?"
+**First, it adds the push down.** Pick $b$ to be roughly the average reward for a question, and suddenly $R(\tau) - b$ is positive for better-than-average rollouts and *negative* for worse-than-average ones. Now the gradient pushes good rollouts up **and bad rollouts down**, so both halves of the signal are used. The quantity $R(\tau) - b$ gets a name: the **advantage**. It stops asking "was this rollout good?" and starts asking a more useful question: "was this rollout better or worse than what I'd normally do here?"
 
-**Second, it's free.** You might worry: we just changed the weights on every rollout — doesn't that corrupt what we're optimizing? No, because subtracting $b$ doesn't change the *expected* gradient. To see why, expand the new objective by linearity of expectation:
+**Second, it adds no bias.** You might worry: we just changed the weights on every rollout — doesn't that corrupt what we're optimizing? No, because subtracting $b$ doesn't change the *expected* gradient. To see why, expand the new objective by linearity of expectation:
 
 $$\mathbb{E}\big[(R(\tau) - b)\,\nabla_\theta \log p_\theta\big] = \underbrace{\mathbb{E}\big[R(\tau)\,\nabla_\theta \log p_\theta\big]}_{\text{original REINFORCE gradient}} - \underbrace{\mathbb{E}\big[b\,\nabla_\theta \log p_\theta\big]}_{\text{= 0, proved below}}$$
 
@@ -262,9 +262,9 @@ $$
 = \nabla_\theta\, 1 = 0
 $$
 
-The middle step runs the log-derivative trick backwards ($p\,\nabla\log p = \nabla p$); the last step is just "the gradient of a constant is zero." So the baseline term is exactly zero in expectation, and you can choose any $b$ you like without introducing bias.
+The middle step runs the log-derivative trick backwards ($p\,\nabla\log p = \nabla p$); the last step is just "the gradient of a constant is zero." So the baseline term is exactly zero in expectation, and you can choose any $b$ without introducing bias, as long as $b$ does not depend on the rollout it is applied to.
 
-Now: what's a good baseline? The cleverest choice, and this is the central idea of **GRPO** (Group Relative Policy Optimization), is to use *the average reward of other attempts at the same question*.
+Now: what's a good baseline? A simple choice, and the central idea of **GRPO** (Group Relative Policy Optimization), is to use *the average reward of other attempts at the same question*.
 
 So the recipe becomes:
 
@@ -274,7 +274,7 @@ So the recipe becomes:
 4. Use the **group's mean reward** as the baseline.
 5. Advantage of completion $i$ = $R_i - \text{mean}(R)$.
 
-This is gorgeous because the baseline is *per-question and self-calibrating*. An easy question where 15/16 rollouts succeed has a high baseline (~0.94), so the lone failure gets a large negative advantage ("you blew an easy one, fix that") while the successes get a tiny positive nudge ("nice, but everyone did that"). A hard question where only 1/16 succeeds has a low baseline (~0.06), so that one lucky correct rollout gets a big positive advantage ("you found the needle, do more of that"). The signal automatically focuses on the rollouts that are *surprising relative to their peers*. No value network, no extra model: just sample a bunch and subtract the mean.
+This works well because the baseline is *per-question and self-calibrating*. An easy question where 15/16 rollouts succeed has a high baseline (~0.94), so the lone failure gets a large negative advantage ("you blew an easy one, fix that") while the successes get a tiny positive nudge ("nice, but everyone did that"). A hard question where only 1/16 succeeds has a low baseline (~0.06), so that one lucky correct rollout gets a big positive advantage ("this worked, do more of it"). The signal automatically focuses on the rollouts that are *surprising relative to their peers*. No value network, no extra model: just sample a bunch and subtract the mean.
 
 In code it's two lines:
 
@@ -283,29 +283,31 @@ mu = rewards.mean()
 advantages = rewards - mu
 ```
 
-That's the entire "GRPO." Let that sink in: the famous algorithm is `rewards - rewards.mean()`.
+That's the core of GRPO: `rewards - rewards.mean()`.
+
+Two details. The GRPO paper also divides by the group's standard deviation, so advantages have a similar scale across questions. And the group mean includes the rollout's own reward, so strictly it breaks the "does not depend on the rollout" condition. The effect is small: it scales the gradient by $(1 - 1/G)$ and leaves its direction unchanged.
 
 ---
 
 ## 6. From REINFORCE to GRPO: the family tree
 
-We've actually already built the entire algorithm: REINFORCE + a group-mean baseline. That's essentially what "GRPO" is. But the literature has a zoo of acronyms **(PPO, TRPO, GRPO, DAPO)** that all sound like prerequisites. They're not. Each one is just **REINFORCE plus a patch for a specific pain**. Build the family tree from scratch and "GRPO" reads as "REINFORCE with a couple of patches," which is exactly what it is.
+We've already built the entire algorithm: REINFORCE + a group-mean baseline. That's essentially what "GRPO" is. But the literature has many acronyms **(PPO, TRPO, GRPO, DAPO)** that sound like prerequisites. They're not. Each one is **REINFORCE plus a fix for a specific problem**. Build the family tree from scratch and "GRPO" reads as "REINFORCE with a couple of fixes," which is what it is.
 
-### 6.1 The family tree: each algorithm just patches the last one's headache
+### 6.1 The family tree: each algorithm fixes a problem in the last one
 
-The most useful thing to realize about the acronym soup (REINFORCE, TRPO, PPO, GRPO, DAPO) is that it isn't five rival algorithms you study separately. It's **one** algorithm, REINFORCE, with a chain of patches bolted on. Every node below is just "the previous one **plus** a fix for the specific headache it created." Here's the whole chain on one line; then we walk it node by node:
+These acronyms (REINFORCE, TRPO, PPO, GRPO, DAPO) aren't five rival algorithms you study separately. They're **one** algorithm, REINFORCE, with a chain of fixes added. Every node below is "the previous one **plus** a fix for the specific problem it created." Here's the whole chain on one line; then we walk it node by node:
 
 1. **REINFORCE** — the base algorithm. One gradient step per batch of rollouts.
 2. **+ Importance sampling → TRPO** — lets you reuse a batch for multiple steps, but needs a trust region to stop the policy from drifting too far.
-3. **+ PPO clip** — replaces TRPO's expensive second-order trust region with a cheap one-line clamp. Same protection, 10x simpler.
-4. **+ Group baseline → GRPO** — ditches PPO's learned value network. Uses the mean reward across a group of rollouts for the same question as the baseline instead.
+3. **+ PPO clip** — replaces TRPO's expensive second-order trust region with a cheap one-line clamp. Similar protection, much simpler.
+4. **+ Group baseline → GRPO** — removes PPO's learned value network. Uses the mean reward across a group of rollouts for the same question as the baseline instead.
 5. **+ DAPO tweaks** — four practical fixes for large-scale, long chain-of-thought training (asymmetric clip, dynamic sampling, token-level normalization, overlong reward shaping).
 
 *If that felt like a lot, don't worry, we'll walk through each one step by step.*
 
 #### 6.1.1 REINFORCE: the base case
 
-REINFORCE is the original policy gradient algorithm; everything else in this tree is a patch on top of it. The whole loop:
+REINFORCE is the original policy gradient algorithm; everything else in this tree is a fix on top of it. The whole loop:
 
 1. **Sample rollouts.** Let the current model attempt a batch of questions; each attempt is one trajectory.
 2. **Score them.** Run the reward function on each: for GSM8K, 1.0 if the final number matches, else 0.0.
@@ -313,25 +315,25 @@ REINFORCE is the original policy gradient algorithm; everything else in this tre
 
 The core insight, which §4 derived: **it's the SFT cross-entropy gradient, scaled by a reward instead of treating every token as correct.** With a 0/1 reward that means a correct rollout (reward = 1) gets all its tokens pushed up, and a wrong rollout (reward = 0) contributes nothing: its gradient is multiplied by zero. Run enough questions through it and the distribution concentrates on the reasoning paths that work.
 
-**The limitation that kicks off the chain.** REINFORCE is strictly **on-policy**: the gradient is only valid for the exact model that generated the rollouts. The instant you step, the model changes and the rollouts in your hand are stale: reusing them for a second step would bias the gradient. So one batch of rollouts buys exactly **one** step, then it's trash. Since generating rollouts is the expensive part (decoding tokens one at a time, across many samples), spending all that compute on a single update *stings*, and that sting is what the next node fixes.
+**The limitation that leads to the next step.** REINFORCE is strictly **on-policy**: the gradient is only valid for the exact model that generated the rollouts. The instant you step, the model changes and the rollouts in your hand are stale: reusing them for a second step would bias the gradient. So one batch of rollouts buys exactly **one** step, then must be discarded. Since generating rollouts is the expensive part (decoding tokens one at a time, across many samples), spending all that compute on a single update is wasteful, and that is what the next node fixes.
 
 #### 6.1.2 Importance sampling: fixes "a batch is only good for one step"
 
-(Not an algorithm on its own: it's the patch the next three are built on, so it comes first.)
+(Not an algorithm on its own: it's the fix the next three are built on, so it comes first.)
 
-We'd love to take several gradient steps per batch, since rollouts are expensive to generate. The naive way, just keep stepping on the same data, is subtly wrong: after the first step the model has moved, so you're now training on samples drawn by an *older* version of itself. The gradient quietly points the wrong way, and nothing warns you.
+We want to take several gradient steps per batch, since rollouts are expensive to generate. The naive way, just keep stepping on the same data, is wrong in a way that is easy to miss: after the first step the model has moved, so you're now training on samples drawn by an *older* version of itself. The gradient is biased, and nothing warns you.
 
 The fix is one of the oldest tricks in statistics. If you have samples from an old distribution but want the average under a new one, reweight each sample by how much more (or less) likely the new model makes it:
 
 $$\text{ratio} = \frac{\pi_\text{new}(a)}{\pi_\text{old}(a)} \quad\text{"how much more likely is this token now than when I sampled it?"}$$
 
-A token that's become 1.5× as likely since sampling counts 1.5×; one that's become half as likely counts 0.5×. Reweighting every token this way cancels the bias, and stale data becomes usable again. So REINFORCE's objective `reward · logp` simply becomes `reward · ratio`. That's the whole idea.
+A token that's become 1.5× as likely since sampling counts 1.5×; one that's become half as likely counts 0.5×. Reweighting every token this way corrects most of the bias, as long as the new policy stays close to the old one, and stale data becomes usable again. So REINFORCE's objective `reward · logp` simply becomes `reward · ratio`. That's the whole idea.
 
 And it barely touches the gradient. Differentiating the ratio with the same `∇p = p·∇log p` identity from §4.4 (with $\pi_\text{old}$ held constant) gives:
 
 $$\nabla\,\text{ratio} = \frac{\nabla\pi_\text{new}}{\pi_\text{old}} = \frac{\pi_\text{new}\cdot\nabla\log\pi_\text{new}}{\pi_\text{old}} = \text{ratio}\cdot\nabla\log\pi_\text{new}$$
 
-so REINFORCE's per-token gradient `reward · ∇logp` becomes `reward · ratio · ∇logp`, the very same gradient, with the ratio bolted on as a reweighting factor.
+so REINFORCE's per-token gradient `reward · ∇logp` becomes `reward · ratio · ∇logp`, the very same gradient, with the ratio added as a reweighting factor.
 
 In code it's a one-line change, and you compute the ratio in log-space for stability:
 
@@ -343,13 +345,13 @@ pg_obj = (ratio * rewards).sum()           # was: (logp * rewards).sum()
 
 The model outputs log-probabilities, so `π_new/π_old` is computed as `exp(logp - logp_old)`: subtract in log-space, exponentiate once. This avoids numerical underflow from multiplying hundreds of tiny per-token probabilities directly.
 
-Here's the key insight on when you actually need this. On the *first* step, before the model has moved, `π_new = π_old`, so every ratio is exactly 1 and `reward · ratio · ∇logp` collapses straight back to plain REINFORCE. The ratio only earns its keep on the *second* step onward, once you reuse the batch and the two policies have drifted apart. If you take exactly one gradient step per batch and then resample fresh, the ratio is always 1, and you can use the plain on-policy objective without ever computing one.
+When do you need this? On the *first* step, before the model has moved, `π_new = π_old`, so every ratio is exactly 1 and `reward · ratio · ∇logp` collapses straight back to plain REINFORCE. The ratio only matters from the *second* step onward, once you reuse the batch and the two policies have drifted apart. If you take exactly one gradient step per batch and then resample fresh, the ratio is always 1, and you can use the plain on-policy objective without ever computing one.
 
 #### 6.1.3 TRPO: fixes "a reused-data step can leap too far"
 
-Reusing a batch, the previous fix, opened a new wound. The moment the current policy drifts from the one that generated the data, the ratio stops being near 1: a token the old model thought unlikely but the new one now loves produces a *huge* ratio, the gradient's variance detonates, and one oversized step can wreck the model. So we need a cap: don't let the policy move *too far* in a single round of reuse.
+Reusing a batch, the previous fix, creates a new problem. The moment the current policy drifts from the one that generated the data, the ratio stops being near 1: a token the old model thought unlikely but the new one now favors produces a *huge* ratio, the gradient's variance grows very large, and one oversized step can break the model. So we need a cap: don't let the policy move *too far* in a single round of reuse.
 
-The obvious cap is a small fixed learning rate, but that doesn't work reliably. The same step size in weight space can be a tiny behavioral change in one part of training and a catastrophic one later, the model suddenly starts repeating tokens or spewing garbage. Weight distance and behavioral distance aren't the same thing. We need to budget steps by how far the model's *behavior* moves, not by how far the *weights* move. And to do that we need a way to measure "how different are two policies", which is the **KL divergence**.
+The obvious cap is a small fixed learning rate, but that doesn't work reliably. The same step size in weight space can be a tiny behavioral change in one part of training and a catastrophic one later, the model suddenly starts repeating tokens or producing nonsense. Weight distance and behavioral distance aren't the same thing. We need to budget steps by how far the model's *behavior* moves, not by how far the *weights* move. And to do that we need a way to measure "how different are two policies", which is the **KL divergence**.
 
 > **Quick aside: what is "KL Divergence"?** Everyone uses it to mean "how different are two probability distributions," and that's all it is. Say at one position the old policy thinks the next token is `{cat: 0.6, dog: 0.4}` and the new one thinks `{cat: 0.5, dog: 0.5}`. KL gives you a single number for how far apart those two opinions are: `0` if identical, growing as they diverge. The formula is just a weighted average of the log-ratio of the two probabilities:
 >
@@ -359,17 +361,17 @@ The obvious cap is a small fixed learning rate, but that doesn't work reliably. 
 >
 > For an LLM the "distribution" is the next-token softmax, so you compute this sum **over the whole vocabulary at one position**, then **add it up across all positions** in the sequence to get the KL for the whole response. (Computing the full vocab sum for every token, for two models, is pricey, so in practice people estimate it from just the *sampled* token's probabilities, but the exact definition is the sum above.)
 
-With KL as the ruler, **TRPO** (Trust Region Policy Optimization) states its rule in one line: **never let a single update change the policy by more than a fixed KL budget**, say $\text{KL} = 0.01$. The catch is the weight-vs-behavior gap from above: the same step size in weight space produces a different amount of behavioral change depending on where you are in training. So you can't just pick a fixed step size and know you're staying inside the KL budget. TRPO has to *estimate* how much behavior changes per unit of weight movement at the current point, and then step accordingly.
+With KL as the measure, **TRPO** (Trust Region Policy Optimization) states its rule in one line: **never let a single update change the policy by more than a fixed KL budget**, say $\text{KL} = 0.01$. The catch is the weight-vs-behavior gap from above: the same step size in weight space produces a different amount of behavioral change depending on where you are in training. So you can't just pick a fixed step size and know you're staying inside the KL budget. TRPO has to *estimate* how much behavior changes per unit of weight movement at the current point, and then step accordingly.
 
-The mechanics of how TRPO estimates and enforces this budget (Fisher Information Matrix, conjugate gradient, line search) are beyond the scope of this post, the details are in the [original paper](https://arxiv.org/abs/1502.05477). What matters here is that it works but it's expensive. That cost is exactly why people reached for PPO's cheaper alternative instead. PPO threw the whole machinery away and got 90% of the benefit with a one-line clamp.
+The mechanics of how TRPO estimates and enforces this budget (Fisher Information Matrix, conjugate gradient, line search) are beyond the scope of this post, the details are in the [original paper](https://arxiv.org/abs/1502.05477). What matters here is that it works but it's expensive. That cost is why people moved to PPO, which drops that machinery and gets most of the benefit with a one-line clamp.
 
 #### 6.1.4 PPO: fixes "TRPO's second-order math is too expensive"
 
-**PPO** (Proximal Policy Optimization) is the cheap, wildly popular approximation that made TRPO a museum piece. It keeps §6.1.2's reusable ratio objective but makes two moves: weight each token by a proper **advantage** instead of the raw reward, and replace TRPO's curvature math with a dead-simple **clip**. Take them in turn.
+**PPO** (Proximal Policy Optimization) is the cheaper approximation that replaced TRPO in practice. It keeps §6.1.2's reusable ratio objective but makes two moves: weight each token by a proper **advantage** instead of the raw reward, and replace TRPO's curvature math with a simple **clip**. Take them in turn.
 
-**1. The advantage: and the critic that produces it.** PPO uses a learned baseline: a second network called the **critic** (or value network) that takes the current state, the prompt plus tokens generated so far, and predicts how much reward to expect from here. The advantage is then "what you actually got minus what the critic predicted." A positive advantage means the rollout did better than expected; negative means it did worse. PPO further refines this into per-token advantages using **GAE** (Generalized Advantage Estimation), which assigns credit more carefully across individual tokens rather than giving every token the same global number. A full treatment of GAE is out of scope here, the [original PPO paper](https://arxiv.org/abs/1707.06347) covers it well. The key **cost**: the critic is a whole extra model to train alongside the policy, roughly doubling memory and compute. That's exactly what GRPO removes next.
+**1. The advantage: and the critic that produces it.** PPO uses a learned baseline: a second network called the **critic** (or value network) that takes the current state, the prompt plus tokens generated so far, and predicts how much reward to expect from here. The advantage is then "what you actually got minus what the critic predicted." A positive advantage means the rollout did better than expected; negative means it did worse. PPO further refines this into per-token advantages using **GAE** (Generalized Advantage Estimation), which assigns credit more carefully across individual tokens rather than giving every token the same global number. A full treatment of GAE is out of scope here; see the [GAE paper](https://arxiv.org/abs/1506.02438) and the [PPO paper](https://arxiv.org/abs/1707.06347). The key **cost**: the critic is an extra model to train alongside the policy. If it is a separate network the size of the policy, it roughly doubles memory and compute. GRPO removes it next.
 
-**2. The clip: a cheap stand-in for TRPO's trust region.** Rather than measure KL and solve for a step size, PPO just forbids any token's ratio from leaving $[1-\epsilon,\,1+\epsilon] = [0.8,\,1.2]$ (with $\epsilon \approx 0.2$):
+**2. The clip: a cheap stand-in for TRPO's trust region.** Rather than measure KL and solve for a step size, PPO removes the reward for pushing any token's ratio outside $[1-\epsilon,\,1+\epsilon] = [0.8,\,1.2]$ (with $\epsilon \approx 0.2$):
 
 $$\mathcal{L}^{\text{PPO}} = \min\!\left(\underbrace{\text{ratio} \cdot A}_{\text{term 1: unclipped}},\quad \underbrace{\text{clip}(\text{ratio},\ 1{-}\epsilon,\ 1{+}\epsilon) \cdot A}_{\text{term 2: ratio clamped to } [0.8,\,1.2]}\right), \quad \epsilon = 0.2$$
 
@@ -384,17 +386,17 @@ To read the `min`, consider four cases: ratio can be inside or outside `[0.8, 1.
 
 The pattern: **clipping only kicks in when the ratio moved in the same direction as the advantage (a beneficial update that's gone far enough). When the ratio moved in the wrong direction, a mistake, the `min` picks the unclipped term and lets the gradient fix it.** With just the clipped term, cases 2 and 4 would have zero gradient and the mistakes would go uncorrected.
 
-Another way to see it: `min(ratio·A, clip·A)` is always ≤ `ratio·A`, making it a **pessimistic lower bound** on the unclipped objective: you never over-claim progress, but you never block corrections. Net effect: TRPO's trust region, first-order and free, with no KL computed and no line search.
+Another way to see it: `min(ratio·A, clip·A)` is always ≤ `ratio·A`, making it a **pessimistic lower bound** on the unclipped objective: you never over-claim progress, but you never block corrections. The result is a first-order version of TRPO's trust region, with no KL computed and no line search.
 
-**The payoff** is the data reuse we were after all along: with the clip as a guardrail you can safely run *several* gradient steps over the same batch of rollouts before throwing it out and resampling. Squeezing many safe steps from each expensive batch is PPO's whole value proposition.
+**The payoff** is the data reuse we were after all along: with the clip as a limit you can safely run *several* gradient steps over the same batch of rollouts before throwing it out and resampling. Getting many safe steps from each expensive batch is the main benefit of PPO.
 
-One more thing usually bundled into PPO-for-LLMs, while we're here: the **KL-to-reference leash.** Bounding the step size stops *blow-ups*, but not a slower failure: over many steps a policy chasing a loose or learned reward will creep toward degenerate text that scores high and reads like nonsense ("reward hacking"). The fix is to keep a *frozen copy* of the original SFT model and add a penalty for drifting too far from *it*. Careful: this is a **different KL from TRPO's**, and people mix them up constantly; TRPO bounds the gap between *consecutive* policies (step to step), while this one anchors to a *fixed* reference for the whole run. One limits how fast you move; the other ties you to base camp. (This is the "spring" version of a KL bound, vs. TRPO's hard wall.)
+One more thing usually bundled into PPO-for-LLMs, while we're here: the **KL-to-reference penalty.** Bounding the step size stops *blow-ups*, but not a slower failure: over many steps a policy chasing a loose or learned reward will creep toward degenerate text that scores high and reads like nonsense ("reward hacking"). The fix is to keep a *frozen copy* of the original SFT model and add a penalty for drifting too far from *it*. Careful: this is a **different KL from TRPO's**, and the two are easy to confuse; TRPO bounds the gap between *consecutive* policies (step to step), while this one anchors to a *fixed* reference for the whole run. One limits how fast you move; the other keeps you near the starting model. (This one is a soft penalty; TRPO's is a hard limit.)
 
-#### 6.1.5 GRPO: fixes "PPO hauls a costly second network (the critic)"
+#### 6.1.5 GRPO: fixes "PPO needs a costly second network (the critic)"
 
-Step back and look at what that critic costs. It's a second model roughly as large as the policy, which in LLM-land means it **roughly doubles your memory footprint and a big chunk of your compute**: you're forwarding *and* backpropagating two giant networks every step. It has to be trained, so it adds its own loss and hyperparameters. And it's a chicken-and-egg headache: early in training the critic's predictions are garbage, so your advantages are garbage, so the policy gets noisy updates, and a critic that mis-estimates can drag the whole run sideways.
+Step back and look at what that critic costs. It's a second model roughly as large as the policy, which for LLMs means it **roughly doubles your memory footprint and a big chunk of your compute**: you're forwarding *and* backpropagating two giant networks every step. It has to be trained, so it adds its own loss and hyperparameters. And it's a circular problem: early in training the critic's predictions are poor, so your advantages are poor, so the policy gets noisy updates, and a critic that mis-estimates can destabilize the whole run.
 
-**GRPO** (Group Relative Policy Optimization) answers exactly that and **deletes the critic outright.** It still needs a baseline, but recall *why* we wanted one (the variance section): just to know whether a rollout did better or worse than "typical for this question." GRPO gets that for free from rollouts it's already generating: sample a **group** of $G$ completions per question and use the group's **mean reward** as the baseline. No value network, no GAE, no second model. That's literally the `rewards - rewards.mean()` we built earlier, the "critic" replaced by an empirical average over samples you were taking anyway. In practice this **cuts memory and model FLOPs by roughly half** versus PPO and removes the critic-instability failure mode entirely. The trade: you now need *several* completions per question to estimate that mean, costing extra sampling, but sampling is cheap next to hauling a second network. GRPO keeps PPO's clip and usually the KL-to-reference leash; the *only* thing it removes is the critic.
+**GRPO** (Group Relative Policy Optimization) addresses that and **removes the critic.** It still needs a baseline, but recall *why* we wanted one (the variance section): just to know whether a rollout did better or worse than "typical for this question." GRPO gets that for free from rollouts it's already generating: sample a **group** of $G$ completions per question and use the group's **mean reward** as the baseline. No value network, no GAE, no second model. That's the `rewards - rewards.mean()` we built earlier, the "critic" replaced by an empirical average over samples you were taking anyway. Compared with PPO using a separate critic of the same size, this **cuts memory and model FLOPs by roughly half** and removes the critic-instability failure mode entirely. The trade: you now need *several* completions per question to estimate that mean, costing extra sampling, but sampling is cheap next to running a second network. GRPO keeps PPO's clip and usually the KL-to-reference penalty; the *only* thing it removes is the critic.
 
 #### 6.1.6 DAPO: fixes "scaling up long-reasoning runs"
 
@@ -404,7 +406,7 @@ Step back and look at what that critic costs. It's a second model roughly as lar
 
 2. **Dynamic Sampling**: when every completion in a group gets the same reward (all correct, or all wrong), the advantages are all zero and the group contributes no gradient. These are wasted rollouts. DAPO skips such groups and keeps sampling until the batch has a healthy mix of wins and losses.
 
-3. **Token-Level Loss**: divides the loss by total tokens, not total sequences. Without this, a 50-token response and a 500-token response each count as "one example," which quietly biases the model toward short answers.
+3. **Token-Level Loss**: divides the loss by total tokens, not total sequences. Without this, a 50-token response and a 500-token response each count as "one example," so each token in the long response gets a tenth of the weight. The model then learns less from good long reasoning and under-penalizes bad long outputs such as repetition.
 
 4. **Overlong Reward Shaping**: if a response hits the length limit mid-generation and gets cut off, a hard penalty is unfair, the model had no way to know it was about to be truncated. DAPO softens or removes the penalty for truncated responses to keep the reward signal clean.
 
@@ -414,7 +416,7 @@ These fixes matter most when training on long chain-of-thought tasks at scale. F
 
 ## 7. The one-paragraph version
 
-You did SFT, which is imitation and therefore capped by your demonstrations. RL lets you optimize the *outcome* directly: let the model attempt a verifiable problem, score the attempt with a reward, and reuse your SFT cross-entropy gradient, but scaled by that reward, so successful rollouts get reinforced and failures suppressed. Sample a group of attempts per question and subtract the group's mean reward to get a low-variance **advantage** (that's the whole of "GRPO"). Everything else in the acronym zoo (the importance ratio, the trust region, the PPO clip, the value network, the DAPO tweaks) is just a patch for a pain that only shows up at a particular scale or setting. Reach for each one when its specific headache actually appears, and not before.
+You did SFT, which is imitation and therefore capped by your demonstrations. RL lets you optimize the *outcome* directly: let the model attempt a verifiable problem, score the attempt with a reward, and reuse your SFT cross-entropy gradient, but scaled by that reward, so successful rollouts get reinforced and failures suppressed. Sample a group of attempts per question and subtract the group's mean reward to get a low-variance **advantage** (that's the whole of "GRPO"). Everything else (the importance ratio, the trust region, the PPO clip, the value network, the DAPO tweaks) is a fix for a problem that only shows up at a particular scale or setting. Use each one when its specific problem appears, and not before.
 
 ```
 pretraining   ->  learn language          (imitate the internet)
