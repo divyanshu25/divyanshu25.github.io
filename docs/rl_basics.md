@@ -283,7 +283,11 @@ advantages = rewards - mu
 
 That's the core of GRPO: `rewards - rewards.mean()`.
 
-Two details. The GRPO paper also divides by the group's standard deviation, so advantages have a similar scale across questions. And the group mean includes the rollout's own reward, so strictly it breaks the "does not depend on the rollout" condition. The effect is small: it scales the gradient by $(1 - 1/G)$ and leaves its direction unchanged.
+Two details about the real algorithm.
+
+**GRPO also divides by the standard deviation.** The paper computes `(rewards - mean) / std` over the group. This puts advantages on a similar scale for every question, so no single question dominates the update.
+
+**The baseline includes the rollout's own reward.** The proof above needs a baseline that does not depend on the rollout being scored. The group mean depends on it a little, because each rollout's reward is one of the $G$ numbers being averaged. This is harmless. With $G = 16$, subtracting the group mean gives the same result as subtracting the mean of the *other* 15 rollouts, which does satisfy the condition, and then multiplying every advantage by $15/16$. The gradient points the same way and is slightly smaller.
 
 Put together, one training step looks like this:
 
