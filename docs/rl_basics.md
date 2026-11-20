@@ -379,8 +379,6 @@ The mechanics of how TRPO estimates and enforces this budget (Fisher Information
 
 **1. The advantage: and the critic that produces it.** PPO uses a learned baseline: a second network called the **critic** (or value network) that takes the current state, the prompt plus tokens generated so far, and predicts how much reward to expect from here. The advantage is then "what you actually got minus what the critic predicted." A positive advantage means the rollout did better than expected; negative means it did worse. PPO further refines this into per-token advantages using **GAE** (Generalized Advantage Estimation), which assigns credit more carefully across individual tokens rather than giving every token the same global number. A full treatment of GAE is out of scope here; see the [GAE paper](https://arxiv.org/abs/1506.02438) and the [PPO paper](https://arxiv.org/abs/1707.06347). The key **cost**: the critic is an extra model to train alongside the policy. If it is a separate network the size of the policy, it roughly doubles memory and compute. GRPO removes it next.
 
-Here is where the critic sits in one PPO step for an LLM. Two networks are trained, the policy and the critic. Two parts stay fixed: the reference model and the reward. The clip and the reference model are explained below.
-
 ![PPO for LLMs: the policy generates a response; a frozen reference model gives a KL penalty, the reward scores the answer, and a trained critic predicts expected reward; these combine into advantages, the clipped PPO loss updates the policy, and the critic is trained on actual returns](/blog/rl/ppo_models.png)
 
 **2. The clip: a cheap stand-in for TRPO's trust region.** Rather than measure KL and solve for a step size, PPO removes the reward for pushing any token's ratio outside $[1-\epsilon,\,1+\epsilon] = [0.8,\,1.2]$ (with $\epsilon \approx 0.2$):
@@ -391,10 +389,10 @@ Term 1 is the plain importance-sampling objective from §6.1.2: no clamping, rat
 
 To read the `min`, consider four cases: ratio can be inside or outside `[0.8, 1.2]`, and A can be positive or negative:
 
-- **Good update, gone far enough** (A>0, ratio>1.2, token's prob rose past the boundary): `min(1.5·A, 1.2·A) = 1.2·A`, picks the clipped term, gradient zero, stop pushing. ✓
-- **Bad update made a mistake** (A<0, ratio>1.2, model *increased* a bad token's prob): `min(1.5·(−1), 1.2·(−1)) = min(−1.5, −1.2) = −1.5`, picks the *unclipped* term, gradient flows, corrects back down. ✓
-- **Bad update, suppressed far enough** (A<0, ratio<0.8, token's prob fell past the boundary): `min(0.6·(−1), 0.8·(−1)) = min(−0.6, −0.8) = −0.8`, picks the clipped term, gradient zero, stop suppressing. ✓
-- **Good update made a mistake** (A>0, ratio<0.8, model *decreased* a good token's prob): `min(0.6·A, 0.8·A) = 0.6·A`, picks the *unclipped* term, gradient flows, corrects back up. ✓
+- **Positive trajectory, ratio strongly above 1** (A>0, ratio>1.2, token's prob rose past the boundary): `min(1.5·A, 1.2·A) = 1.2·A`, picks the clipped term, gradient zero, stop pushing. ✓
+- **Negative trajectory, ratio strongly above 1** (A<0, ratio>1.2, model *increased* a bad token's prob): `min(1.5·(−1), 1.2·(−1)) = min(−1.5, −1.2) = −1.5`, picks the *unclipped* term, gradient flows, corrects back down. ✓
+- **Negative trajectory, ratio strongly below 1** (A<0, ratio<0.8, token's prob fell past the boundary): `min(0.6·(−1), 0.8·(−1)) = min(−0.6, −0.8) = −0.8`, picks the clipped term, gradient zero, stop suppressing. ✓
+- **Positive trajectory, ratio strongly below 1** (A>0, ratio<0.8, model *decreased* a good token's prob): `min(0.6·A, 0.8·A) = 0.6·A`, picks the *unclipped* term, gradient flows, corrects back up. ✓
 
 The pattern: **clipping only kicks in when the ratio moved in the same direction as the advantage (a beneficial update that's gone far enough). When the ratio moved in the wrong direction, a mistake, the `min` picks the unclipped term and lets the gradient fix it.** With just the clipped term, cases 2 and 4 would have zero gradient and the mistakes would go uncorrected.
 
