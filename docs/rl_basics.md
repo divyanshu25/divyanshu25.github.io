@@ -402,6 +402,10 @@ Another way to see it: `min(ratio·A, clip·A)` is always ≤ `ratio·A`, making
 
 One more thing usually bundled into PPO-for-LLMs, while we're here: the **KL-to-reference penalty.** Bounding the step size stops *blow-ups*, but not a slower failure: over many steps a policy chasing a loose or learned reward will drift toward degenerate text that scores high and reads like nonsense ("reward hacking"). The fix is to keep a *frozen copy* of the original SFT model and add a penalty for drifting too far from *it*. Careful: this is a **different KL from TRPO's**, and the two are easy to confuse; TRPO bounds the gap between *consecutive* policies (step to step), while this one anchors to a *fixed* reference for the whole run. One limits how fast you move; the other keeps you near the starting model. (This one is a soft penalty; TRPO's is a hard limit.)
 
+Putting the pieces together, one PPO step for an LLM looks like this. Two networks are trained, the policy and the critic. Two parts stay fixed: the reference model and the reward.
+
+![PPO for LLMs: the policy generates a response; a frozen reference model gives a KL penalty, the reward scores the answer, and a trained critic predicts expected reward; these combine into advantages, the clipped PPO loss updates the policy, and the critic is trained on actual returns](/blog/rl/ppo_models.png)
+
 #### 6.1.5 GRPO: fixes "PPO needs a costly second network (the critic)"
 
 Step back and look at what that critic costs. It's a second model roughly as large as the policy, which for LLMs means it **roughly doubles your memory footprint and a big chunk of your compute**: you're forwarding *and* backpropagating two giant networks every step. It has to be trained, so it adds its own loss and hyperparameters. And it's a circular problem: early in training the critic's predictions are poor, so your advantages are poor, so the policy gets noisy updates, and a critic that mis-estimates can destabilize the whole run.
