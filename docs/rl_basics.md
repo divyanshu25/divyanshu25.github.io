@@ -412,17 +412,17 @@ Step back and look at what that critic costs. It's a second model roughly as lar
 
 #### 6.1.6 DAPO: fixes "scaling up long-reasoning runs"
 
-**DAPO** (Decoupled Clip and Dynamic sampling Policy Optimization, from ByteDance) is GRPO with four engineering fixes that address specific failure modes at scale. The full details are in the [DAPO paper](https://arxiv.org/abs/2503.14476); here's the intuition for each:
+**DAPO** (Decoupled Clip and Dynamic sampling Policy Optimization, from ByteDance) is GRPO plus four fixes. Each one solves a specific problem that shows up when you train long-reasoning models at scale. The full details are in the [DAPO paper](https://arxiv.org/abs/2503.14476). Here is the problem and the fix for each.
 
-1. **Clip-Higher**: PPO's symmetric clip $[0.8, 1.2]$ limits how fast any token's probability can grow, which hurts exploration — the model converges to a narrow set of confident responses and stops trying new things. DAPO loosens only the upper bound, so rare-but-good tokens can still climb quickly.
+1. **Clip-Higher.** *Problem:* the clip $[0.8, 1.2]$ caps how much a token's probability can grow in one update. A rare token at 1% can reach 1.2% at most, so good but unlikely tokens rise very slowly. The model settles on a few confident answers and stops exploring. *Fix:* raise only the upper bound (the paper uses 1.28) and keep the lower bound at 0.8.
 
-2. **Dynamic Sampling**: when every completion in a group gets the same reward (all correct, or all wrong), the advantages are all zero and the group contributes no gradient. These are wasted rollouts. DAPO skips such groups and keeps sampling until the batch has a healthy mix of wins and losses.
+2. **Dynamic Sampling.** *Problem:* if every answer in a group gets the same reward (all right or all wrong), every advantage is zero. The group gives no gradient, and its rollouts are wasted. *Fix:* drop these groups and keep sampling new questions until the batch is full of groups with mixed results.
 
-3. **Token-Level Loss**: divides the loss by total tokens, not total sequences. Without this, a 50-token response and a 500-token response each count as "one example," so each token in the long response gets a tenth of the weight. The model then learns less from good long reasoning and under-penalizes bad long outputs such as repetition.
+3. **Token-Level Loss.** *Problem:* GRPO averages the loss within each response first, so a 50-token response and a 500-token response count the same. Each token in the long response then gets a tenth of the weight. Good long reasoning is under-rewarded, and bad long output such as repetition is under-punished. *Fix:* average over all tokens in the batch, so every token counts the same.
 
-4. **Overlong Reward Shaping**: if a response hits the length limit mid-generation and gets cut off, a hard penalty is unfair, the model had no way to know it was about to be truncated. DAPO softens or removes the penalty for truncated responses to keep the reward signal clean.
+4. **Overlong Reward Shaping.** *Problem:* a response that hits the length limit is cut off and usually gets a penalty. But the reasoning before the cut may have been good, so the penalty is noise in the reward. *Fix:* either leave truncated responses out of the loss, or use a soft penalty that grows gradually as a response gets close to the limit.
 
-These fixes matter most when training on long chain-of-thought tasks at scale. For short, simple tasks with a clean verifiable reward, you can usually skip them.
+These fixes matter most for long chain-of-thought training at scale. For short tasks with a clean, checkable reward, you can usually skip them.
 
 ---
 
