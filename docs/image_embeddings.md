@@ -28,8 +28,6 @@ similar = same textual description       (CLIP, SigLIP: language as supervisor)
 similar = same image, viewed differently (DINO family: the image supervises itself)
 ```
 
-The rest of this post builds each answer from scratch, shows where it falls short, and follows what came next, until the whole zoo fits into one family tree.
-
 ---
 
 ## 2. The old way: supervised pretraining, and its ceiling
