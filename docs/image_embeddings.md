@@ -1,6 +1,6 @@
 # Image Embeddings, from First Principles
 
-*A from-scratch primer on the vision encoder zoo: CLIP, SigLIP, DINOv2, DINOv3 and related models. Assumes you understand transformers and supervised training, and nothing past that.*
+*A from-scratch primer on the main vision encoders: CLIP, SigLIP, DINOv2, DINOv3 and related models. Assumes you understand transformers and supervised training, and nothing past that.*
 
 ---
 
@@ -16,9 +16,9 @@ Once you have that, many vision tasks become simple:
 - **Multimodal LLMs**: the "vision" in every vision-language model (VLM) is an embedding model attached to a large language model (LLM).
 - **Dense tasks**: segmentation, depth, tracking. If the encoder gives you a good vector *per patch*, not just per image, these become linear probes too.
 
-So the encoder is the interesting part. What makes the field confusing from the outside is that there is a zoo of them (CLIP, SigLIP, SigLIP 2, DINO, DINOv2, DINOv3, MAE, SimCLR, BYOL, iBOT, I-JEPA), and they all claim to produce "good representations." What does *good* mean?
+So the encoder is the interesting part. What makes the field confusing from the outside is that there are many of them (CLIP, SigLIP, SigLIP 2, DINO, DINOv2, DINOv3, MAE, SimCLR, BYOL, iBOT, I-JEPA), and they all claim to produce "good representations." What does *good* mean?
 
-> **Note:** Throughout this post we'll use one running example. You have a photo of **a golden retriever standing on a beach at sunset**. Which images should be *near* it in embedding space? Another golden retriever, indoors? A different dog on the same beach? The same scene, but zoomed into just the dog's face? A cat on a beach? There is no correct answer. **"Similar" is not a property of images; it's a choice.** Every model in the zoo is one particular answer to the question: *who gets to define what "similar" means?*
+> **Note:** Throughout this post we'll use one running example. You have a photo of **a golden retriever standing on a beach at sunset**. Which images should be *near* it in embedding space? Another golden retriever, indoors? A different dog on the same beach? The same scene, but zoomed into just the dog's face? A cat on a beach? There is no correct answer. **"Similar" is not a property of images; it's a choice.** Every one of these models is one particular answer to the question: *who gets to define what "similar" means?*
 
 That question organizes this post. There are three answers:
 
@@ -34,7 +34,11 @@ similar = same image, viewed differently (DINO family: the image supervises itse
 
 For most of the 2010s the recipe was: train a classifier on ImageNet (1.28M images, 1000 classes), then **remove the final classification layer** and keep the penultimate activations as your embedding. Nobody designed this as an embedding method. It's a byproduct: to separate 1000 classes, the network is forced to arrange images meaningfully in its last hidden layer, and that arrangement transfers to other tasks surprisingly well.
 
-This matters, because it sets the template for everything that follows: **you never train an embedding directly. You train the network to do some task, and the embedding is a byproduct.** The entire zoo is just different choices of task.
+![Supervised pretraining: an ImageNet image goes through the network; the last hidden layer is kept as the embedding and the final 1000-class classification layer is removed after training](/blog/image-embeddings/supervised_penultimate.png)
+
+**Fig. 1:** *The network is trained to classify ImageNet images into 1000 classes. After training, the final classification layer is removed, and the activations of the last hidden layer are kept as the embedding.*
+
+This matters, because it sets the template for everything that follows: **you never train an embedding directly. You train the network to do some task, and the embedding is a byproduct.** The models in this post differ only in their choice of task.
 
 So what's wrong with the classification task? Two things, and they're both about the labels.
 
@@ -44,7 +48,7 @@ So what's wrong with the classification task? Two things, and they're both about
 
 That's the ceiling: **an embedding trained on labels can never be richer than the labels.**
 
-There are two ways around it, and they define the two main families of the zoo:
+There are two ways around it, and they define the two main families of models:
 
 - **Route A: find cheaper, richer labels.** The internet has billions of images that come with *free text*: alt-text, captions, surrounding words. Use language as the supervisor. This leads to **CLIP and SigLIP**.
 - **Route B: use no labels at all.** Make the image supervise itself. This leads to **DINO, DINOv2, and DINOv3**.
@@ -78,7 +82,7 @@ Now build the $N \times N$ matrix of all pairwise similarities: $S_{ij} = u_i \c
 
 ![The N by N similarity matrix: diagonal cells are true pairs pushed up, all other cells are mismatches pushed down](/blog/image-embeddings/clip_similarity_matrix.png)
 
-**Fig. 1:** *Every batch builds this matrix. The diagonal holds the true pairs, whose similarity training pushes up; every other cell is a mismatch, pushed down.*
+**Fig. 2:** *Every batch builds this matrix. The diagonal holds the true pairs, whose similarity training pushes up; every other cell is a mismatch, pushed down.*
 
 Here is the view that makes the loss obvious. For image $i$, ask: **"which of the $N$ captions in this batch is yours?"** That is an $N$-way classification problem, and classification comes with a standard loss: softmax cross-entropy.
 
@@ -128,7 +132,7 @@ The shared image-text space gives you something earlier methods could not do nea
 
 ![Zero-shot CLIP versus a fully supervised ResNet-50 linear probe across 27 datasets](/blog/image-embeddings/clip_zero_shot_vs_resnet50.png)
 
-**Fig. 2:** *Zero-shot CLIP (ViT-L/14@336px) against a fully supervised linear classifier trained on ResNet-50 features, across the paper's 27-dataset evaluation suite. Replotted from the data in [Radford et al., 2021](https://arxiv.org/abs/2103.00020), Figure 5 and appendix Tables 9 to 11.*
+**Fig. 3:** *Zero-shot CLIP (ViT-L/14@336px) against a fully supervised linear classifier trained on ResNet-50 features, across the paper's 27-dataset evaluation suite. Replotted from the data in [Radford et al., 2021](https://arxiv.org/abs/2103.00020), Figure 5 and appendix Tables 9 to 11.*
 
 The full picture is worth a close look, because the pattern of wins and losses is exactly what the training task predicts. Zero-shot CLIP wins on 16 of the 27 datasets, and **it wins where the categories are things people write about**: cars, food, scenes, actions. **It loses where the task is specialized and nobody captions it**: satellite imagery, traffic signs, counting objects, tumor tissue. An embedding knows what its supervision talked about, and alt-text does not talk about lymph node histology.
 
@@ -206,7 +210,7 @@ That leaves CLIP's other problem: the features are global-only. The matching tas
 
 ![SigLIP 2 trains one shared vision encoder on four tasks at once: sigmoid matching, captioning, self-distillation, and masked prediction](/blog/image-embeddings/siglip2_one_encoder_four_graders.png)
 
-**Fig. 3:** *One shared encoder, four tasks pulling on it at once. Each grades a property of the embedding that the others cannot see.*
+**Fig. 4:** *One shared encoder, four tasks pulling on it at once. Each grades a property of the embedding that the others cannot see.*
 
 Two practical upgrades complete it: the training data is multilingual, and the model accepts images at their native resolution and aspect ratio instead of forcing everything into a square (a real difference for documents, screenshots, and anything tall or wide). The result is the text-aligned encoder most new systems use today: aligned to language like CLIP, cheap to train like SigLIP, and competent at dense tasks thanks to what it borrowed from Route B.
 
@@ -242,7 +246,7 @@ And because it's the same loss, **it inherits the same batch-size problem from ย
 
 ![MoCo: two views of one image go through the trained encoder and the momentum encoder; the query is pulled toward its key and pushed away from a queue of keys from recent batches](/blog/image-embeddings/moco_queue.png)
 
-**Fig. 4:** *MoCo's split of labor: the current batch supplies each query's positive; the queue of keys from recent batches supplies the negatives. The momentum encoder, a slowly updated moving average of the trained encoder, keeps the queued keys consistent.*
+**Fig. 5:** *MoCo's split of labor: the current batch supplies each query's positive; the queue of keys from recent batches supplies the negatives. The momentum encoder, a slowly updated moving average of the trained encoder, keeps the queued keys consistent.*
 
 Whichever way the negatives are supplied, one problem remains, and it belongs to the whole family: the loss actively pushes apart two *different* photos of golden retrievers on beaches, because they happen to be "negatives." The repulsion that prevents collapse is also fighting the semantics you want.
 
@@ -259,13 +263,13 @@ The training rule: **looking at view 1, the student must predict what the teache
 
 ![DINO: two augmented views of one image; the student must reproduce, from its view, the slot distribution the teacher produced from the other view](/blog/image-embeddings/dino_student_teacher.png)
 
-**Fig. 5:** *One DINO training step. The student, from its view, must reproduce the slot distribution the teacher produced from the other view. The teacher is never trained; after every step its weights only drift a little toward the student's.*
+**Fig. 6:** *One DINO training step. The student, from its view, must reproduce the slot distribution the teacher produced from the other view. The teacher is never trained; after every step its weights only drift a little toward the student's.*
 
 **Now, why doesn't this collapse?** The asymmetry removes the fast route to collapse: the teacher takes no gradients, so the optimizer cannot drag the target down into a constant the way it could when both sides were the same trained network. But a slow drift into collapse is still possible, and for an output that is a distribution over slots, collapse has exactly two forms:
 
 ![The two collapse modes: every image maps to one dominant slot, or every image maps to the uniform distribution](/blog/image-embeddings/dino_collapse_modes.png)
 
-**Fig. 6:** *The two ways a distribution over slots stops carrying information. Left: one slot wins for every image, so the output is the same confident answer no matter what comes in. Right: every slot gets the same score $1/K$ for every image, the same non-answer no matter what comes in. Different failures, same symptom: the output stopped depending on the input.*
+**Fig. 7:** *The two ways a distribution over slots stops carrying information. Left: one slot wins for every image, so the output is the same confident answer no matter what comes in. Right: every slot gets the same score $1/K$ for every image, the same non-answer no matter what comes in. Different failures, same symptom: the output stopped depending on the input.*
 
 Both fail for the same reason: the output no longer depends on the input. DINO blocks each with a correction applied to the teacher's scores, and the two corrections deliberately pull in opposite directions:
 
@@ -276,7 +280,7 @@ Centering alone pushes every output toward the uniform distribution; sharpening 
 
 ![A vague-to-confident axis with a collapse at each end; sharpening pulls right away from the uniform output, centering pulls left away from the fixed winner, and the balance point is outputs that are confident and different per image](/blog/image-embeddings/dino_centering_sharpening.png)
 
-**Fig. 7:** *The balance. Each collapse sits at one end of the vague-to-confident axis, and each correction pulls away from one of them: sharpening away from the uniform output, centering away from the fixed winner. Where they balance, the teacher must stay confident while no slot dominates across images, and the only way to do both is for different images to win different slots.*
+**Fig. 8:** *The balance. Each collapse sits at one end of the vague-to-confident axis, and each correction pulls away from one of them: sharpening away from the uniform output, centering away from the fixed winner. Where they balance, the teacher must stay confident while no slot dominates across images, and the only way to do both is for different images to win different slots.*
 
 > **Note:** It's fair to be suspicious of the whole arrangement. Why would a model chasing an average of *its own past outputs* learn anything, rather than go in circles? The intuition: an EMA of many past students behaves like an *ensemble* of them, and ensembles are reliably a bit better than any single member. So the target is always slightly ahead of the student, the student improves to catch it, which improves the teacher, which moves the target ahead again. The theory does not yet fully explain why it works so well, but it works.
 
@@ -307,7 +311,7 @@ Then came the result that made DINO well known. In a ViT, the CLS token's attent
 
 ![A pretrained DINO ViT-S/16 run on this post's hero image: the CLS attention heatmap and its overlay both pick out the robot against the cluttered workshop](/blog/image-embeddings/dino_attention_hero.png)
 
-**Fig. 8:** *A pretrained DINO ViT-S/16 run on the robot image from the top of this post, using the visualization from [Caron et al., 2021](https://arxiv.org/abs/2104.14294). Middle: the final layer's CLS-token attention over patches, averaged across heads. Right: the same map overlaid on the image. Nothing ever told the model the robot is the subject; separating foreground from clutter fell out of training.*
+**Fig. 9:** *A pretrained DINO ViT-S/16 run on the robot image from the top of this post, using the visualization from [Caron et al., 2021](https://arxiv.org/abs/2104.14294). Middle: the final layer's CLS-token attention over patches, averaged across heads. Right: the same map overlaid on the image. Nothing ever told the model the robot is the subject; separating foreground from clutter fell out of training.*
 
 ### 4.5 The answers nobody scaled: regularizers and clusters
 
@@ -327,7 +331,7 @@ The masked-modeling family fixes that with the oldest self-supervision method, t
 
 ![iBOT: the teacher sees the full patch grid, the student sees a masked one, and at each masked patch the student must predict the teacher's distribution for it](/blog/image-embeddings/ibot_masked_patches.png)
 
-**Fig. 9:** *One iBOT training step, shown for a single masked patch (outlined in red). The teacher sees the full image and produces a slot distribution for every patch; the student sees the masked image and must predict, from the surrounding context alone, the distribution the teacher assigned to each patch it cannot see. The same matching loss fires at every masked patch, 100+ times per image.*
+**Fig. 10:** *One iBOT training step, shown for a single masked patch (outlined in red). The teacher sees the full image and produces a slot distribution for every patch; the student sees the masked image and must predict, from the surrounding context alone, the distribution the teacher assigned to each patch it cannot see. The same matching loss fires at every masked patch, 100+ times per image.*
 
 Now every patch vector gets its own gradient, and dense features get trained on purpose rather than by accident. (This also explains the other task from ยง3.6: this is the "masked prediction" task SigLIP 2 imported. Both of its borrowed objectives are now accounted for.)
 
@@ -351,7 +355,7 @@ The fix is **gram anchoring**. Start from what dense tasks actually consume: not
 
 ![Gram anchoring: the frozen earlier checkpoint and the current model each produce a patch-to-patch similarity matrix for the same image, and a loss pulls the current matrix back toward the snapshot's crisp block structure](/blog/image-embeddings/dino_gram_anchoring.png)
 
-**Fig. 10:** *Gram anchoring, on six patches of our image: three from the robot (r1 to r3), three from the background (b1 to b3). In the earlier checkpoint's Gram matrix the block structure is crisp: robot patches are similar to each other, background patches to each other, and the two groups are distinct. In the still-training model that structure is smearing. The anchoring loss pulls the current Gram matrix back toward the snapshot's, while the feature values themselves stay free to improve.*
+**Fig. 11:** *Gram anchoring, on six patches of our image: three from the robot (r1 to r3), three from the background (b1 to b3). In the earlier checkpoint's Gram matrix the block structure is crisp: robot patches are similar to each other, background patches to each other, and the two groups are distinct. In the still-training model that structure is smearing. The anchoring loss pulls the current Gram matrix back toward the snapshot's, while the feature values themselves stay free to improve.*
 
 > **Note: how is the anchor checkpoint chosen?** The degradation is measurable during training: a segmentation probe on the patch features peaks around 200k iterations and then declines, even as classification keeps climbing. Any checkpoint from before that peak works as the anchor; the paper finds 100k and 200k equally good. The anchor also doesn't stay old: once the anchoring loss is active the structure stops dissolving, so the Gram teacher is refreshed every 10k iterations with the current model.
 
@@ -359,9 +363,9 @@ Ship the 7B model, distill a family of deployable sizes from it (plus a text-ali
 
 ---
 
-## 5. The map: the whole zoo on one axis
+## 5. The map: every model on one axis
 
-Step back and the whole zoo fits into one family tree:
+Step back and all of these models fit into one family tree:
 
 ```
 supervised classification            "similar = same label"
@@ -415,7 +419,7 @@ When the next new checkpoint appears, ask two questions of it (*who defines "sim
 
 ## 6. The one-paragraph version
 
-An embedding model is never trained directly: you pick a pretext task and the embedding is a byproduct, so the entire zoo is just a list of answers to *"who defines what similar means?"* Supervised pretraining says *the label list*, and is capped by it. CLIP says *language*: match images to captions with a softmax over the batch (classification with improvised classes), which gives zero-shot classification and search at the cost of giant batches and text-shaped blind spots; SigLIP swaps the softmax for independent sigmoids and frees the batch; SigLIP 2 adds generative and patch-level tasks to cover the blind spots. The DINO line says *the image itself*: make two augmented views agree without collapsing to a constant, first via negatives (SimCLR, InfoNCE again), then via self-distillation against an EMA of your own past weights (DINO), extended to per-patch targets (iBOT), scaled up with curated data and distillation (DINOv2), and stabilized at 7B scale with gram anchoring (DINOv3). Text-aligned when you need to talk to the space; self-supervised when you need the space to be true to the pixels. Current work combines the two, feeding both kinds of features to VLMs and distilling both kinds of teacher into single backbones.
+An embedding model is never trained directly: you pick a pretext task and the embedding is a byproduct, so all of these models are just a list of answers to *"who defines what similar means?"* Supervised pretraining says *the label list*, and is capped by it. CLIP says *language*: match images to captions with a softmax over the batch (classification with improvised classes), which gives zero-shot classification and search at the cost of giant batches and text-shaped blind spots; SigLIP swaps the softmax for independent sigmoids and frees the batch; SigLIP 2 adds generative and patch-level tasks to cover the blind spots. The DINO line says *the image itself*: make two augmented views agree without collapsing to a constant, first via negatives (SimCLR, InfoNCE again), then via self-distillation against an EMA of your own past weights (DINO), extended to per-patch targets (iBOT), scaled up with curated data and distillation (DINOv2), and stabilized at 7B scale with gram anchoring (DINOv3). Text-aligned when you need to talk to the space; self-supervised when you need the space to be true to the pixels. Current work combines the two, feeding both kinds of features to VLMs and distilling both kinds of teacher into single backbones.
 
 ```
 supervised   ->  similar = same label                (capped by the label list)
