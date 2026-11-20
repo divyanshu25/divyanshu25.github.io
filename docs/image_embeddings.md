@@ -126,7 +126,7 @@ Train that on the 400 million image-text pairs OpenAI scraped from the internet,
 
 ### 3.3 The payoff: classification without training
 
-The shared image-text space gives you something that seemed out of reach in 2020: **classification without training**. Want a cat-vs-dog classifier? Embed the *sentences* "a photo of a cat" and "a photo of a dog", embed your image, and see which sentence it's closer to. You just built a classifier out of sentences. Any label list, any time, zero training examples. This is "zero-shot" classification, and CLIP's version of it matched a fully supervised ResNet-50 on ImageNet without seeing a single ImageNet label.
+The shared image-text space gives you something earlier methods could not do nearly as well: **classification without training**. Want a cat-vs-dog classifier? Embed the *sentences* "a photo of a cat" and "a photo of a dog", embed your image, and see which sentence it's closer to. You just built a classifier out of sentences. Any label list, any time, zero training examples. This is "zero-shot" classification, and CLIP's version of it matched a fully supervised ResNet-50 on ImageNet without seeing a single ImageNet label.
 
 ![Zero-shot CLIP versus a fully supervised ResNet-50 linear probe across 27 datasets](/blog/image-embeddings/clip_zero_shot_vs_resnet50.png)
 
