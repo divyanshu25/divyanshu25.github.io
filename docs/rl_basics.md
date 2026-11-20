@@ -82,7 +82,7 @@ Let's make that precise.
 
 ## 4. Deriving the policy gradient (the one piece of math)
 
-### 4.1 Step 1: What a "gradient" means here
+### 4.1 What a "gradient" means here
 
 If you've done SFT you already know the training loop: compute a loss, call `.backward()`, the optimizer takes a step. The gradient ($\nabla_\theta$) is just a long vector, one number per weight in the model, that says how the loss changes if you nudge that weight. Gradient *descent* steps against it to reduce the loss.
 
@@ -90,7 +90,7 @@ Here we want to *maximize* reward instead of minimize loss, so we step *along* t
 
 ---
 
-### 4.2 Step 2: The objective: maximize expected reward
+### 4.2 The objective: maximize expected reward
 
 When we say "maximize expected reward," concretely it means: over many different problems and rollouts, we want the average reward to be as high as possible. In math, if $\tau$ is one rollout (trajectory) and $R(\tau)$ is its reward:
 
@@ -102,7 +102,7 @@ We want $\nabla_\theta J(\theta)$: the gradient of this average reward with resp
 
 ---
 
-### 4.3 Step 3: A simpler idea first, and why we want more
+### 4.3 A simpler idea first, and why we want more
 
 You might think: out of 4 rollouts, if 2 got the answer right (reward=1) and 2 didn't (reward=0), why not just do SFT on the 2 correct ones? Ignore the failures, treat the successes as gold demonstrations, backpropagate normally.
 
@@ -114,7 +114,7 @@ That calls for a gradient that looks like: *(some signed weight) × (push this r
 
 ---
 
-### 4.4 Step 4: The log-derivative trick (one algebraic identity)
+### 4.4 The log-derivative trick (one algebraic identity)
 
 Before the algebra, let's make one piece of notation concrete: **what is $p_\theta(\tau)$?**
 
@@ -161,13 +161,13 @@ And now flip back to expectation notation: an integral weighted by $p_\theta(\ta
 
 $$\boxed{\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\big[ R(\tau)\, \nabla_\theta \log p_\theta(\tau) \big]}$$
 
-The gradient is now an expectation, so we can estimate it by sampling rollouts and averaging. We only need to differentiate the $\log p_\theta(\tau)$ term. The trick moved the differentiation off the sampling operation and onto the log-probability, which the model computes directly. (In the next step we'll expand $\log p_\theta(\tau)$ into the per-token policy terms.)
+The gradient is now an expectation, so we can estimate it by sampling rollouts and averaging. We only need to differentiate the $\log p_\theta(\tau)$ term. The trick moved the differentiation off the sampling operation and onto the log-probability, which the model computes directly. (In the next section we'll expand $\log p_\theta(\tau)$ into the per-token policy terms.)
 
 ---
 
-### 4.5 Step 5: breaking the trajectory into tokens
+### 4.5 Breaking the trajectory into tokens
 
-The boxed result has a $\log p_\theta(\tau)$: the log-probability of the *whole trajectory*. But the network doesn't output trajectory probabilities; it outputs per-token policy probabilities $\pi_\theta(a_t \mid s_t)$. So we expand the trajectory term using the relationship from Step 4:
+The boxed result has a $\log p_\theta(\tau)$: the log-probability of the *whole trajectory*. But the network doesn't output trajectory probabilities; it outputs per-token policy probabilities $\pi_\theta(a_t \mid s_t)$. So we expand the trajectory term using the relationship from §4.4:
 
 $$p_\theta(\tau) = \prod_{t} \pi_\theta(a_t \mid s_t)$$
 
@@ -203,20 +203,14 @@ That's REINFORCE. The gradient is computable because $\log \pi_\theta(a_t \mid s
 ---
 
 ### 4.7 The connection to SFT
-For an autoregressive decoder (like the GPT here), the cross-entropy loss over one sequence is:
 
-$$\mathcal{L}(\theta) = -\sum_{t=1}^{T} \log \pi_\theta(a_t \mid a_{<t})$$
+For an autoregressive decoder (like the GPT here), the SFT cross-entropy loss over one sequence is:
 
-where $a_t$ is the true/target token at position $t$, and $a_{<t} = a_1, \dots, a_{t-1}$ is everything before it (the context). Usually you average instead of sum:
+$$\mathcal{L}_\text{SFT}(\theta) = -\sum_{t=1}^{T} \log \pi_\theta(a_t \mid a_{<t})$$
 
-$$\mathcal{L}(\theta) = -\frac{1}{T}\sum_{t=1}^{T} \log \pi_\theta(a_t \mid a_{<t})$$
+where $a_t$ is the target token at position $t$ and $a_{<t}$ is everything before it (the context $s_t$). In practice you average over tokens instead of summing.
 
-
-In SFT the training loss for one token is:
-
-$$\mathcal{L}_\text{SFT} = -\log \pi_\theta(a_t \mid s_t)$$
-
-Minimizing that is identical to maximizing $\log \pi_\theta(a_t \mid s_t)$, which is identical to the gradient direction above. So the per-token gradient in RL is **exactly the same computation as SFT**. The one difference:
+Minimizing that loss is the same as maximizing $\sum_t \log \pi_\theta(a_t \mid s_t)$, so its gradient is $\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)$: the same per-token term as in REINFORCE. So the per-token gradient in RL is **exactly the same computation as SFT**. The one difference:
 
 ```
 SFT gradient:    gradient of log π  ×  1           (constant, always reinforce)
@@ -229,7 +223,7 @@ SFT is the special case where every demonstration gets reward = 1 (it's shown as
 
 ## 5. The variance problem, and the one trick that fixes it
 
-REINFORCE works. But if you actually run it, it learns *slowly* and the training curve is very noisy. The cause is **variance**, and it has a one-line fix. Let's look at the problem first.
+REINFORCE works. But if you run it, it learns *slowly* and the training curve is very noisy. The cause is **variance**: the gradient we estimate from one batch of rollouts swings a lot from batch to batch, so many steps point in poor directions. It has a one-line fix. Let's look at where the noise comes from first.
 
 Here's a problem with the gradient we just derived. On GSM8K the reward is always 0 or 1, **never negative**. So trace what the gradient does to each rollout:
 
@@ -238,9 +232,11 @@ Here's a problem with the gradient we just derived. On GSM8K the reward is alway
 
 **You never push anything down.** Every step is "make these sequences more likely," and the only signal the model gets is how *hard* it gets pushed up. A correct rollout gets a nudge of 1; a wrong rollout contributes nothing. The softmax is normalized, so pushing correct responses up does lower everything else, but only indirectly. It's like coaching chess by only saying "nice!" and never "no, not that."
 
-There's a second problem. This binary signal tells the model nothing about *how much* better one correct rollout is compared to another, or how much it still needs to learn on easy questions it already knows well. Take a question the model already gets right 90% of the time. Sample 16 rollouts → ~14 correct, ~2 wrong. The gradient reinforces all 14 correct ones at full strength, even though the model *already knows how to solve this*. Almost the whole gradient goes to behavior the model has already learned, while the 2 informative failures contribute nothing. The update is large but teaches almost nothing. **That's the variance problem: the size of the gradient has almost nothing to do with how much there is to learn.**
+There's a second problem. This binary signal tells the model nothing about *how much* better one correct rollout is compared to another, or how much it still needs to learn on easy questions it already knows well. Take a question the model already gets right 90% of the time. Sample 16 rollouts → ~14 correct, ~2 wrong. The gradient reinforces all 14 correct ones at full strength, even though the model *already knows how to solve this*. Almost the whole gradient goes to behavior the model has already learned, while the 2 informative failures contribute nothing. The update is large but teaches almost nothing.
 
-The fix is a **baseline**. Instead of scaling by the raw reward, scale by reward *minus some reference value* $b$:
+Both problems come from scaling the gradient by the raw reward. Its size then depends on how often the model happens to be right in this batch, and very little on what it has left to learn. **That is the variance problem: large terms that mostly cancel in expectation, added to a small useful signal.**
+
+The fix is a **baseline**. It removes the large common part of the reward and keeps the part that differs between rollouts. Instead of scaling by the raw reward, scale by reward *minus some reference value* $b$:
 
 $$\nabla_\theta J = \mathbb{E}\Big[ (R(\tau) - b) \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \Big]$$
 
@@ -276,6 +272,8 @@ So the recipe becomes:
 
 This works well because the baseline is *per-question and self-calibrating*. An easy question where 15/16 rollouts succeed has a high baseline (~0.94), so the lone failure gets a large negative advantage ("you failed an easy one, fix that") while the successes get a tiny positive nudge ("nice, but everyone did that"). A hard question where only 1/16 succeeds has a low baseline (~0.06), so that one lucky correct rollout gets a big positive advantage ("this worked, do more of it"). The signal automatically focuses on the rollouts that are *surprising relative to their peers*. No value network, no extra model: just sample a bunch and subtract the mean.
 
+![Advantages for an easy question with 15 of 16 rollouts correct and a hard question with 1 of 16 correct: the rare outcome gets the large push](/blog/rl/group_baseline.png)
+
 In code it's two lines:
 
 ```python
@@ -287,6 +285,10 @@ That's the core of GRPO: `rewards - rewards.mean()`.
 
 Two details. The GRPO paper also divides by the group's standard deviation, so advantages have a similar scale across questions. And the group mean includes the rollout's own reward, so strictly it breaks the "does not depend on the rollout" condition. The effect is small: it scales the gradient by $(1 - 1/G)$ and leaves its direction unchanged.
 
+Put together, one training step looks like this:
+
+![The RL training loop: sample a group of attempts, score them, subtract the group mean, update the model, and repeat](/blog/rl/rl_loop.png)
+
 ---
 
 ## 6. From REINFORCE to GRPO: the family tree
@@ -295,13 +297,15 @@ We've already built the entire algorithm: REINFORCE + a group-mean baseline. Tha
 
 ### 6.1 The family tree: each algorithm fixes a problem in the last one
 
-These acronyms (REINFORCE, TRPO, PPO, GRPO, DAPO) aren't five rival algorithms you study separately. They're **one** algorithm, REINFORCE, with a chain of fixes added. Every node below is "the previous one **plus** a fix for the specific problem it created." Here's the whole chain on one line; then we walk it node by node:
+Every node below is "the previous one **plus** a fix for the specific problem it created." Here's the whole chain; then we walk it node by node:
 
 1. **REINFORCE** — the base algorithm. One gradient step per batch of rollouts.
 2. **+ Importance sampling → TRPO** — lets you reuse a batch for multiple steps, but needs a trust region to stop the policy from drifting too far.
 3. **+ PPO clip** — replaces TRPO's expensive second-order trust region with a cheap one-line clamp. Similar protection, much simpler.
 4. **+ Group baseline → GRPO** — removes PPO's learned value network. Uses the mean reward across a group of rollouts for the same question as the baseline instead.
 5. **+ DAPO tweaks** — four practical fixes for large-scale, long chain-of-thought training (asymmetric clip, dynamic sampling, token-level normalization, overlong reward shaping).
+
+![The family tree: REINFORCE, then importance sampling, TRPO, PPO, GRPO and DAPO, each adding one fix to the one before](/blog/rl/family_tree.png)
 
 *If that felt like a lot, don't worry, we'll walk through each one step by step.*
 
@@ -385,6 +389,8 @@ To read the `min`, consider four cases: ratio can be inside or outside `[0.8, 1.
 - **Good update made a mistake** (A>0, ratio<0.8, model *decreased* a good token's prob): `min(0.6·A, 0.8·A) = 0.6·A`, picks the *unclipped* term, gradient flows, corrects back up. ✓
 
 The pattern: **clipping only kicks in when the ratio moved in the same direction as the advantage (a beneficial update that's gone far enough). When the ratio moved in the wrong direction, a mistake, the `min` picks the unclipped term and lets the gradient fix it.** With just the clipped term, cases 2 and 4 would have zero gradient and the mistakes would go uncorrected.
+
+![The PPO objective as a function of the ratio, for a positive and a negative advantage: flat where a helpful update has gone far enough, sloped where a harmful one must be corrected](/blog/rl/ppo_clip.png)
 
 Another way to see it: `min(ratio·A, clip·A)` is always ≤ `ratio·A`, making it a **pessimistic lower bound** on the unclipped objective: you never over-claim progress, but you never block corrections. The result is a first-order version of TRPO's trust region, with no KL computed and no line search.
 
