@@ -379,6 +379,10 @@ The mechanics of how TRPO estimates and enforces this budget (Fisher Information
 
 **1. The advantage: and the critic that produces it.** PPO uses a learned baseline: a second network called the **critic** (or value network) that takes the current state, the prompt plus tokens generated so far, and predicts how much reward to expect from here. The advantage is then "what you actually got minus what the critic predicted." A positive advantage means the rollout did better than expected; negative means it did worse. PPO further refines this into per-token advantages using **GAE** (Generalized Advantage Estimation), which assigns credit more carefully across individual tokens rather than giving every token the same global number. A full treatment of GAE is out of scope here; see the [GAE paper](https://arxiv.org/abs/1506.02438) and the [PPO paper](https://arxiv.org/abs/1707.06347). The key **cost**: the critic is an extra model to train alongside the policy. If it is a separate network the size of the policy, it roughly doubles memory and compute. GRPO removes it next.
 
+Here is where the critic sits in one PPO step for an LLM. Two networks are trained, the policy and the critic. Two parts stay fixed: the reference model and the reward. The clip and the reference model are explained below.
+
+![PPO for LLMs: the policy generates a response; a frozen reference model gives a KL penalty, the reward scores the answer, and a trained critic predicts expected reward; these combine into advantages, the clipped PPO loss updates the policy, and the critic is trained on actual returns](/blog/rl/ppo_models.png)
+
 **2. The clip: a cheap stand-in for TRPO's trust region.** Rather than measure KL and solve for a step size, PPO removes the reward for pushing any token's ratio outside $[1-\epsilon,\,1+\epsilon] = [0.8,\,1.2]$ (with $\epsilon \approx 0.2$):
 
 $$\mathcal{L}^{\text{PPO}} = \min\!\left(\underbrace{\text{ratio} \cdot A}_{\text{term 1: unclipped}},\quad \underbrace{\text{clip}(\text{ratio},\ 1{-}\epsilon,\ 1{+}\epsilon) \cdot A}_{\text{term 2: ratio clamped to } [0.8,\,1.2]}\right), \quad \epsilon = 0.2$$
@@ -401,10 +405,6 @@ Another way to see it: `min(ratio·A, clip·A)` is always ≤ `ratio·A`, making
 **The payoff** is the data reuse we were after all along: with the clip as a limit you can safely run *several* gradient steps over the same batch of rollouts before throwing it out and resampling. Getting many safe steps from each expensive batch is the main benefit of PPO.
 
 One more thing usually bundled into PPO-for-LLMs, while we're here: the **KL-to-reference penalty.** Bounding the step size stops *blow-ups*, but not a slower failure: over many steps a policy chasing a loose or learned reward will drift toward degenerate text that scores high and reads like nonsense ("reward hacking"). The fix is to keep a *frozen copy* of the original SFT model and add a penalty for drifting too far from *it*. Careful: this is a **different KL from TRPO's**, and the two are easy to confuse; TRPO bounds the gap between *consecutive* policies (step to step), while this one anchors to a *fixed* reference for the whole run. One limits how fast you move; the other keeps you near the starting model. (This one is a soft penalty; TRPO's is a hard limit.)
-
-Putting the pieces together, one PPO step for an LLM looks like this. Two networks are trained, the policy and the critic. Two parts stay fixed: the reference model and the reward.
-
-![PPO for LLMs: the policy generates a response; a frozen reference model gives a KL penalty, the reward scores the answer, and a trained critic predicts expected reward; these combine into advantages, the clipped PPO loss updates the policy, and the critic is trained on actual returns](/blog/rl/ppo_models.png)
 
 #### 6.1.5 GRPO: fixes "PPO needs a costly second network (the critic)"
 
