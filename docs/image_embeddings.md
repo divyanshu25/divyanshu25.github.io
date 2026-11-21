@@ -179,6 +179,10 @@ SigLIP's sigmoid: grade each CELL as its own yes/no   -> any cell can be
 
 **Why this frees the batch**: each cell's loss is now **self-contained**. There is no denominator summing over the row, so no cell needs to know about any other cell, and the giant $N \times N$ matrix never has to exist in one place. The SigLIP implementation exploits that directly. Each GPU holds its own slice of images and texts, and scores its images against its own texts first. Then every GPU hands its text embeddings to its neighbor, scores its images against the chunk it just received, and repeats until every text chunk has visited every GPU. The loss just accumulates chunk by chunk: the same $N^2$ pairs get scored in the end, but each device only ever holds one small block of the matrix at a time, and the only communication is neighbor-to-neighbor hand-offs instead of an all-gather across the whole cluster.
 
+![SigLIP training on four GPUs: each GPU keeps its own images, scores them against its own captions first, then the caption embeddings are passed to the neighboring GPU three times until every image has met every caption](/blog/image-embeddings/siglip_ring.png)
+
+**Fig. 5:** *How the data moves in one SigLIP training step, shown with 4 GPUs. Images stay where they are. Each GPU scores its images against its own captions, then the caption embeddings are passed one GPU to the right and scored again. After 3 hops every image has met every caption. Compare with Fig. 4: no GPU ever receives all N embeddings at once.*
+
 Image embeddings never move: a pair is scored on whichever device holds the image, so it is enough for the text embeddings alone to travel. A visiting text meeting a foreign image is exactly what we want (those cross pairs are the negatives); each text meets its own image just once, on its home device's diagonal. In pseudocode, per device:
 
 ```python
@@ -214,7 +218,7 @@ That leaves CLIP's other problem: the features are global-only. The matching tas
 
 ![SigLIP 2 trains one shared vision encoder on four tasks at once: sigmoid matching, captioning, self-distillation, and masked prediction](/blog/image-embeddings/siglip2_one_encoder_four_graders.png)
 
-**Fig. 5:** *One shared encoder, four tasks pulling on it at once. Each grades a property of the embedding that the others cannot see.*
+**Fig. 6:** *One shared encoder, four tasks pulling on it at once. Each grades a property of the embedding that the others cannot see.*
 
 Two practical upgrades complete it: the training data is multilingual, and the model accepts images at their native resolution and aspect ratio instead of forcing everything into a square (a real difference for documents, screenshots, and anything tall or wide). The result is the text-aligned encoder most new systems use today: aligned to language like CLIP, cheap to train like SigLIP, and competent at dense tasks thanks to what it borrowed from Route B.
 
@@ -250,7 +254,7 @@ And because it's the same loss, **it inherits the same batch-size problem from ย
 
 ![MoCo: two views of one image go through the trained encoder and the momentum encoder; the query is pulled toward its key and pushed away from a queue of keys from recent batches](/blog/image-embeddings/moco_queue.png)
 
-**Fig. 6:** *MoCo's split of labor: the current batch supplies each query's positive; the queue of keys from recent batches supplies the negatives. The momentum encoder, a slowly updated moving average of the trained encoder, keeps the queued keys consistent.*
+**Fig. 7:** *MoCo's split of labor: the current batch supplies each query's positive; the queue of keys from recent batches supplies the negatives. The momentum encoder, a slowly updated moving average of the trained encoder, keeps the queued keys consistent.*
 
 Whichever way the negatives are supplied, one problem remains, and it belongs to the whole family: the loss actively pushes apart two *different* photos of golden retrievers on beaches, because they happen to be "negatives." The repulsion that prevents collapse is also fighting the semantics you want.
 
@@ -267,13 +271,13 @@ The training rule: **looking at view 1, the student must predict what the teache
 
 ![DINO: two augmented views of one image; the student must reproduce, from its view, the slot distribution the teacher produced from the other view](/blog/image-embeddings/dino_student_teacher.png)
 
-**Fig. 7:** *One DINO training step. The student, from its view, must reproduce the slot distribution the teacher produced from the other view. The teacher is never trained; after every step its weights only drift a little toward the student's.*
+**Fig. 8:** *One DINO training step. The student, from its view, must reproduce the slot distribution the teacher produced from the other view. The teacher is never trained; after every step its weights only drift a little toward the student's.*
 
 **Now, why doesn't this collapse?** The asymmetry removes the fast route to collapse: the teacher takes no gradients, so the optimizer cannot drag the target down into a constant the way it could when both sides were the same trained network. But a slow drift into collapse is still possible, and for an output that is a distribution over slots, collapse has exactly two forms:
 
 ![The two collapse modes: every image maps to one dominant slot, or every image maps to the uniform distribution](/blog/image-embeddings/dino_collapse_modes.png)
 
-**Fig. 8:** *The two ways a distribution over slots stops carrying information. Left: one slot wins for every image, so the output is the same confident answer no matter what comes in. Right: every slot gets the same score $1/K$ for every image, the same non-answer no matter what comes in. Different failures, same symptom: the output stopped depending on the input.*
+**Fig. 9:** *The two ways a distribution over slots stops carrying information. Left: one slot wins for every image, so the output is the same confident answer no matter what comes in. Right: every slot gets the same score $1/K$ for every image, the same non-answer no matter what comes in. Different failures, same symptom: the output stopped depending on the input.*
 
 Both fail for the same reason: the output no longer depends on the input. DINO blocks each with a correction applied to the teacher's scores, and the two corrections deliberately pull in opposite directions:
 
@@ -284,7 +288,7 @@ Centering alone pushes every output toward the uniform distribution; sharpening 
 
 ![A vague-to-confident axis with a collapse at each end; sharpening pulls right away from the uniform output, centering pulls left away from the fixed winner, and the balance point is outputs that are confident and different per image](/blog/image-embeddings/dino_centering_sharpening.png)
 
-**Fig. 9:** *The balance. Each collapse sits at one end of the vague-to-confident axis, and each correction pulls away from one of them: sharpening away from the uniform output, centering away from the fixed winner. Where they balance, the teacher must stay confident while no slot dominates across images, and the only way to do both is for different images to win different slots.*
+**Fig. 10:** *The balance. Each collapse sits at one end of the vague-to-confident axis, and each correction pulls away from one of them: sharpening away from the uniform output, centering away from the fixed winner. Where they balance, the teacher must stay confident while no slot dominates across images, and the only way to do both is for different images to win different slots.*
 
 > **Note:** It's fair to be suspicious of the whole arrangement. Why would a model chasing an average of *its own past outputs* learn anything, rather than go in circles? The intuition: an EMA of many past students behaves like an *ensemble* of them, and ensembles are reliably a bit better than any single member. So the target is always slightly ahead of the student, the student improves to catch it, which improves the teacher, which moves the target ahead again. The theory does not yet fully explain why it works so well, but it works.
 
@@ -315,7 +319,7 @@ Then came the result that made DINO well known. In a ViT, the CLS token's attent
 
 ![A pretrained DINO ViT-S/16 run on this post's hero image: the CLS attention heatmap and its overlay both pick out the robot against the cluttered workshop](/blog/image-embeddings/dino_attention_hero.png)
 
-**Fig. 10:** *A pretrained DINO ViT-S/16 run on the robot image from the top of this post, using the visualization from [Caron et al., 2021](https://arxiv.org/abs/2104.14294). Middle: the final layer's CLS-token attention over patches, averaged across heads. Right: the same map overlaid on the image. Nothing ever told the model the robot is the subject; separating foreground from clutter fell out of training.*
+**Fig. 11:** *A pretrained DINO ViT-S/16 run on the robot image from the top of this post, using the visualization from [Caron et al., 2021](https://arxiv.org/abs/2104.14294). Middle: the final layer's CLS-token attention over patches, averaged across heads. Right: the same map overlaid on the image. Nothing ever told the model the robot is the subject; separating foreground from clutter fell out of training.*
 
 ### 4.5 The answers nobody scaled: regularizers and clusters
 
@@ -335,7 +339,7 @@ The masked-modeling family fixes that with the oldest self-supervision method, t
 
 ![iBOT: the teacher sees the full patch grid, the student sees a masked one, and at each masked patch the student must predict the teacher's distribution for it](/blog/image-embeddings/ibot_masked_patches.png)
 
-**Fig. 11:** *One iBOT training step, shown for a single masked patch (outlined in red). The teacher sees the full image and produces a slot distribution for every patch; the student sees the masked image and must predict, from the surrounding context alone, the distribution the teacher assigned to each patch it cannot see. The same matching loss fires at every masked patch, 100+ times per image.*
+**Fig. 12:** *One iBOT training step, shown for a single masked patch (outlined in red). The teacher sees the full image and produces a slot distribution for every patch; the student sees the masked image and must predict, from the surrounding context alone, the distribution the teacher assigned to each patch it cannot see. The same matching loss fires at every masked patch, 100+ times per image.*
 
 Now every patch vector gets its own gradient, and dense features get trained on purpose rather than by accident. (This also explains the other task from ยง3.6: this is the "masked prediction" task SigLIP 2 imported. Both of its borrowed objectives are now accounted for.)
 
@@ -359,7 +363,7 @@ The fix is **gram anchoring**. Start from what dense tasks actually consume: not
 
 ![Gram anchoring: the frozen earlier checkpoint and the current model each produce a patch-to-patch similarity matrix for the same image, and a loss pulls the current matrix back toward the snapshot's crisp block structure](/blog/image-embeddings/dino_gram_anchoring.png)
 
-**Fig. 12:** *Gram anchoring, on six patches of our image: three from the robot (r1 to r3), three from the background (b1 to b3). In the earlier checkpoint's Gram matrix the block structure is crisp: robot patches are similar to each other, background patches to each other, and the two groups are distinct. In the still-training model that structure is smearing. The anchoring loss pulls the current Gram matrix back toward the snapshot's, while the feature values themselves stay free to improve.*
+**Fig. 13:** *Gram anchoring, on six patches of our image: three from the robot (r1 to r3), three from the background (b1 to b3). In the earlier checkpoint's Gram matrix the block structure is crisp: robot patches are similar to each other, background patches to each other, and the two groups are distinct. In the still-training model that structure is smearing. The anchoring loss pulls the current Gram matrix back toward the snapshot's, while the feature values themselves stay free to improve.*
 
 > **Note: how is the anchor checkpoint chosen?** The degradation is measurable during training: a segmentation probe on the patch features peaks around 200k iterations and then declines, even as classification keeps climbing. Any checkpoint from before that peak works as the anchor; the paper finds 100k and 200k equally good. The anchor also doesn't stay old: once the anchoring loss is active the structure stops dissolving, so the Gram teacher is refreshed every 10k iterations with the current model.
 
