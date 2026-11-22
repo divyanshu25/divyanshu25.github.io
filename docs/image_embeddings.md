@@ -363,8 +363,6 @@ The fix is **gram anchoring**. Start from what dense tasks actually consume: not
 
 **Fig. 12:** *Gram anchoring, on six patches of our image: three from the robot (r1 to r3), three from the background (b1 to b3). In the earlier checkpoint's Gram matrix the block structure is crisp: robot patches are similar to each other, background patches to each other, and the two groups are distinct. In the still-training model that structure is smearing. The anchoring loss pulls the current Gram matrix back toward the snapshot's, while the feature values themselves stay free to improve.*
 
-Ship the 7B model, distill a family of deployable sizes from it (plus a text-aligned variant, so text-to-image retrieval works too), and you have the current endpoint of Route B: one frozen backbone whose features beat *specialized, fine-tuned* pipelines on dense benchmarks, detection and segmentation among them. That is further than supervised pretraining ever got.
-
 ---
 
 ## 5. The map: every model on one axis
