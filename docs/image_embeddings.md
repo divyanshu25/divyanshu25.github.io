@@ -100,7 +100,7 @@ Two details worth unpacking:
 
 **The temperature $\tau$.** Dot products of unit vectors live in $[-1, 1]$, a very narrow range for logits; the softmax over it is nearly uniform and the gradient is weak. So you divide by a learned temperature $\tau$ (CLIP initializes it to $0.07$ and clamps the resulting logit scale at 100 for stability), which stretches the range enough for the softmax to separate the scores. It's just a logit scale.
 
-**The classes are improvised, and that changes everything.** Supervised pretraining had 1000 fixed classes chosen by a committee. Here, every batch creates a new classification problem whose "classes" are whatever $N$ captions it happens to contain, and CLIP trained with $N = 32{,}768$, so each step poses a fresh 32,768-way problem. Same engine as classification, but the label space is no longer a fixed list: anything that can be written can be a class.
+**The classes are improvised.** Supervised pretraining had 1000 fixed classes chosen by a committee. Here, every batch creates a new classification problem whose "classes" are whatever $N$ captions it happens to contain, and CLIP trained with $N = 32{,}768$, so each step poses a fresh 32,768-way problem. Same engine as classification, but the label space is no longer a fixed list: anything that can be written can be a class.
 
 ```
 supervised:  cross-entropy over 1000 fixed classes      (the label list is the ceiling)
@@ -140,9 +140,9 @@ Retrieval works the same way: text-to-image search is now a dot product. This is
 
 ### 3.4 The two problems CLIP leaves open
 
-So why isn't CLIP the end of the story? Because it leaves two problems open: one about the infrastructure it takes to train, and a deeper one about what the embedding can and cannot see.
+CLIP leaves two problems open: one about the infrastructure it takes to train, and a deeper one about what the embedding can and cannot see.
 
-**First: the batch is the label space, so the batch must be enormous.** Look at the denominator of the softmax: $\sum_j e^{S_{ij}/\tau}$. The "wrong answers" the model learns from are *the other captions in the batch*. With a batch of 128, discriminating your caption from 127 others is too easy; the task only gets hard, and the embedding only gets sharp, when there are tens of thousands of near-miss distractors. So CLIP-style training runs at batch sizes of **32,768**, and because the softmax needs a *full row* of the similarity matrix, every GPU must gather **every other GPU's embeddings** each step (an all-gather across the whole cluster) just to normalize. The loss function is dictating your infrastructure.
+**First: the batch is the label space, so the batch must be enormous.** Look at the denominator of the softmax: $\sum_j e^{S_{ij}/\tau}$. The "wrong answers" the model learns from are *the other captions in the batch*. With a batch of 128, discriminating your caption from 127 others is too easy; the task only gets hard, and the embedding only gets sharp, when there are tens of thousands of near-miss distractors. So CLIP-style training runs at batch sizes of **32,768**, and because the softmax needs a *full row* of the similarity matrix, every GPU must gather **every other GPU's embeddings** each step (an all-gather across the whole cluster) just to normalize. So the choice of loss decides how much the GPUs must communicate.
 
 ![CLIP training on four GPUs: each GPU encodes its own slice of the batch, an all-gather copies all N embeddings to every GPU, and each GPU then scores its own images against all N captions](/blog/image-embeddings/clip_all_gather.png)
 
@@ -208,7 +208,7 @@ And quality no longer *depends* on a huge batch for normalization: SigLIP matche
 
 Notice the pattern, because you'll see it again: **keep the task, swap the normalization.** Nothing about "language supervises vision" changed; one line of loss math did.
 
-### 3.6 SigLIP 2: one task was never going to be enough
+### 3.6 SigLIP 2: more tasks on the same encoder
 
 That leaves CLIP's other problem: the features are global-only. The matching task grades one summary vector per image, so nothing in training ever grades *where* things are. No tweak to the matching loss can change that, because the limit comes from the task, not the loss. So **[SigLIP 2](https://arxiv.org/abs/2502.14786)** (2025) changes the tasks. It trains the same encoder on several tasks at once, chosen so that every property you want in the embedding has a task that grades it:
 
@@ -248,15 +248,15 @@ The first answer reuses the mechanism CLIP already relies on: pull the two views
 
 Mechanically this is **InfoNCE again, the exact boxed equation from §3.2**, with one substitution: where CLIP pairs an image with its caption, here an image is paired with *its other augmented view*, and both sides go through the same image encoder. That is all **[SimCLR](https://arxiv.org/abs/2002.05709)** (a Simple framework for Contrastive Learning of visual Representations) is: CLIP with the text tower removed and the image tower used for both sides.
 
-And because it's the same loss, **it inherits the same batch-size problem from §3.4**: the negatives come from the batch, so the batch must hold thousands of them for the task to be hard. SimCLR answered by simply paying the cost: it ran at batch 4096.
+And because it's the same loss, **it inherits the same batch-size problem from §3.4**: the negatives come from the batch, so the batch must hold thousands of them for the task to be hard. SimCLR simply paid the cost: it ran at batch 4096.
 
-**[MoCo](https://arxiv.org/abs/1911.05722)** (Momentum Contrast) answered by questioning the premise. A negative is just an embedding you push away from, and nothing says it has to come from the *current* batch. So MoCo keeps a *queue* of embeddings from the last several batches and uses those as the negatives: the model compares against tens of thousands of them while the actual batch stays small. One catch: the queued embeddings were produced by slightly older versions of the encoder, so MoCo computes them with a slowly updated moving-average copy of the network to keep them consistent. That copy is the "momentum" in the name. Remember it, because the same idea becomes the main mechanism next.
+**[MoCo](https://arxiv.org/abs/1911.05722)** (Momentum Contrast) took a different approach. A negative is just an embedding you push away from, and nothing says it has to come from the *current* batch. So MoCo keeps a *queue* of embeddings from the last several batches and uses those as the negatives: the model compares against tens of thousands of them while the actual batch stays small. One catch: the queued embeddings were produced by slightly older versions of the encoder, so MoCo computes them with a slowly updated moving-average copy of the network to keep them consistent. That copy is the "momentum" in the name. Remember it, because the same idea becomes the main mechanism next.
 
 ![MoCo: two views of one image go through the trained encoder and the momentum encoder; the query is pulled toward its key and pushed away from a queue of keys from recent batches](/blog/image-embeddings/moco_queue.png)
 
 **Fig. 7:** *MoCo's split of labor: the current batch supplies each query's positive; the queue of keys from recent batches supplies the negatives. The momentum encoder, a slowly updated moving average of the trained encoder, keeps the queued keys consistent.*
 
-Whichever way the negatives are supplied, one problem remains, and it belongs to the whole family: the loss actively pushes apart two *different* photos of golden retrievers on beaches, because they happen to be "negatives." The repulsion that prevents collapse is also fighting the semantics you want.
+Whichever way the negatives are supplied, one problem remains, and it belongs to the whole family: the loss actively pushes apart two *different* photos of golden retrievers on beaches, because they happen to be "negatives." The same pushing-apart that prevents collapse also works against the similarity you want.
 
 ### 4.4 Answer 2: no negatives, an asymmetric setup (BYOL and DINO)
 
@@ -265,7 +265,7 @@ The second answer is stranger, and it turned out to work best. Keep the objectiv
 **The setup.**
 
 - The **student** is the network being trained. It gets the gradients, as usual.
-- The **teacher** is a second copy of the same architecture. It is never trained. Instead, after every step, its weights drift a small fraction of the way toward the student's current weights, making it a slow-moving average of the student's own past (an exponential moving average, EMA). This is exactly MoCo's momentum copy, promoted from a supporting role to the main mechanism.
+- The **teacher** is a second copy of the same architecture. It is never trained. Instead, after every step, its weights drift a small fraction of the way toward the student's current weights, making it a slow-moving average of the student's own past (an exponential moving average, EMA). This is exactly MoCo's momentum copy, now used as the main mechanism.
 
 The training rule: **looking at view 1, the student must predict what the teacher outputs for view 2.** **[BYOL](https://arxiv.org/abs/2006.07733)** (Bootstrap Your Own Latent, DeepMind 2020) was the first to show this works with no negatives at all. **[DINO](https://arxiv.org/abs/2104.14294)** (self-**di**stillation with **no** labels, Meta 2021) is the version that made it work well on ViTs, and the one worth understanding in detail.
 
@@ -284,7 +284,7 @@ What does "predict what the teacher outputs" mean, when an encoder outputs a vec
 DINO blocks each with a correction applied to the teacher's scores, and the two corrections pull in opposite directions:
 
 - **Centering** blocks collapse #1. Keep a running average of the teacher's scores over recent images, and subtract it. A slot that fires for *every* image builds up a large average, so the subtraction cancels exactly the image-independent part of each score. Whatever survives centering is, by construction, the part that differs from image to image.
-- **Sharpening** blocks collapse #2. Divide the scores by a temperature below 1 before the softmax, which exaggerates whichever slots are ahead *for this particular image*. The teacher is forced to commit to an opinion instead of staying uniform.
+- **Sharpening** blocks collapse #2. Divide the scores by a temperature below 1 before the softmax, which exaggerates whichever slots are ahead *for this particular image*. The teacher is forced to give a confident answer instead of staying uniform.
 
 Centering alone pushes every output toward the uniform distribution; sharpening alone lets one slot win everything. Balanced against each other, they leave one stable option: outputs that are confident *and* different from image to image.
 
@@ -317,17 +317,17 @@ for x in loader:
 
 ![A pretrained DINO ViT-S/16 run on this post's hero image: the CLS attention heatmap and its overlay both pick out the robot against the cluttered workshop](/blog/image-embeddings/dino_attention_hero.png)
 
-**Fig. 10:** *A pretrained DINO ViT-S/16 run on the robot image from the top of this post, using the visualization from [Caron et al., 2021](https://arxiv.org/abs/2104.14294). Middle: the final layer's CLS-token attention over patches, averaged across heads. Right: the same map overlaid on the image. Nothing ever told the model the robot is the subject; separating foreground from clutter fell out of training.*
+**Fig. 10:** *A pretrained DINO ViT-S/16 run on the robot image from the top of this post, using the visualization from [Caron et al., 2021](https://arxiv.org/abs/2104.14294). Middle: the final layer's CLS-token attention over patches, averaged across heads. Right: the same map overlaid on the image. Nothing ever told the model the robot is the subject; separating foreground from clutter came out of training on its own.*
 
-### 4.5 The answers nobody scaled: regularizers and clusters
+### 4.5 Two more answers: regularizers and clusters
 
-There are two more ways to stop collapse. Neither was scaled up the way self-distillation was, so each gets only a sketch here; the linked papers have the full mechanics. Pieces of both survive inside the models that won (§4.7).
+There are two more ways to stop collapse. Neither was scaled up the way self-distillation was, so each is described only briefly here; the linked papers have the details. DINOv2 uses parts of both (§4.7).
 
 **Answer 3: penalize collapse directly.** **[Barlow Twins](https://arxiv.org/abs/2103.03230)** and **[VICReg](https://arxiv.org/abs/2105.04906)** (Variance-Invariance-Covariance Regularization) use no negatives and no teacher. They pull the two views together and add loss terms that any collapsed embedding scores badly on. VICReg forces every embedding dimension to keep high variance across the batch (a collapsed embedding has zero variance) and forces different dimensions to stay decorrelated. Barlow Twins gets the same effect by pushing the cross-correlation matrix between the two views toward the identity. So BYOL and DINO prevent collapse through the training arrangement, while these methods put the prevention in the loss itself. (**[SimSiam](https://arxiv.org/abs/2011.10566)** is the minimal case: no negatives, no EMA, no regularizer, only a predictor head on one branch and a stop-gradient on the other, and it still doesn't collapse. Why is still not fully settled.)
 
 **Answer 4: cluster, but keep the clusters balanced.** **[DeepCluster](https://arxiv.org/abs/1807.05520)** and **[SwAV](https://arxiv.org/abs/2006.09882)** (Swapping Assignments between Views) assign images to learned clusters and require two views of the same image to land in the same cluster, with the assignments explicitly *balanced* (SwAV uses the Sinkhorn-Knopp algorithm for this) so that everything can't end up in one giant cluster. Balanced clusters are themselves an anti-collapse constraint.
 
-At scale, the self-distillation family won the benchmarks. But look inside DINOv2 (§4.7) and you'll find the other answers absorbed rather than defeated: its teacher normalization is SwAV's Sinkhorn-Knopp, swapped in for DINO's original centering, and its KoLeo term (named for the Kozachenko-Leonenko entropy estimator it's built on) is a spread-the-features regularizer in exactly the VICReg spirit.
+At scale, the self-distillation family got the best benchmark results. But DINOv2 (§4.7) also uses parts of the other two answers: its teacher normalization is SwAV's Sinkhorn-Knopp, swapped in for DINO's original centering, and its KoLeo term (named for the Kozachenko-Leonenko entropy estimator it's built on) is a regularizer that spreads the features apart, the same idea as VICReg.
 
 ### 4.6 The missing piece: supervision per patch, not per image
 
@@ -339,11 +339,11 @@ The masked-modeling family fixes that with the oldest self-supervision method, t
 
 **Fig. 11:** *One iBOT training step, shown for a single masked patch (outlined in red). The teacher sees the full image and produces a slot distribution for every patch; the student sees the masked image and must predict, from the surrounding context alone, the distribution the teacher assigned to each patch it cannot see. The same matching loss fires at every masked patch, 100+ times per image.*
 
-Now every patch vector gets its own gradient, and dense features get trained on purpose rather than by accident. (This also explains the other task from §3.6: this is the "masked prediction" task SigLIP 2 imported. Both of its borrowed objectives are now accounted for.)
+Now every patch vector gets its own gradient, and dense features get trained on purpose rather than by accident. (This also explains the other task from §3.6: this is the "masked prediction" task SigLIP 2 imported. That covers both of the objectives SigLIP 2 borrowed.)
 
 ### 4.7 DINOv2: the recipe, engineered and scaled
 
-**[DINOv2](https://arxiv.org/abs/2304.07193)** (Meta 2023) introduced no new core idea. Its contribution is engineering: it combined the pieces built up over the previous sections, tuned them, and scaled them into a backbone other teams could build on. Three decisions did the work.
+**[DINOv2](https://arxiv.org/abs/2304.07193)** (Meta 2023) introduced no new core idea. Its contribution is engineering: it combined the pieces built up over the previous sections, tuned them, and scaled them into a backbone other teams could build on. It made three decisions.
 
 **The first decision is the loss.** DINOv2 trains DINO's image-level self-distillation and iBOT's patch-level masked distillation side by side, so one model learns global semantics and dense features at the same time. The anti-collapse machinery is the upgraded version you already met in §4.5: SwAV's Sinkhorn-Knopp normalization replaces DINO's centering, and the KoLeo regularizer nudges embeddings to spread uniformly over the sphere.
 
@@ -351,11 +351,11 @@ Now every patch vector gets its own gradient, and dense features get trained on 
 
 **The third decision is to scale first and distill after.** Train one big ViT-g (about 1.1 billion parameters), then distill it into small, base, and large students, so the sizes people actually deploy inherit the large model's quality.
 
-The payoff was a real step change: a **frozen** DINOv2 backbone (no fine-tuning, just linear probes) matched or beat supervised and CLIP-style features on classification, and dominated dense tasks (depth, segmentation, correspondence) where CLIP-family encoders were weakest. The message became: *stop fine-tuning backbones; embed once, probe cheaply.*
+The result was a large improvement: a **frozen** DINOv2 backbone (no fine-tuning, just linear probes) matched or beat supervised and CLIP-style features on classification, and was clearly better on dense tasks (depth, segmentation, correspondence) where CLIP-family encoders were weakest. The practical lesson: *stop fine-tuning backbones; embed once, probe cheaply.*
 
 ### 4.8 DINOv3: scale, and the problem it exposed
 
-**[DINOv3](https://arxiv.org/abs/2508.10104)** (Meta 2025) pushes the recipe further: a 7-billion-parameter ViT trained on about 1.7 billion curated images. But the more instructive part of the paper is the failure mode the team hit on the way. Train that large and that long, and global metrics keep climbing while **the dense features quietly degrade**: patch embeddings that were crisp and local earlier in training turn noisy and smeared, and segmentation probes get *worse* as training continues. What is happening: the model is slowly reallocating its patch capacity toward what the image-level losses reward, which is global abstraction, and away from local fidelity, which nothing in the loss is grading anymore.
+**[DINOv3](https://arxiv.org/abs/2508.10104)** (Meta 2025) pushes the recipe further: a 7-billion-parameter ViT trained on about 1.7 billion curated images. But the more instructive part of the paper is the failure mode the team hit on the way. Train that large and that long, and global metrics keep climbing while **the dense features degrade**: patch embeddings that were crisp and local earlier in training turn noisy and smeared, and segmentation probes get *worse* as training continues. What is happening: the model is slowly reallocating its patch capacity toward what the image-level losses reward, which is global abstraction, and away from local fidelity, which nothing in the loss is grading anymore.
 
 The fix is **gram anchoring**. Start from what dense tasks actually consume: not any particular feature *values*, but the *relational structure* between patches, which patches are similar to which. That structure is captured by the **Gram matrix**, the patch-by-patch similarity table ("these 40 patches are all dog, those 200 are all sand"). Gram anchoring takes a snapshot of an earlier checkpoint, from before the degradation set in, and adds a loss that keeps the current model's Gram matrix close to the snapshot's. The feature values stay free to keep improving under the global losses; only the patch-level similarity structure is pinned in place. With this term added, global quality keeps climbing while dense quality stops decaying.
 
@@ -390,12 +390,12 @@ supervised classification            "similar = same label"
       └─ DINOv3          7B scale, gram anchoring keeps the dense features crisp
 ```
 
-The two routes produce two different kinds of embedding, separated by one axis: **aligned to language** versus **faithful to the image**. CLIP-family embeddings live in a space shared with text: you can query the space with words, but it only encodes what text tends to mention. DINO-family embeddings know nothing of words, but they encode the image's actual structure, down to the patch. Neither dominates; they answered different questions. That difference translates directly into a usage guide:
+The two routes produce two different kinds of embedding, separated by one axis: **aligned to language** versus **faithful to the image**. CLIP-family embeddings live in a space shared with text: you can query the space with words, but it only encodes what text tends to mention. DINO-family embeddings know nothing of words, but they encode the image's actual structure, down to the patch. Neither is better overall; they are good at different things. That difference translates directly into a usage guide:
 
 | You want | Use | Why |
 |---|---|---|
 | Zero-shot classification, text→image search | SigLIP 2 (or any CLIP descendant) | You need the text input into the space |
-| Vision encoder for a VLM | SigLIP 2, increasingly with DINOv2/v3 features mixed in | The LLM speaks language; a text-aligned space is half-translated already |
+| Vision encoder for a VLM | SigLIP 2, increasingly with DINOv2/v3 features mixed in | The LLM works with language, so a text-aligned space is easier for it to read |
 | Segmentation, depth, correspondence, tracking (frozen backbone + probe) | DINOv3 / DINOv2 | Patch features were trained on purpose, not as a side effect |
 | Image→image search ("more like this one") | DINOv2/v3 | No caption bottleneck; visual similarity, not describable similarity |
 | Few-shot classifier (linear probe on 50 examples) | DINOv2/v3 or SigLIP 2 | Both spaces are linearly clean; try both, it takes ten minutes |
@@ -410,7 +410,7 @@ The VLM row deserves a closer look: multimodal LLMs overwhelmingly use CLIP-fami
 - **[EVA-CLIP](https://arxiv.org/abs/2303.15389)**: a CLIP whose image tower starts from weights already pretrained with masked image modeling (a Route B objective) instead of from scratch; the head start makes the contrastive training cheaper and the final model stronger.
 - **[I-JEPA](https://arxiv.org/abs/2301.08243)** (Image-based Joint-Embedding Predictive Architecture): masked prediction in latent space like iBOT, but with no augmentations at all; predict hidden regions from context and position alone.
 - **[AIMv2](https://arxiv.org/abs/2411.14402)** (Autoregressive Image Models, v2): keeps language as the supervisor but drops the contrastive loss entirely; the encoder's features must support *generating* the caption (and the pixels) token by token, the way GPT generates text.
-- **[Perception Encoder](https://arxiv.org/abs/2504.13181)**: Meta's 2025 bet that a single well-tuned contrastive model, probed at the *right internal layers*, can serve global and dense tasks at once.
+- **[Perception Encoder](https://arxiv.org/abs/2504.13181)**: Meta's 2025 model, built on the idea that a single well-tuned contrastive model, probed at the *right internal layers*, can serve global and dense tasks at once.
 - **[RADIO](https://arxiv.org/abs/2312.06709)** (Reduce All Domains Into One) and **[Theia](https://arxiv.org/abs/2407.20179)**: "agglomerative" backbones that distill several pretrained teachers into one student (CLIP + DINOv2 + [SAM](https://arxiv.org/abs/2304.02643), the Segment Anything Model, in RADIO's case), so a single encoder inherits text alignment and dense features at once.
 - **[E5-V](https://arxiv.org/abs/2407.12580)** and **[VLM2Vec](https://arxiv.org/abs/2410.05160)**: skip the standalone encoder entirely; prompt a full multimodal LLM and read the embedding out of its hidden state. A new answer to *who defines similar*: the LLM does.
 - **[Matryoshka embeddings](https://arxiv.org/abs/2205.13147)**: a training trick, not a model; train so every prefix of the vector is a usable embedding, letting you truncate to your storage budget.
@@ -423,7 +423,7 @@ When the next new checkpoint appears, ask two questions of it (*who defines "sim
 
 ## 6. The one-paragraph version
 
-An embedding model is never trained directly: you pick a pretext task and the embedding is a byproduct, so all of these models are just a list of answers to *"who defines what similar means?"* Supervised pretraining says *the label list*, and is capped by it. CLIP says *language*: match images to captions with a softmax over the batch (classification with improvised classes), which gives zero-shot classification and search at the cost of giant batches and text-shaped blind spots; SigLIP swaps the softmax for independent sigmoids and frees the batch; SigLIP 2 adds generative and patch-level tasks to cover the blind spots. The DINO line says *the image itself*: make two augmented views agree without collapsing to a constant, first via negatives (SimCLR, InfoNCE again), then via self-distillation against an EMA of your own past weights (DINO), extended to per-patch targets (iBOT), scaled up with curated data and distillation (DINOv2), and stabilized at 7B scale with gram anchoring (DINOv3). Text-aligned when you need to talk to the space; self-supervised when you need the space to be true to the pixels. Current work combines the two, feeding both kinds of features to VLMs and distilling both kinds of teacher into single backbones.
+An embedding model is never trained directly: you pick a pretext task and the embedding is a byproduct, so all of these models are just a list of answers to *"who defines what similar means?"* Supervised pretraining says *the label list*, and is capped by it. CLIP says *language*: match images to captions with a softmax over the batch (classification with improvised classes), which gives zero-shot classification and search at the cost of giant batches and text-shaped blind spots; SigLIP swaps the softmax for independent sigmoids and frees the batch; SigLIP 2 adds generative and patch-level tasks to cover the blind spots. The DINO line says *the image itself*: make two augmented views agree without collapsing to a constant, first via negatives (SimCLR, InfoNCE again), then via self-distillation against an EMA of your own past weights (DINO), extended to per-patch targets (iBOT), scaled up with curated data and distillation (DINOv2), and stabilized at 7B scale with gram anchoring (DINOv3). Text-aligned when you need to query the space with words; self-supervised when you need the space to be true to the pixels. Current work combines the two, feeding both kinds of features to VLMs and distilling both kinds of teacher into single backbones.
 
 ```
 supervised   ->  similar = same label                (capped by the label list)
