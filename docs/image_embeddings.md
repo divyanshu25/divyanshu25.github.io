@@ -349,7 +349,7 @@ Now every patch vector gets its own gradient, and dense features get trained on 
 
 **The second decision is data curation, and it matters more than it sounds.** Raw web images are full of duplicates and junk, and a self-supervised model, having no labels to steer it, learns whatever distribution it is fed. So DINOv2 builds its own: start from roughly 1.2 billion uncurated web images, deduplicate, then use an *existing* embedding model to retrieve the images most similar to a curated seed corpus. The result is **LVD-142M**, 142 million images with the diversity of the web but the distribution of a clean dataset. Notice the loop: embeddings curate the data that trains better embeddings.
 
-**The third decision is to scale first and distill after.** Train one big ViT-g (about 1.1 billion parameters), then distill it into small, base, and large students, so the sizes people actually deploy inherit the large model's quality.
+**The third decision is to scale first and distill after.** Train one big ViT-g (about 1.1 billion parameters), then distill it into three smaller models (ViT-S, ViT-B and ViT-L), so the sizes people actually deploy inherit the large model's quality.
 
 The result was a large improvement: a **frozen** DINOv2 backbone (no fine-tuning, just linear probes) matched or beat supervised and CLIP-style features on classification, and was clearly better on dense tasks (depth, segmentation, correspondence) where CLIP-family encoders were weakest. The practical lesson: *stop fine-tuning backbones; embed once, probe cheaply.*
 
