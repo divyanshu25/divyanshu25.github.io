@@ -419,9 +419,15 @@ When the next new checkpoint appears, ask two questions of it (*who defines "sim
 
 ---
 
-## 6. The one-paragraph version
+## 6. The short version
 
-An embedding model is never trained directly: you pick a pretext task and the embedding is a byproduct, so all of these models are just a list of answers to *"who defines what similar means?"* Supervised pretraining says *the label list*, and is capped by it. CLIP says *language*: match images to captions with a softmax over the batch (classification with improvised classes), which gives zero-shot classification and search at the cost of giant batches and text-shaped blind spots; SigLIP swaps the softmax for independent sigmoids and frees the batch; SigLIP 2 adds generative and patch-level tasks to cover the blind spots. The DINO line says *the image itself*: make two augmented views agree without collapsing to a constant, first via negatives (SimCLR, InfoNCE again), then via self-distillation against an EMA of your own past weights (DINO), extended to per-patch targets (iBOT), scaled up with curated data and distillation (DINOv2), and stabilized at 7B scale with gram anchoring (DINOv3). Text-aligned when you need to query the space with words; self-supervised when you need the space to be true to the pixels. Current work combines the two, feeding both kinds of features to VLMs and distilling both kinds of teacher into single backbones.
+An embedding model is never trained directly. You train the network on some task, and the embedding is a byproduct. So each model in this post is one answer to the question *"who defines what similar means?"*
+
+**Supervised pretraining** answers *the label list*, so the embedding can never be richer than the labels. **CLIP** answers *language*: it matches images to captions with a softmax over the batch, which is classification where the classes are the captions in the batch. That gives zero-shot classification and text search, but it needs very large batches and encodes only what captions mention. **SigLIP** replaces the softmax with one sigmoid per pair, which removes the need for the large batch. **SigLIP 2** adds captioning and patch-level tasks, so the features also record where things are.
+
+The **DINO** line answers *the image itself*: two augmented views of one image must get the same output, without collapsing to a constant. SimCLR prevents collapse with negatives. DINO prevents it with self-distillation: a student matches a teacher that is an average of the student's own past weights. iBOT applies the same loss to every patch, DINOv2 scales it up with curated data and distillation, and DINOv3 keeps the patch features stable at 7B parameters with gram anchoring.
+
+Use a text-aligned model when you need to query the space with words, and a self-supervised model when you need features that follow the image's structure. Current work combines the two: VLMs are given both kinds of features, and single backbones are distilled from both kinds of teacher.
 
 ```
 supervised   ->  similar = same label                (capped by the label list)
