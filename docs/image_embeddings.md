@@ -345,7 +345,7 @@ Now every patch vector gets its own gradient, and dense features get trained on 
 
 **[DINOv2](https://arxiv.org/abs/2304.07193)** (Meta 2023) introduced no new core idea. Its contribution is engineering: it combined the pieces built up over the previous sections, tuned them, and scaled them into a backbone other teams could build on. It made three decisions.
 
-**The first decision is the loss.** DINOv2 trains DINO's image-level self-distillation and iBOT's patch-level masked distillation side by side, so one model learns global semantics and dense features at the same time. The anti-collapse machinery is the upgraded version you already met in §4.5: SwAV's Sinkhorn-Knopp normalization replaces DINO's centering, and the KoLeo regularizer nudges embeddings to spread uniformly over the sphere.
+**The first decision is the loss.** DINOv2 trains DINO's image-level self-distillation and iBOT's patch-level masked distillation side by side, so one model learns global semantics and dense features at the same time. The anti-collapse parts are the upgraded versions described in §4.5: SwAV's Sinkhorn-Knopp normalization replaces DINO's centering, and the KoLeo regularizer nudges embeddings to spread uniformly over the sphere.
 
 **The second decision is data curation, and it matters more than it sounds.** Raw web images are full of duplicates and junk, and a self-supervised model, having no labels to steer it, learns whatever distribution it is fed. So DINOv2 builds its own: start from roughly 1.2 billion uncurated web images, deduplicate, then use an *existing* embedding model to retrieve the images most similar to a curated seed corpus. The result is **LVD-142M**, 142 million images with the diversity of the web but the distribution of a clean dataset. Notice the loop: embeddings curate the data that trains better embeddings.
 
@@ -402,7 +402,7 @@ The two routes produce two different kinds of embedding, separated by one axis: 
 
 The VLM row deserves a closer look: multimodal LLMs overwhelmingly use CLIP-family encoders, which is exactly why they inherit CLIP-family blind spots. Ask one to count objects or judge spatial layout and it often fails, because those are properties captions rarely spell out. A growing line of work ([Eyes Wide Shut](https://arxiv.org/abs/2401.06209), [Cambrian-1](https://arxiv.org/abs/2406.16860)) addresses this by feeding the LLM DINO features *alongside* the CLIP-style ones, so the two routes end up converging inside the same model.
 
-**Other names you'll meet**, each with a place on the map:
+**Other models you may come across**, each with a place on the map:
 
 - **[OpenCLIP](https://github.com/mlfoundations/open_clip)**: an open-source reproduction of CLIP trained on open datasets; the loss and architecture are unchanged.
 - **[ALIGN](https://arxiv.org/abs/2102.05918)** (A Large-scale ImaGe and Noisy-text embedding): Google's CLIP counterpart, the same loss on 1.8B noisier pairs; proof that scale can make up for noisy alt-text.
