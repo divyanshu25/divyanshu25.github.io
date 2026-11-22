@@ -288,7 +288,7 @@ DINO blocks each with a correction applied to the teacher's scores, and the two 
 
 Centering alone pushes every output toward the uniform distribution; sharpening alone lets one slot win everything. Balanced against each other, they leave one stable option: outputs that are confident *and* different from image to image.
 
-> **Note:** Why would a model chasing an average of *its own past outputs* learn anything? The intuition: an EMA of many past students behaves like an *ensemble* of them, and ensembles are reliably a bit better than any single member. So the target is always slightly ahead of the student, and each time the student catches up, the target moves ahead again. The theory does not yet fully explain why this works so well.
+> **Note:** Why would a model chasing a teacher built by averaging *its own past weights* learn anything? The intuition: an EMA of many past students behaves like an *ensemble* of them, and ensembles are reliably a bit better than any single member. So the target is always slightly ahead of the student, and each time the student catches up, the target moves ahead again. The theory does not yet fully explain why this works so well.
 
 The whole training loop. One detail the diagram simplified: both networks embed *both* views, and the loss adds the two crossed pairings (student on view 2 chasing teacher on view 1, and the reverse):
 
