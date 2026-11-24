@@ -60,11 +60,10 @@ export const posts: Post[] = [
   {
     id: "llm-training-optimizations",
     title: "Going Fast: Every Optimization That Made LLM Training Fly",
-    summary: "Six concrete optimizations (TF32, BF16 mixed precision, torch.compile, Flash Attention, parallel DataLoaders, and pinned memory transfers) that collectively drove a significant jump in Model Flop Utilization (MFU) while training VibeNanoChat, a GPT-2 scale LLM. Each technique is explained with real code and the hardware-level reasoning behind it.",
-    url: "https://medium.com/@divyanshugoyal/going-fast-every-optimization-that-made-llm-training-fly-f465f3cf3588",
-    content: `Published on [Medium](https://medium.com/@divyanshugoyal/going-fast-every-optimization-that-made-llm-training-fly-f465f3cf3588)
-
-[Read the full article on Medium →](https://medium.com/@divyanshugoyal/going-fast-every-optimization-that-made-llm-training-fly-f465f3cf3588)`,
+    summary: "Six changes that raised GPU utilization when training a GPT-2 scale model: TF32, BF16 mixed precision, torch.compile, Flash Attention, DataLoader workers, and pinned memory with non-blocking copies. What each one does at the hardware level, with the code.",
+    content: "",
+    contentFile: "docs/going_fast.md",
+    heroImage: "/blog/going-fast/hero.png",
     date: "2026-03-05",
     tags: ["LLM", "Machine Learning", "Performance Optimization", "Deep Learning", "Training"],
     authors: ["Divyanshu Goyal"]
