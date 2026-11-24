@@ -1,87 +1,64 @@
 # Going Fast: Every Optimization That Made LLM Training Fly
 
-*Six changes that made [VibeNanoChat](https://github.com/divyanshu25/VibeNanoChat), a GPT-2 scale training framework, use far more of the GPU. Assumes you know what a PyTorch training loop looks like.*
+*Notes from making [VibeNanoChat](https://github.com/divyanshu25/VibeNanoChat), my GPT-2 scale training repo, actually use the GPU it runs on.*
 
 ---
 
-## The metric: MFU
+The first time I got VibeNanoChat training end to end, I was pretty happy. The loss was going down, the samples were slowly getting less garbled, everything looked fine. Then I computed the MFU and it was embarrassing.
 
-**MFU (Model FLOPs Utilization)** is the fraction of the GPU's peak compute that your training run actually uses. If a GPU can do 1,000 TFLOPS (trillion floating-point operations per second) and your model's forward and backward passes do 400 TFLOPS worth of useful work, your MFU is 40%.
+MFU stands for Model FLOPs Utilization. It's a simple idea: your GPU has some peak number of floating-point operations it can do per second, and MFU is the fraction of that peak your training run actually turns into useful work. If the GPU can do 1,000 TFLOPS and your forward and backward passes are doing 400 TFLOPS worth of math, you're at 40%. The rest of the time the GPU is sitting there waiting. Waiting on memory, waiting on the CPU, waiting for the next batch to show up. And you're paying for all of it.
 
-A low MFU means you are paying for a GPU that is mostly waiting: on memory, on the CPU, on data, or on slow kernels. The six changes below each remove one of those waits. They are ordered roughly by effort, easiest first.
+This post is the list of things I changed to fix that. There are six of them. Some are literally one line. A couple took real thought. I'll go roughly from easiest to hardest.
 
-| # | Change | What it fixes | Effort |
-|---|---|---|---|
-| 1 | TF32 | FP32 matmuls skip the tensor cores | 1 line |
-| 2 | BF16 mixed precision | Every tensor is 4 bytes when 2 is enough | A few lines |
-| 3 | `torch.compile` | Too many small kernel launches | 1 line |
-| 4 | Flash Attention | Attention reads and writes a huge matrix to memory | A module |
-| 5 | DataLoader workers | GPU waits for the CPU to prepare the next batch | A few args |
-| 6 | Pinned memory + non-blocking copies | GPU waits for the CPU-to-GPU copy | 2 args |
+## 1. TF32
 
----
-
-## 1. TF32: use the tensor cores for FP32 matmuls
+Here's the first one, and it's a single line you should put at the top of every PyTorch training script you ever write:
 
 ```python
-# trainer.py, before the training loop starts
 torch.set_float32_matmul_precision("high")
 ```
 
-That is the whole change.
+To see why it helps, you need to know that an NVIDIA GPU has two kinds of compute units. CUDA cores do general-purpose math. Tensor cores do one thing, matrix multiplication, and they're much faster at it. The catch is that tensor cores can't do full-precision FP32. So by default, when PyTorch multiplies two FP32 matrices, it runs on the slower CUDA cores.
 
-**What it does.** By default, PyTorch runs FP32 matrix multiplications on the GPU's regular CUDA cores with the full 23-bit mantissa (the bits that store a number's precision). **TF32** keeps FP32's 8-bit exponent but cuts the mantissa to 10 bits. That smaller format is what lets the matmul run on the **tensor cores**, the GPU units built for matrix math.
+A floating-point number has an exponent, which sets how big or small it can be, and a mantissa, which sets how precise it is. FP32 has 8 exponent bits and 23 mantissa bits. TF32 keeps the 8 exponent bits but only 10 mantissa bits:
 
 ```
-FP32 ("highest"): [sign 1][exponent 8][mantissa 23]  -> CUDA cores
-TF32 ("high"):    [sign 1][exponent 8][mantissa 10]  -> tensor cores
+FP32: [sign 1][exponent 8][mantissa 23]  -> CUDA cores
+TF32: [sign 1][exponent 8][mantissa 10]  -> tensor cores
 ```
 
-On an A100, dense FP32 on CUDA cores peaks at 19.5 TFLOPS, and dense TF32 on tensor cores peaks at 156 TFLOPS. That is 156 / 19.5 = **8x more peak matmul throughput**.
+Same range, less precision, and now the multiply can run on tensor cores. On an A100, FP32 on CUDA cores peaks at 19.5 TFLOPS and TF32 on tensor cores peaks at 156. That's 8x. Setting precision to `"high"` is what turns this on. (`"highest"` is the slow default, and `"medium"` lets FP32 matmuls go even lower, to BF16, which we'll get to next.)
 
-**Why it is safe.** The range of numbers you can represent is unchanged, because the exponent is still 8 bits. Only the least significant precision bits are dropped, and training is not sensitive to them.
+Is throwing away 13 bits of precision okay? Yes. Neural network training doesn't care about the bottom bits of each number. You won't see a difference in the loss curve.
 
-**What you actually get.** Wall-clock speedups are typically 10 to 40%, not 8x. Only the matmuls get faster. Softmax, normalization, memory reads and everything else run at the same speed as before.
-
-The three settings:
-- `"highest"`: full FP32. The slow default.
-- `"high"`: TF32 for matmuls. Use this.
-- `"medium"`: allows BF16 internally for FP32 matmuls. This only affects matmuls, unlike the autocast in section 2, which covers the whole forward pass.
-
-**Rule:** put this line in every PyTorch training script.
-
----
+Don't expect your training to get 8x faster though. Only the matrix multiplies speed up. Softmax, layer norms, reading and writing memory, none of that changes. In practice you get something like 10 to 40% depending on the model. For one line, that's a great trade.
 
 ## 2. BF16 mixed precision
 
-TF32 speeds up matmuls but still stores every tensor in 4 bytes. **BF16 (bfloat16)** stores numbers in 2 bytes. Half the bytes means half the memory traffic and roughly twice the matmul throughput on tensor cores.
+TF32 makes the multiplies faster, but every number is still stored in 4 bytes. BF16 stores each number in 2. That means half as much data to move around, and tensor cores chew through BF16 about twice as fast as TF32.
 
-You do not train fully in BF16. You run the **forward pass** in it with `autocast`:
+The trick is that you don't train the model in BF16. You keep the weights in FP32 and only run the forward pass in BF16, using autocast:
 
 ```python
-# trainer.py, wrap the forward pass
 with torch.autocast(device_type=self.device, dtype=torch.bfloat16):
     _, per_token_loss = self.model(x, y, loss_reduction="none")
 ```
 
-Inside this block, PyTorch runs eligible operations (matmuls and attention) in BF16 and keeps numerically sensitive ones (like softmax, normalization and loss reductions) in FP32. The model weights and their gradients stay in FP32, so the optimizer update keeps full precision.
+Inside that block, PyTorch decides op by op. Matmuls and attention run in BF16. Things that are sensitive to precision, like softmax, normalization and summing up the loss, stay in FP32. The weights and their gradients are still FP32, so when the optimizer updates them, it does so at full precision. You get most of the speed of low precision without the numerical problems.
 
-### Why BF16 and not FP16
+Why BF16 and not FP16? Look at the bits:
 
 ```
-FP16: [sign 1][exponent 5][mantissa 10]  <- small range, needs loss scaling
-BF16: [sign 1][exponent 8][mantissa 7]   <- same range as FP32, less precision
-FP32: [sign 1][exponent 8][mantissa 23]  <- full precision, 4 bytes
+FP16: [sign 1][exponent 5][mantissa 10]
+BF16: [sign 1][exponent 8][mantissa 7]
+FP32: [sign 1][exponent 8][mantissa 23]
 ```
 
-FP16's largest value is about 65,504. Large activations overflow and small gradients underflow to zero, so FP16 training needs **loss scaling**: multiply the loss by a large factor before the backward pass and divide the gradients back afterward. BF16 has the same 8-bit exponent as FP32, so it covers the same range and needs no loss scaling. With mixed precision, BF16 training curves track FP32 closely.
+FP16 only has 5 exponent bits, so the largest number it can represent is about 65,504. Big activations overflow, and tiny gradients round down to zero. People used to work around this with loss scaling: multiply the loss by some large number before backward, then divide the gradients back down after. It works, but it's fiddly. BF16 has the same 8 exponent bits as FP32, so it covers the same range and none of that is needed. You lose precision, not range, and as we saw with TF32, precision is the thing training can afford to lose.
 
-### Storing embeddings in BF16
-
-We go one step further and store the embedding tables in BF16 permanently:
+I went one step further and stored the embedding tables themselves in BF16:
 
 ```python
-# gpt2_model.py, called once after moving the model to the GPU
 def cast_embeddings_to_bfloat16(self):
     """Cast token and value embeddings to bfloat16 (nanochat-style)."""
     if self.transformer.wte.weight.device.type == "cuda":
@@ -89,75 +66,58 @@ def cast_embeddings_to_bfloat16(self):
         for ve in self.value_embeds.values():
             ve.to(dtype=torch.bfloat16)
 
-# model_setup.py
 raw_model = GPT(config, master_process=master_process)
 raw_model.to(device)
 raw_model.cast_embeddings_to_bfloat16()
 ```
 
-An embedding table is a lookup table: each token ID selects one row. The table is large (vocabulary size × model width), so storing it in 2 bytes instead of 4 halves its memory, and the optimizer tolerates the lower precision.
-
-The RoPE (rotary position embedding) tables are also precomputed in BF16, since they are fixed and never trained:
+An embedding table is just a lookup table. A token ID comes in, you grab that row. But it's a big table (vocab size times model width), so halving its size is a real memory win, and the optimizer is fine with the lower precision. Same story for the RoPE tables, the sines and cosines used for rotary position embeddings. They're fixed and never trained, so I just build them in BF16 from the start:
 
 ```python
-# gpt2_model.py, at model init
 cos, sin = precompute_rotary_embeddings(
-    self.rotary_seq_len,
-    head_dim,
-    base=10000,
-    device="cpu",
-    dtype=torch.bfloat16,
+    self.rotary_seq_len, head_dim, base=10000,
+    device="cpu", dtype=torch.bfloat16,
 )
 ```
 
-**Result:** roughly 2x forward-pass throughput, plus memory savings that let you use a larger batch.
+Altogether this roughly doubled forward pass throughput, and the memory I saved let me use a bigger batch.
 
----
-
-## 3. `torch.compile`
+## 3. torch.compile
 
 ```python
-# model_setup.py
-raw_model = GPT(config, master_process=master_process)
-raw_model.to(device)
-raw_model.cast_embeddings_to_bfloat16()
-
 model = torch.compile(raw_model, dynamic=False)
-
-# keep raw_model for checkpointing, so there is nothing to unwrap
-return config, raw_model, model
 ```
 
-`dynamic=False` tells the compiler that input shapes never change. In training, every batch is `(batch_size, block_size)`, always. With fixed shapes, the compiler can generate kernels specialized to those exact sizes instead of general ones that check shapes at runtime.
+I was a bit skeptical of torch.compile at first, because it's a black box and black boxes have a way of breaking at the worst time. But it works, and the speedup is real.
 
-### What compile does
+To understand what it's doing, think about how PyTorch normally runs your model. Every operation is its own GPU kernel. An add is a kernel. A multiply is a kernel. A GELU is a kernel. Each one reads its inputs from GPU memory, does a tiny bit of math, and writes the result back to memory, where the next kernel reads it again. For a chain of small elementwise ops, almost all the time goes into those memory round trips, not the math.
 
-1. **Kernel fusion.** Without compile, each operation (add, multiply, activation) launches its own GPU kernel and writes its result to memory, and the next kernel reads it back. Compile fuses chains of operations into one kernel, so there are fewer launches and fewer round trips to memory.
-2. **Memory layout.** It reorders operations to improve cache use and removes unnecessary copies.
-3. **Dead code removal and constant folding.** Unused computation is dropped. Values that never change, like mask shapes derived from a fixed `block_size`, are computed once at compile time. With `dynamic=False`, most shape arithmetic falls into this group.
+torch.compile looks at your whole forward pass, figures out which ops can be merged, and generates one kernel for the whole chain. Data gets loaded once, all the math happens, and the result is written once. It also drops work that doesn't need to happen and precomputes anything that's constant.
 
-The `torch.compile()` call itself returns instantly; it only wraps the model. The real compilation (tracing the graph and generating Triton kernels) happens **just-in-time on the first forward pass**, when it first sees real shapes and dtypes. The first step is slow. After that, you run the optimized kernels.
+The `dynamic=False` part tells it that input shapes never change. That's true in training, where every batch is `(batch_size, block_size)`. With fixed shapes, the compiler can write code for those exact sizes, instead of general code that has to check shapes every time.
 
-**Typical result:** 10 to 30% faster training, depending on the architecture.
+One thing that confused me at first: the `torch.compile()` call returns instantly. It doesn't actually compile anything yet. The real work happens on the first forward pass, when it sees real tensors for the first time. So your first step will be slow, sometimes really slow, and then everything after it is fast. Expect something like 10 to 30% faster training.
 
----
+Small practical note: I keep a reference to the uncompiled `raw_model` around. That way, when I save a checkpoint, I don't have to deal with unwrapping the compiled one.
 
 ## 4. Flash Attention
 
-Standard attention builds the full T × T attention matrix (T = sequence length) for every head and stores it in **HBM**, the GPU's main memory. That costs O(T²) memory.
+This is the one that needs a bit of explaining.
 
-The arithmetic for one layer, in FP32 (4 bytes per number):
-- T = 1,024 tokens, 12 heads: 12 × 1,024 × 1,024 = 12.6M numbers = **50 MB**.
-- T = 8,192 tokens, 12 heads: 12 × 8,192 × 8,192 = 805M numbers = **3.2 GB**.
+In standard attention, you compute a score for every pair of tokens in the sequence. For a sequence of length T, that's a T × T matrix, per head. And it gets written out to HBM, the GPU's main memory. Let's put numbers on it. With 12 heads at 4 bytes per number:
 
-That is for the attention weights alone, in a single layer.
+```
+T = 1,024:  12 × 1,024 × 1,024 = 12.6M numbers = 50 MB
+T = 8,192:  12 × 8,192 × 8,192 = 805M numbers  = 3.2 GB
+```
 
-**Flash Attention** computes attention in tiles that fit in **SRAM**, the small, fast on-chip memory, and never writes the full matrix to HBM. It is exact attention, not an approximation; results match standard attention up to floating-point rounding. Extra memory drops from O(T²) to O(T), and it runs much faster because attention is limited by memory bandwidth, not by compute.
+3.2 GB, for the attention scores of a single layer. And it grows with T², so it gets bad quickly.
 
-Our attention module tries Flash Attention 3 first, then Flash Attention 2, then PyTorch's built-in SDPA (scaled dot product attention):
+The key thing to realize about attention is that the GPU isn't slow at the math. It's slow at moving that giant matrix in and out of memory. Flash Attention's idea is to never write the matrix out at all. GPUs have a small amount of very fast on-chip memory called SRAM. Flash Attention splits the computation into tiles that fit in SRAM, does all the work for a tile there, and only writes out the final result. It's still exact attention, not some approximation. You get the same answer up to rounding. But the extra memory now grows with T instead of T², and it runs a lot faster.
+
+My attention code tries the fastest option first and falls back if it's not available. Flash Attention 3 only runs on Hopper GPUs (H100, H200), Flash Attention 2 runs on Ampere (A100, A10 and friends), and if neither loads, PyTorch's built-in `scaled_dot_product_attention` (SDPA) is the fallback. I check which ones load once, when the module is imported:
 
 ```python
-# attention.py, detected once at import time
 def _load_flash_attention_3():
     """Try to load Flash Attention 3 (requires Hopper GPU, sm90)."""
     if not torch.cuda.is_available():
@@ -185,10 +145,9 @@ _fa3 = _load_flash_attention_3()
 _fa2 = _load_flash_attention_2()
 ```
 
-At runtime:
+And then at runtime, pick the best one that works for the current inputs:
 
 ```python
-# attention.py
 def attention_forward(q, k, v, is_causal=True, enable_gqa=False, window_size=()):
     supported_dtypes_fa3 = (torch.float16, torch.bfloat16, torch.float8_e4m3fn)
     supported_dtypes_fa2 = (torch.float16, torch.bfloat16)
@@ -197,7 +156,7 @@ def attention_forward(q, k, v, is_causal=True, enable_gqa=False, window_size=())
     use_fa2 = HAS_FA2 and q.is_cuda and q.dtype in supported_dtypes_fa2
 
     if use_fa3 or use_fa2:
-        # Flash Attention expects (B, T, n_head, head_dim);
+        # Flash Attention wants (B, T, n_head, head_dim);
         # PyTorch uses (B, n_head, T, head_dim)
         q = q.transpose(1, 2)
         k = k.transpose(1, 2)
@@ -213,36 +172,29 @@ def attention_forward(q, k, v, is_causal=True, enable_gqa=False, window_size=())
 
         return output.transpose(1, 2)
     else:
-        # fallback: PyTorch's fused attention
         return F.scaled_dot_product_attention(q, k, v, dropout_p=0.0, is_causal=is_causal)
 ```
 
-Which path you get:
-- **Flash Attention 3** (H100/H200, Hopper GPUs): fastest. Uses Hopper-specific tensor core instructions. Roughly 2 to 3x faster than standard attention.
-- **Flash Attention 2** (A100, A10 and similar): still very fast. Most people land here.
-- **PyTorch SDPA**: a fused kernel, better than naive attention but slower than the dedicated Flash Attention kernels.
+FA3 is the fastest, roughly 2 to 3x over standard attention, because it uses tensor core instructions only Hopper has. FA2 is still very fast and is what most people will be running. SDPA is fine, it's a fused kernel so it's already much better than naive attention, it's just not as tuned.
 
-> **Note:** Flash Attention 2 and 3 only accept FP16 or BF16 inputs, so the BF16 autocast from section 2 is required for those paths. Without it (on CPU or Apple MPS, for example), the code falls back to SDPA in FP32. Training still works; it is just slower.
+Notice the dtype checks. Flash Attention only accepts FP16 or BF16, so this whole section depends on the BF16 autocast from section 2. If you run without it, say on a CPU or a Mac, you fall back to SDPA in FP32. Nothing breaks, it's just slower.
 
-Flash Attention also supports **GQA (grouped query attention)** and **sliding-window attention** directly, and our model uses both. Passing `window_size=(512, 0)` means each token attends to the previous 512 tokens and none after it, which gives local attention at no extra cost.
+A nice bonus is that Flash Attention supports grouped query attention (several query heads sharing one key/value head) and sliding-window attention out of the box, and my model uses both. Passing `window_size=(512, 0)` means each token looks back at the previous 512 tokens and nothing ahead. That gives you local attention with no extra code.
 
----
+## 5. Don't make the GPU wait for data
 
-## 5. DataLoader workers: keep the GPU from waiting on data
-
-The GPU is the most expensive part of the setup, so it should never wait for data. The naive loop:
+Here's the training loop everyone writes first:
 
 ```python
 for batch in dataset:
     train_step(batch)
 ```
 
-runs everything in sequence. The GPU finishes the forward and backward pass, then sits idle while the CPU reads, tokenizes and packs the next batch.
+The problem is that it runs one thing at a time. The GPU does a forward and backward pass, then sits completely idle while the CPU reads the next chunk of files, tokenizes it, and packs it into a batch. Then the GPU goes again. Your most expensive piece of hardware is waiting on your cheapest one.
 
-The fix is to prepare batches in parallel CPU processes while the GPU works. While the GPU runs step N, the workers are already building the batches after it.
+The fix is to have separate CPU processes building batches in the background while the GPU is busy. PyTorch's DataLoader does this for you if you ask it to:
 
 ```python
-# fineweb_edu_parquet_bos_dataloader.py
 self.dataloader = DataLoader(
     dataset,
     batch_size=1,           # the dataset already packs full batches
@@ -255,70 +207,58 @@ self.dataloader = DataLoader(
 )
 ```
 
-- **`num_workers=4`**: starts 4 worker processes. Each one reads Parquet files, tokenizes, packs sequences, and puts finished batches on a shared queue.
-- **`prefetch_factor=4`**: each worker keeps 4 batches ready ahead of time. 4 workers × 4 batches = **16 batches** waiting at any moment.
-- **`persistent_workers=True`**: keeps workers alive between epochs. Without it, PyTorch kills and restarts every worker at each epoch boundary, which can take several seconds on large datasets. With it, workers keep their open files and state.
+`num_workers=4` starts 4 worker processes. Each one reads Parquet files, tokenizes, packs sequences, and drops finished batches into a shared queue. `prefetch_factor=4` means each worker tries to keep 4 batches ready ahead of time, so with 4 workers there are up to 16 batches waiting at any moment. The GPU basically never has to wait.
 
----
+`persistent_workers=True` is the one people forget. Without it, PyTorch kills all the workers at the end of every epoch and starts fresh ones for the next, which can take several seconds on a large dataset. With it, the workers just stay alive and keep going.
 
 ## 6. Pinned memory and non-blocking copies
 
-Every `.to("cuda")` call has a hidden cost. These two settings fix it together: `pin_memory=True` on the DataLoader and `non_blocking=True` on the copy.
+The last one is about something that happens every time you call `.to("cuda")`, which you probably never think about.
 
-**What happens by default.** The GPU copies data from CPU memory using a **DMA (direct memory access)** engine. Normal CPU memory is *pageable*: the operating system can move it or swap it to disk at any time, so the DMA engine cannot read it safely. CUDA therefore:
-1. copies the tensor into a temporary page-locked buffer,
-2. copies that buffer to the GPU,
-3. blocks your Python code until both copies finish.
+The GPU copies data from CPU memory using a DMA engine, a piece of hardware that moves memory without bothering the CPU. But normal CPU memory is "pageable", meaning the operating system is free to move it around or swap it to disk whenever it wants. The DMA engine can't read from memory that might move out from under it. So when you call `.to("cuda")` on a normal tensor, CUDA quietly copies it into a temporary buffer that the OS isn't allowed to move, then copies that buffer to the GPU, and your Python code waits for both copies to finish.
 
-That is two copies, one after the other, while your training loop waits.
+Two copies, back to back, and the training loop is blocked the whole time.
 
-**The fix:**
+The fix is two small settings that only work as a pair:
 
 ```python
-# DataLoader setup
 dataloader = DataLoader(
     dataset,
     num_workers=4,
     prefetch_factor=4,
-    pin_memory=True,          # allocate batches in page-locked memory
+    pin_memory=True,
     persistent_workers=True,
 )
 
-# training loop
 x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
 ```
 
-- **`pin_memory=True`**: batches are allocated in **pinned (page-locked) memory**, which the DMA engine can read directly. One copy instead of two.
-- **`non_blocking=True`**: starts the copy and returns immediately instead of waiting for it to finish. CUDA orders the copy before any GPU work that uses the data, so the result is still correct.
+`pin_memory=True` tells the DataLoader to put batches in pinned (page-locked) memory from the start, so the DMA engine can read them directly. One copy instead of two. `non_blocking=True` tells CUDA to start the copy and return immediately instead of waiting. You don't have to worry about using the data before it arrives, CUDA orders things so the copy finishes before any GPU work that needs it.
 
-Together, the copy of batch N+1 runs while the GPU is computing batch N, so the transfer time is hidden.
+Put the two together and the copy of the next batch happens while the GPU is still working on the current one. The transfer time just disappears behind the compute.
 
-Limits:
-- It only helps on CUDA, not on CPU or Apple MPS. Our dataloader turns `pin_memory` on only for CUDA with workers enabled.
-- Pinned memory cannot be swapped out, so it uses real RAM. Do not pin more than you need.
+Two caveats. This only helps on CUDA, not on a CPU or a Mac, so my dataloader only turns pinning on when it's on CUDA with workers. And pinned memory can't be swapped to disk, so it uses up real RAM. Don't pin more than you need.
 
----
+## All together
 
-## 7. Putting it together
-
-The six changes are not independent. Flash Attention needs the BF16 autocast, and pinned memory only pays off with `non_blocking=True`. Here is the condensed training setup:
+None of these really stand alone. Flash Attention needs BF16. Pinned memory is pointless without `non_blocking=True`. Here's the whole thing in one place:
 
 ```python
-# 1. TF32, at the very start
+# 1. TF32
 torch.set_float32_matmul_precision("high")
 
-# 2. BF16 embeddings, after init and .to(device)
+# 2. BF16 embeddings
 raw_model = GPT(config)
 raw_model.to(device)
 raw_model.cast_embeddings_to_bfloat16()
 
-# 3. torch.compile with fixed shapes
+# 3. compile, with fixed shapes
 model = torch.compile(raw_model, dynamic=False)
 
-# 4. Flash Attention is picked at import time inside attention.py
-#    and used inside the model's forward pass
+# 4. Flash Attention gets picked when attention.py is imported,
+#    and runs inside the model's forward pass
 
-# 5 + 6. DataLoader with workers, prefetching and pinned memory
+# 5 + 6. workers, prefetching, pinned memory
 dataloader = DataLoader(
     dataset,
     num_workers=4,
@@ -329,20 +269,10 @@ dataloader = DataLoader(
 
 for x, y in dataloader:
     x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
-    # 2. BF16 autocast for the forward pass
     with torch.autocast(device_type=device, dtype=torch.bfloat16):
-        _, loss = model(x, y)  # Flash Attention runs in here
+        _, loss = model(x, y)
     loss.backward()
     optimizer.step()
 ```
 
----
-
-## Code
-
-Everything here is in [VibeNanoChat](https://github.com/divyanshu25/VibeNanoChat):
-
-- `src/gpt_2/trainer.py`: TF32 and BF16 autocast
-- `src/gpt_2/attention.py`: Flash Attention loading and dispatch
-- `src/gpt_2/training_utilities/model_setup.py`: BF16 embeddings and `torch.compile`
-- `src/dataloaders/fineweb_edu_parquet_bos_dataloader.py`: DataLoader workers and pinned memory
+If you want to dig into the real code, it's all in [VibeNanoChat](https://github.com/divyanshu25/VibeNanoChat). TF32 and autocast are in `src/gpt_2/trainer.py`, Flash Attention is in `src/gpt_2/attention.py`, the BF16 embeddings and compile are in `src/gpt_2/training_utilities/model_setup.py`, and the dataloader is in `src/dataloaders/fineweb_edu_parquet_bos_dataloader.py`.

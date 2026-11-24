@@ -1,66 +1,52 @@
 # A Lazy Engineer's Guide to Scaling Transformers
 
-*How to set a transformer's architecture, batch size, learning rate, weight decay and training length from one integer: `depth`. Code is from [VibeNanoChat](https://github.com/divyanshu25/VibeNanoChat).*
+*How I got every hyperparameter in [VibeNanoChat](https://github.com/divyanshu25/VibeNanoChat) to follow from a single number.*
 
 ---
 
-## 1. The problem: too many knobs that depend on each other
+Training an LLM isn't the tedious part. The GPUs do that. The tedious part is the configuration.
 
-To try a new model size, you normally pick three architecture numbers:
+Every time I wanted to try a new model size, I'd sit down and pick three numbers: the number of layers, the width, and the number of attention heads. Then I'd pick a batch size, a learning rate, a weight decay, and how many tokens to train on. And these numbers all depend on each other in ways that are easy to get wrong.
 
-- `n_layer`: how many transformer blocks are stacked.
-- `n_embed`: the hidden dimension, the width of the vector each token is represented by.
-- `n_head`: how many attention heads each layer has.
+Now do that for six model sizes, because you want to run a scaling sweep. One config will have a learning rate that made sense for the small model but not the big one. Another will run out of memory on the first batch. You'll find out three hours in.
 
-Then you pick a batch size, learning rate, weight decay and number of training tokens to go with them.
+I got tired of this, so I made everything follow from one integer: `depth`, the number of transformer layers. You pick the depth, and the width, the heads, the batch size, the learning rate, the weight decay and the training length are all computed from it. Want a bigger model? Make the number bigger. That's the whole interface.
 
-For a scaling sweep over six model sizes, that is six hand-written configs. In practice one of them has the wrong learning rate, one runs out of memory on the first batch, and you find out hours into the run.
+Here's how it works.
 
-This post replaces all of that with **one integer, `depth`**, the number of transformer layers. Everything else is computed from it.
+## Most configs are bad
 
----
+A transformer's shape comes down to three numbers. `n_layer` is how many blocks you stack. `n_embed` is the width, the size of the vector each token is represented by. `n_head` is how many attention heads each layer has.
 
-## 2. Most architecture configs are bad
+It looks like you have three free choices, but you don't really, because there are constraints between them.
 
-The three architecture numbers are not independent:
+The width has to divide evenly by the number of heads, since each head gets `n_embed / n_head` dimensions. If that's not a whole number, the model doesn't even work.
 
-1. **`n_embed` must be divisible by `n_head`.** Each head gets `n_embed / n_head` dimensions, which must be a whole number.
-2. **The head dimension should be 64 or 128.** Flash Attention's fastest kernels are built for these sizes.
-3. **The aspect ratio `n_embed / n_layer` should be roughly 64 to 128.** GPT-2 small has 768 / 12 = 64. GPT-3 175B has 12,288 / 96 = 128, and LLaMA 7B has 4,096 / 32 = 128. Kaplan et al. (2020) found that loss changes very little across a wide range of aspect ratios, and published models cluster in this band.
+That per-head dimension should also be 64 or 128, because that's what Flash Attention's fastest kernels are built for.
 
-So most points in the 3D space of `(n_layer, n_embed, n_head)` are invalid (heads don't divide the width), slow (wrong head size), or oddly shaped (aspect ratio far outside the usual band). **The good configs lie along a thin 1D curve through that space.**
+And then there's the aspect ratio, `n_embed / n_layer`, which is the interesting one. If you look at well-known models, it keeps landing in roughly the same range. GPT-2 small is 768 wide and 12 deep, so 64. GPT-3 175B is 12,288 wide and 96 deep, so 128. LLaMA 7B is 4,096 and 32, also 128. This isn't a coincidence. Kaplan et al. (2020) found that loss barely changes across a wide range of aspect ratios, so people settled on what works and stopped messing with it. Go far outside that range and you're in territory nobody has really tested.
 
-The idea of this post: stop searching the 3D space and move only along that curve.
+So if you think of all possible `(n_layer, n_embed, n_head)` combinations as a 3D space, most of it is junk. Some configs are broken, some are slow, and some are weirdly shaped. The good ones sit along a thin curve running through that space.
 
----
+So why search the whole 3D space? Just walk along the curve.
 
-## 3. The architecture from `depth`
+## Three lines of math
 
-Fix the aspect ratio and the head dimension. Then:
+Fix the aspect ratio and the head dimension, and everything else falls out of depth:
 
 ```
 n_layer = depth
 n_embed = depth × aspect_ratio      (rounded up to a multiple of head_dim)
-n_head  = n_embed ÷ head_dim
+n_head  = n_embed / head_dim
 ```
 
-With `aspect_ratio = 64` and `head_dim = 64`, no rounding is ever needed:
+With `aspect_ratio = 64` and `head_dim = 64`, everything divides evenly. `depth = 12` gives 768 wide with 12 heads, which is exactly GPT-2 small. `depth = 24` gives 1,536 wide with 24 heads.
 
-| depth | n_layer | n_embed | n_head |
-|---|---|---|---|
-| 12 | 12 | 12 × 64 = 768 | 768 / 64 = 12 |
-| 24 | 24 | 24 × 64 = 1,536 | 1,536 / 64 = 24 |
+What I like about this is what you can no longer do. You can't make a config where the heads don't divide the width. You can't make one with a weird aspect ratio. You don't need to check for those mistakes, because there's no way to write them down.
 
-`depth = 12` is the GPT-2 small shape.
-
-With this setup, you cannot create a config where the heads don't divide the width, or where the aspect ratio is off. Those configs cannot be expressed.
-
-### The code
-
-This is in `GPTConfig.__post_init__`, which Python runs automatically after the dataclass is created:
+In code, it lives in `__post_init__` on the config dataclass, which Python runs automatically right after the object is created:
 
 ```python
-# config.py
 @dataclass
 class GPTConfig:
     depth: int = 12          # the one knob; 12 is the GPT-2 small shape
@@ -72,97 +58,88 @@ class GPTConfig:
             self.n_layer = self.depth
             base_dim = self.depth * self.aspect_ratio
 
-            # ceiling division: round up to the nearest multiple of head_dim
-            # so that n_embed % head_dim == 0 always holds
+            # round up to the nearest multiple of head_dim,
+            # so n_embed % head_dim == 0 always holds
             self.n_embed = ((base_dim + self.head_dim - 1) // self.head_dim) * self.head_dim
 
             self.n_head = self.n_embed // self.head_dim
 ```
 
-**Why the rounding.** Suppose you try `aspect_ratio = 50` and `depth = 13`. Then `base_dim = 650`, and 650 / 64 = 10.16 heads, which is not a whole number. The ceiling division rounds `n_embed` up to 704, which gives 704 / 64 = 11 heads.
-
-The code records how much it added:
+The rounding line only matters if you try other aspect ratios. Say you try `aspect_ratio = 50` with `depth = 13`. That gives a base width of 650, and 650 / 64 is about 10.16 heads, which doesn't work. The rounding bumps the width up to 704, which is exactly 11 heads. I also track how much got added:
 
 ```python
-nudge = self.n_embed - base_dim  # dimensions added to make heads divide evenly
+nudge = self.n_embed - base_dim  # how many dimensions were added to fit the heads
 ```
 
-With `aspect_ratio = 64` and `head_dim = 64`, `nudge` is always 0. With other aspect ratios, it tells you how far the actual model is from what you asked for.
+With 64 and 64, the nudge is always zero. With other values, it tells you how far the real model drifted from what you asked for.
 
----
+## The rest of the hyperparameters
 
-## 4. The training hyperparameters from `depth`
+Getting the architecture from depth is nice, but the part I find more satisfying is that everything else follows too. Depth sets the architecture. The architecture sets the parameter count. The parameter count sets how long to train. The training length sets the batch size. The batch size sets the learning rate and the weight decay. Each step feeds the next.
 
-The architecture is only the first step. `depth` sets the parameter count, and the parameter count sets everything below. Each step uses the output of the one before:
+All of it is measured against one reference model, `depth = 12`, about 125M parameters. It's small enough that I can afford to tune it by hand. I tuned its batch size, learning rate and weight decay once, and every other size just scales those values by some ratio.
 
-```
-depth -> parameters -> training tokens -> batch size -> learning rate -> weight decay
-```
+### How long to train
 
-All of these are defined **relative to a reference model, `depth = 12`**, which is small enough to tune by hand. You tune its batch size, learning rate and weight decay once. Every other size gets those values multiplied by a scale factor.
+The Chinchilla paper (Hoffmann et al., 2022) showed that for a fixed compute budget, there's a best ratio of training tokens to model parameters. Train on too few tokens and the model is undertrained. Train on too many and you're spending compute for very little gain.
 
-### 4.1 Training tokens
-
-The Chinchilla paper (Hoffmann et al., 2022) showed that for a fixed compute budget, there is a best ratio of **training tokens to model parameters**. Too few tokens and the model is undertrained. Too many and you spend compute for little gain.
-
-We store this as one config value, `target_param_data_ratio`, the number of training tokens per parameter:
+I store this as one config value, `target_param_data_ratio`:
 
 ```
 training_tokens = target_param_data_ratio × parameters
 ```
 
-A bigger model has more parameters, so it automatically trains on more tokens. Chinchilla measured about **20** tokens per parameter for their setup. For our architecture we use **10**. This ratio depends on the architecture, so measure it for yours instead of copying it.
+A bigger model has more parameters, so it automatically trains on more tokens. Chinchilla found about 20 tokens per parameter for their setup. For mine it's 10. Don't just copy either number. This ratio depends on the architecture, and you have to measure it for yours.
 
-### 4.2 Batch size
+### Batch size
 
-More training tokens means a larger best batch size. The **Power Lines** paper (Bergsma et al., 2025) found that the best batch size grows as a power of the number of training tokens D:
+More training tokens means you want a bigger batch. But how much bigger? The Power Lines paper (Bergsma et al., 2025) found that the best batch size grows with the number of training tokens D like this:
 
 ```
 B_opt ∝ D^0.383
 ```
 
-So we scale from the reference model:
+So I scale from the reference model:
 
 ```python
 token_ratio = target_tokens / reference_tokens
 predicted_batch_size = reference_batch_size * (token_ratio ** 0.383)
 ```
 
-The growth is sublinear. 10× more tokens gives 10^0.383 = **2.4× the batch size**, not 10×. We then round to a power of 2.
+The exponent is well below 1, so the batch grows a lot slower than the data. 10x more tokens only gets you 10^0.383 ≈ 2.4x the batch size. I round the result to a power of 2. Like the Chinchilla ratio, the 0.383 was measured on someone else's setup, so treat it as a good starting point you can recalibrate.
 
-Like the Chinchilla ratio, the 0.383 exponent was measured on a specific setup. It is a good starting point, not a law.
+### Learning rate
 
-### 4.3 Learning rate
+Now the batch changed, so the learning rate should too. A bigger batch averages the gradient over more examples, so each gradient estimate is less noisy and you can trust it enough to take a bigger step.
 
-A larger batch averages the gradient over more samples, so each gradient estimate is less noisy and you can take larger steps.
-
-- For **SGD**, the usual rule is linear: double the batch, double the learning rate.
-- For **Adam and AdamW**, the usual rule is **square root**: double the batch, multiply the learning rate by √2 = 1.41. Adam already divides each update by a running estimate of the gradient's size, which partly cancels the effect of noise, so a bigger batch helps it less.
+With plain SGD, the usual rule is linear: double the batch, double the learning rate. Adam is different. Adam already divides each update by a running estimate of how big the gradients are, which cancels out part of the noise on its own. So it gains less from a bigger batch, and the rule that works in practice is the square root:
 
 ```python
 batch_ratio = total_batch_size / reference_batch_size
 lr_scale_factor = batch_ratio ** 0.5
 ```
 
-The reference model's learning rate is tuned by hand. Every other size multiplies it by `lr_scale_factor`.
+Double the batch, and the learning rate goes up by √2 ≈ 1.41x, not 2x.
 
-### 4.4 Weight decay
+### Weight decay
 
-Weight decay uses the **τ_epoch** idea from the Power Lines paper.
+This one took me the longest to understand, so let me go slowly.
 
-With AdamW, the weights behave like an exponential moving average of recent updates. The length of that average, measured in optimizer steps, is 1 / (η·λ), where η is the learning rate and λ is the weight decay. Training lasts D / B steps, where D is training tokens and B is the batch size in tokens. Dividing the first by the second gives the averaging window as a **fraction of the whole training run**:
+The Power Lines paper looks at AdamW in a useful way. With weight decay, the model's weights end up behaving like a moving average of recent updates. Older updates slowly fade out. The question is how long that averaging window is.
+
+It turns out the window is about 1 / (η·λ) steps, where η is the learning rate and λ is the weight decay. The whole training run is D / B steps, where D is the number of training tokens and B is the batch size in tokens. Divide one by the other and you get the window as a fraction of the training run:
 
 ```
 τ_epoch = (1 / (η·λ)) / (D / B) = B / (η·λ·D)
 ```
 
-The paper found the best τ_epoch stays about the same across model sizes. So we hold τ_epoch fixed and solve for λ:
+The paper found that the best τ_epoch stays about the same across model sizes. So I hold it fixed and solve for weight decay:
 
 ```
 λ = B / (η · τ_epoch · D)
 ```
 
-Since η already scales as √B (section 4.3), B / η scales as B / √B = √B. That gives:
+The learning rate already scales with √B from the last section, so B / η scales like B / √B = √B. That leaves:
 
 ```
 λ / λ_ref = √(B / B_ref) × (D_ref / D)
@@ -170,43 +147,33 @@ Since η already scales as √B (section 4.3), B / η scales as B / √B = √B.
 
 ```python
 batch_ratio = total_batch_size / reference_batch_size
-token_ratio = reference_tokens / target_tokens   # note: D_ref / D, inverted
+token_ratio = reference_tokens / target_tokens   # note: D_ref / D, flipped
 wd_scale_factor = (batch_ratio ** 0.5) * token_ratio
 ```
 
-In words: **a bigger batch needs more weight decay, and a longer run needs less.** The full code is in `batch_scaling.py`.
+In plain words: a bigger batch wants more weight decay, and a longer run wants less. The full code is in `batch_scaling.py`.
 
----
+## Let's follow the numbers
 
-## 5. A worked example: depth 12 to depth 24
+Let's go from the reference model at depth 12 to depth 24 and see what changes.
 
-Parameters here count the transformer weight matrices plus the output head, which is what the scaling uses. Each transformer layer has about 12 × n_embed² weights: 4 × n_embed² for attention and 8 × n_embed² for the MLP.
+At depth 12, the model has 12 layers, 768 width and 12 heads, about 125M parameters. That means 10 × 125M = 1.25B training tokens. The batch size is 524,288 tokens (that's 2^19), which I tuned by hand. The learning rate and weight decay scales are 1.0, by definition.
 
-**depth = 12 (the reference)**
-- n_layer = 12, n_embed = 768, n_head = 12, about **125M parameters**
-- Training tokens: 10 × 125M = **1.25B**
-- Batch size: **524K tokens** (2^19, tuned by hand)
-- Learning rate and weight decay scale: **1.0×** by definition
+At depth 24, the model has 24 layers, 1,536 width and 24 heads, about 760M parameters.
 
-**depth = 24**
-- n_layer = 24, n_embed = 1,536, n_head = 24, about **760M parameters**
-- Training tokens: 10 × 760M = **7.6B**, so the token ratio is 7.6 / 1.25 = 6.1
-- Batch size: 524K × 6.1^0.383 = 524K × 2.0 ≈ **1M tokens**
-- Learning rate scale: √(1M / 524K) = √2 ≈ **1.41×**
-- Weight decay scale: √2 × (1.25B / 7.6B) = 1.41 × 0.16 ≈ **0.23×**
+Wait, why 760M? We only doubled the depth. But remember, doubling depth also doubles the width. Each transformer layer has about 12 × n_embed² weights (4 × n_embed² for attention, 8 × n_embed² for the MLP). So the layers grow by 2 for twice as many layers, times 2² = 4 for the wider layers, which is 8x. The output head only grows with width, so 2x. Mix those together and you get about 6x.
 
-**Why the parameter count goes up 6×, not 2×.** Doubling `depth` doubles the number of layers *and* the width. Each layer has about 12 × n_embed² weights, so the transformer part grows 2 (layers) × 2² (width squared) = **8×**. The output head only grows with width, so it grows 2×. Together that comes to about 6×.
+Now the cascade. Training tokens are 10 × 760M = 7.6B, which is 7.6 / 1.25 = 6.1x the reference. The batch size becomes 524K × 6.1^0.383 = 524K × 2.0 ≈ 1M tokens. The batch doubled, so the learning rate goes up by √2 ≈ 1.41x. And the weight decay becomes √2 × (1.25 / 7.6) = 1.41 × 0.16 ≈ 0.23x.
 
-**Why weight decay drops so much.** The larger model trains on 6.1× more tokens. A longer run already averages over more updates, so it needs less weight decay to keep the same τ_epoch. The bigger batch pushes weight decay up by √2, but the longer run pulls it down by 6.1×, and the second effect wins.
+That last one drops a lot, and it's worth seeing why. The bigger batch pushes weight decay up by 1.41x. But the model trains on 6.1x more tokens, and a longer run already averages over more updates, so it needs much less decay to keep the same τ_epoch. The second effect is bigger, so overall it goes down.
 
-Every number above follows from changing one input: 12 to 24.
+Every one of those numbers came from changing 12 to 24.
 
----
+## The payoff
 
-## 6. A scaling sweep
+A full scaling sweep now looks like this:
 
 ```bash
-# six models, one variable
 DEPTH=6  python train.py   # ~30M params
 DEPTH=8  python train.py   # ~51M params
 DEPTH=12 python train.py   # ~125M params  <- tune hyperparameters here, once
@@ -215,16 +182,14 @@ DEPTH=20 python train.py   # ~458M params
 DEPTH=26 python train.py   # ~948M params
 ```
 
-For each run, the architecture, training length, batch size, learning rate and weight decay are all computed. You choose one number.
+One number per run. The architecture, training length, batch size, learning rate and weight decay all come out the other side.
 
-The alternative is six hand-written configs, each checked by hand, with the usual mistakes: a learning rate not updated for the bigger model, an out-of-memory error, a batch size tweaked and rerun.
+Compare that to six hand-written configs, each one checked by hand, and the usual mistakes: forgetting to update the learning rate for the bigger model, hitting an out-of-memory error, tweaking the batch size and starting over. That used to eat a week. Now it's an afternoon.
 
----
+## The bigger idea
 
-## 7. The general idea
+If I zoom out, the thing I like most here isn't really about transformers. If you treat `n_layer`, `n_embed` and `n_head` as three independent settings, most of the combinations you can write down are bad, and you have to check for that. If you instead compute all three from one number, the bad combinations can't be written down in the first place. There's nothing to check.
 
-Parameterized by `(n_layer, n_embed, n_head)` independently, the config space is three-dimensional and mostly bad. The `depth` parameterization keeps you on the 1D curve of good configs. Bad configs are not checked for and rejected; they simply cannot be written down.
+That's a good rule for designing config and APIs in general: make invalid states impossible to express. Don't check that `n_embed % n_head == 0`. Build both from one input so it's always true.
 
-This applies beyond transformers: **design the interface so that invalid states cannot be represented.** Instead of checking `n_embed % n_head == 0`, compute `n_embed` and `n_head` from one input so the constraint always holds.
-
-The practical result: a scaling sweep that used to mean a week of config fixes is now one number per run. That time goes to the questions that matter, like what the loss curves look like and where the scaling law stops holding.
+And the practical win is that I spend my time on the questions I actually care about, like what the loss curves look like and where the scaling law starts to break, instead of on bookkeeping.
