@@ -48,11 +48,10 @@ export const posts: Post[] = [
   {
     id: "scaling-transformers",
     title: "A Lazy Engineer's Guide to Scaling Transformers",
-    summary: "How to compress transformer configuration into a single integer:depth. By deriving architecture dimensions (n_layer, n_embed, n_head), batch size, learning rate, weight decay, and training horizon from one number, scaling sweeps across multiple model sizes become trivial and error-free.",
-    url: "https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91",
-    content: `Published on [Medium](https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91)
-
-[Read the full article on Medium →](https://medium.com/@divyanshugoyal/a-lazy-engineers-guide-to-scaling-transformers-104e404e2f91)`,
+    summary: "How to set a transformer's architecture, batch size, learning rate, weight decay and training length from one integer, depth. Covers why most (n_layer, n_embed, n_head) configs are bad, Chinchilla token ratios, Power Lines batch scaling, square-root learning rate scaling, and weight decay from the AdamW timescale, with a worked example from depth 12 to 24.",
+    content: "",
+    contentFile: "docs/scaling_transformers.md",
+    heroImage: "/blog/scaling-transformers/hero.png",
     date: "2026-03-06",
     tags: ["Transformers", "Scaling", "LLMs", "Training", "Deep Learning", "Scaling Laws"],
     authors: ["Divyanshu Goyal"]
