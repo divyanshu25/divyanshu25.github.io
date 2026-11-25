@@ -83,7 +83,7 @@ Now notice what you **can't** do anymore. You can't make a config where the head
 
 ### 3.2 The code
 
-This goes in `__post_init__` on the config dataclass, which Python runs right after the object is created. (In the repo, `depth` defaults to -1, which turns depth mode off; you pass a depth with `--depth`.)
+This goes in `__post_init__` on the config dataclass, which Python runs right after the object is created. (In the repo, you pass it with `--depth`.)
 
 ```python
 # config.py
@@ -122,9 +122,9 @@ With 64 and 64, `nudge` is always 0. With other values, it tells you how far the
 
 That handles the architecture. The rest of the cascade starts from the parameter count, which `depth` now fixes.
 
-Everything from here on is measured against a **reference model: `depth = 12`**, about 124M parameters. Its batch size, learning rate and weight decay are tuned once; we use the tuned values from nanochat's reference model. Every other size gets those values times a scale factor, and the next three sections derive those factors.
+Everything from here on is measured against a **reference model: `depth = 12`**, about 124M parameters. Its batch size, learning rate and weight decay are tuned once (we use nanochat's tuned values). Every other size gets those values times a scale factor, and the next three sections derive those factors.
 
-> **Note:** "Parameters" here means what the scaling code counts: the transformer blocks' weight matrices plus the output head. It leaves out the token embedding table and the value embeddings. Counting everything, the depth 12 model has about 394M parameters, most of it in embedding tables. So every parameter count in this post is the scaling count.
+> **Note:** "Parameters" in this post means the transformer blocks plus the output head, which is what the scaling code counts. Embedding tables are left out.
 
 The first question is how long to train. The **Chinchilla** paper (Hoffmann et al., 2022) showed that for a fixed compute budget, there's a best ratio of training tokens to parameters. Too few tokens and the model is undertrained. Too many and you're spending compute for little gain.
 
@@ -132,7 +132,7 @@ We store this ratio as one config value, `target_param_data_ratio`:
 
 $$\text{training tokens} = \text{target\_param\_data\_ratio} \times \text{parameters}$$
 
-A bigger model has more parameters, so it automatically trains on more tokens. Chinchilla found about **20** tokens per parameter for their setup. For our architecture we use **10**. The two aren't directly comparable, since Chinchilla counted all parameters and we leave out the embeddings.
+A bigger model has more parameters, so it automatically trains on more tokens. Chinchilla found about **20** tokens per parameter for their setup. For our architecture we use **10**.
 
 > **Note:** The ratio depends on the architecture and data. It's something you measure for your own setup, not a constant you copy from a paper.
 
@@ -179,7 +179,7 @@ lr_scale_factor = batch_ratio ** 0.5
 
 Every other size multiplies the reference learning rate by `lr_scale_factor`.
 
-> **Note:** In VibeNanoChat, most of the weights, all the matrices inside the transformer blocks, are trained with the **Muon** optimizer, not Adam. Only the embeddings, the output head and a few scalars use AdamW. The code applies the same square-root rule to every group, assuming it carries over to Muon.
+> **Note:** In VibeNanoChat, the transformer blocks' matrices use the **Muon** optimizer, not Adam. The code applies the same square-root rule to them, assuming it carries over.
 
 ---
 
@@ -223,7 +223,7 @@ In plain English:
 
 The full code is in `batch_scaling.py`.
 
-> **Note:** In VibeNanoChat, the AdamW groups use no weight decay at all. Weight decay is applied only to the Muon-trained matrices, and it decays linearly to zero over training. The $\lambda$ from this derivation sets its starting value. As with the learning rate, carrying the AdamW result over to Muon is an assumption.
+> **Note:** In VibeNanoChat, weight decay is applied only to the Muon-trained matrices, starting at this $\lambda$ and decaying to zero over training.
 
 ---
 
